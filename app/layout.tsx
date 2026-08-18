@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Space_Grotesk } from 'next/font/google'
 import { CartProvider } from '@/components/cart/cart-provider'
 import { SiteHeader } from '@/components/site-header'
-import { SiteFooter } from '@/components/site-footer'
 import { CartDrawer } from '@/components/cart/cart-drawer'
 import './globals.css'
 
@@ -49,11 +48,10 @@ export default function RootLayout({
       lang="tr"
       className={`${geist.variable} ${spaceGrotesk.variable} bg-background`}
     >
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased text-foreground bg-background">
         <CartProvider>
           <SiteHeader />
-          <main className="min-h-screen">{children}</main>
-          <SiteFooter />
+          <div className="w-full">{children}</div>
           <CartDrawer />
         </CartProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
