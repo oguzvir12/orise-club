@@ -1,65 +1,37 @@
-import { Activity, Sparkles, Users, Waves } from 'lucide-react'
 import { SplitHero } from '@/components/home/split-hero'
-
-const MISSION_ITEMS = [
-  {
-    icon: Users,
-    title: 'Bir Topluluk',
-    text: 'Aynı frekanstaki insanlarla bağ kurmanın en keyifli hali.',
-  },
-  {
-    icon: Activity,
-    title: 'Hareket Odaklı',
-    text: 'Koşudan voleybola, yogadan tenise; performans baskısından uzak.',
-  },
-  {
-    icon: Waves,
-    title: 'Şehrin Enerjisi',
-    text: 'Sokaklara, sahillere ve doğaya yön veren yeni nesil hareket.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Kulübe Özel',
-    text: 'Sınırlı üretim drop koleksiyonları ve club-only ayrıcalıklar.',
-  },
-]
 
 export default function HomePage() {
   return (
-    <div className="pt-16">
-      <SplitHero />
+    <main className="relative flex h-screen w-full flex-col justify-between overflow-hidden bg-background">
+      {/* İki taraflı split alanını ekranın tamamına yayar */}
+      <div className="flex-1 w-full h-full">
+        <SplitHero />
+      </div>
 
-      <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <p className="mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground text-pretty">
-            <span className="font-display font-semibold text-foreground">
-              ORISE
-            </span>{' '}
-            — insanları tek başınalığın rutininden çıkararak sporu bir yaşam
-            tarzına, hareketi ise bağ kurmanın en keyifli yoluna dönüştüren bir
-            kulüp.
-          </p>
-          <div className="grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
-            {MISSION_ITEMS.map((item) => {
-              const Icon = item.icon
-              return (
-                <div
-                  key={item.title}
-                  className="flex flex-col gap-3 bg-card p-6 transition-colors hover:bg-secondary"
-                >
-                  <Icon className="h-6 w-6 text-primary" />
-                  <h3 className="font-display text-base font-semibold">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {item.text}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
+      {/* Ekranın en altında sabit, ince, transparan kulüp barı */}
+      <div className="absolute inset-x-0 bottom-0 z-30 flex h-12 items-center justify-between border-t border-border/40 bg-background/70 px-6 backdrop-blur-md text-xs text-muted-foreground">
+        <span>© 2026 ORISE CLUB</span>
+        <div className="flex items-center gap-4">
+          <a
+            href="https://www.instagram.com/orisecommunity/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors font-medium"
+          >
+            @orisecommunity
+          </a>
+          <span className="opacity-40">·</span>
+          <a
+            href="https://www.instagram.com/orisestore/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors font-medium"
+          >
+            @orisestore
+          </a>
         </div>
-      </section>
-    </div>
+        <span className="hidden sm:inline tracking-widest text-[10px] uppercase">Istanbul · TR</span>
+      </div>
+    </main>
   )
 }
