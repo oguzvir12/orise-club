@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { Flame, Compass, ArrowUpRight, MessageSquareHeart } from 'lucide-react'
+import { Flame, Compass, ArrowUpRight, MessageSquareHeart, Zap } from 'lucide-react'
 import { EVENTS } from '@/lib/events'
 import { EventList } from '@/components/community/event-list'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
@@ -18,7 +18,7 @@ const FEEDBACK_FORM_URL =
 export default function CommunityPage() {
   return (
     <div className="pt-16">
-      {/* Sinematik Hero */}
+      {/* 1. Hero Alanı */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image
@@ -31,7 +31,7 @@ export default function CommunityPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/90 to-background" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 py-24 sm:px-8 lg:px-12 lg:py-32">
+        <div className="relative z-10 mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12 lg:py-28">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             ORISE Topluluk Hareketi
@@ -48,44 +48,9 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* Kulüp Değerleri */}
-      <section className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="group relative overflow-hidden rounded-3xl border border-border bg-card/60 p-8 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:bg-card lg:p-10">
-            <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-secondary/80 text-primary transition-transform duration-300 group-hover:scale-110">
-              <Flame className="h-5 w-5" />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-primary">
-              01 / KULÜP RUHU
-            </span>
-            <h2 className="mt-3 font-display text-2xl font-bold text-foreground">
-              Performans Baskısı Yok, Birlikte Hareket Var.
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-              Koşudan sahile, voleyboldan yogaya; kimsenin geride kalmadığı, sadece hareket etmenin ve şehri paylaşmanın keyfine odaklanan samimi bir ekosistem.
-            </p>
-          </div>
-
-          <div className="group relative overflow-hidden rounded-3xl border border-border bg-card/60 p-8 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:bg-card lg:p-10">
-            <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-secondary/80 text-primary transition-transform duration-300 group-hover:scale-110">
-              <Compass className="h-5 w-5" />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-primary">
-              02 / ŞEHİR VE DOĞA
-            </span>
-            <h2 className="mt-3 font-display text-2xl font-bold text-foreground">
-              Klasik Salonların Dışında, Açık Havada.
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-              Dört duvar arasına sıkışmak yerine şehrin sokaklarını, sahillerini ve parklarını antrenman alanına dönüştüren modern bir kulüp deneyimi.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Canlı Takvim ve Branş Filtre Alanı */}
-      <section className="border-t border-border bg-card/30">
-        <div className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
+      {/* 2. Canlı Etkinlik Takvimi & Branş Filtresi (Doğrudan Üstte) */}
+      <section className="border-b border-border bg-card/30">
+        <div className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:px-12">
           <div className="mb-8 flex flex-col gap-3">
             <span className="inline-flex items-center gap-2 self-start rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
               <span className="relative flex h-2 w-2">
@@ -98,65 +63,107 @@ export default function CommunityPage() {
               Bu Haftanın Buluşmaları
             </h2>
             <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Tüm kulüp etkinliklerine katılım ücretsizdir. Branş seçerek sana uygun buluşmaya kaydolabilirsin.
+              Tüm kulüp etkinliklerine katılım ücretsizdir. Branşını seç ve yerini ayırt.
             </p>
           </div>
 
-          {/* Branş Filtreli Liste Bileşeni */}
           <EventList events={EVENTS} />
         </div>
       </section>
 
-      {/* Alt Alan: Instagram ve Geri Bildirim */}
+      {/* 3. Kulüp Manifestosu & Kültürü (Aşağı Alınmış, 01-02 Olmayan Modern Kartlar) */}
       <section className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
+        <div className="mb-10 text-center md:text-left">
+          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
+            <Zap className="h-3.5 w-3.5" />
+            Kulüp Felsefesi
+          </div>
+          <h2 className="mt-2 font-display text-2xl font-bold tracking-tight sm:text-3xl">
+            Neden Birlikte Koşuyor ve Oynuyoruz?
+          </h2>
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2">
-          <a
-            href={INSTAGRAM}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm transition-all duration-500 hover:border-primary/50 lg:p-12"
-          >
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[0_0_25px_rgba(249,115,22,0.3)] transition-transform duration-500 group-hover:scale-110">
-              <InstagramIcon className="h-7 w-7" />
+          {/* Kart 1 */}
+          <div className="group relative overflow-hidden rounded-3xl border border-border/80 bg-card/50 p-8 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:bg-card lg:p-10">
+            <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-secondary text-primary transition-transform duration-300 group-hover:scale-110">
+              <Flame className="h-5 w-5" />
             </div>
+            <h3 className="font-display text-xl font-bold text-foreground">
+              Performans Baskısı Yok, Birlikte Hareket Var
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Kimsenin geride kalmadığı, yarışmak yerine hareket etmenin ve birlikte sosyalleşmenin keyfine odaklanan samimi bir kulüp ekosistemi.
+            </p>
+          </div>
 
-            <div className="space-y-2">
-              <h3 className="font-display text-2xl font-bold">Harekete Instagram'dan Katıl</h3>
-              <p className="text-sm font-semibold text-primary">@orisecommunity</p>
-              <p className="text-xs text-muted-foreground">
-                Haftalık etkinlik duyuruları ve buluşma kareleri için topluluğu takip et.
-              </p>
+          {/* Kart 2 */}
+          <div className="group relative overflow-hidden rounded-3xl border border-border/80 bg-card/50 p-8 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:bg-card lg:p-10">
+            <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-secondary text-primary transition-transform duration-300 group-hover:scale-110">
+              <Compass className="h-5 w-5" />
             </div>
+            <h3 className="font-display text-xl font-bold text-foreground">
+              Dört Duvarın Dışında, Şehrin Kalbinde
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Klasik spor salonu rutinlerinden uzaklaşarak sahil şeridini, parkları ve açık hava tesislerini antrenman sahasına dönüştürüyoruz.
+            </p>
+          </div>
+        </div>
+      </section>
 
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-primary-foreground">
-              <span>Takip Et</span>
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </div>
-          </a>
+      {/* 4. Alt Alan: Instagram ve Geri Bildirim */}
+      <section className="border-t border-border bg-card/20">
+        <div className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
+          <div className="grid gap-6 md:grid-cols-2">
+            <a
+              href={INSTAGRAM}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm transition-all duration-500 hover:border-primary/50 lg:p-12"
+            >
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[0_0_25px_rgba(249,115,22,0.3)] transition-transform duration-500 group-hover:scale-110">
+                <InstagramIcon className="h-7 w-7" />
+              </div>
 
-          <a
-            href={FEEDBACK_FORM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm transition-all duration-500 hover:border-primary/50 lg:p-12"
-          >
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-secondary text-primary shadow-[0_0_25px_rgba(255,255,255,0.05)] transition-transform duration-500 group-hover:scale-110 group-hover:border-primary">
-              <MessageSquareHeart className="h-7 w-7" />
-            </div>
+              <div className="space-y-2">
+                <h3 className="font-display text-2xl font-bold">Harekete Instagram'dan Katıl</h3>
+                <p className="text-sm font-semibold text-primary">@orisecommunity</p>
+                <p className="text-xs text-muted-foreground">
+                  Haftalık etkinlik duyuruları ve buluşma kareleri için topluluğu takip et.
+                </p>
+              </div>
 
-            <div className="space-y-2">
-              <h3 className="font-display text-2xl font-bold">İletişim & Geri Bildirim</h3>
-              <p className="text-sm font-semibold text-primary">Fikirlerini Paylaş</p>
-              <p className="text-xs text-muted-foreground">
-                Topluluk önerileri, iş birliği veya ürün geri bildirimleri için bize yazabilirsin.
-              </p>
-            </div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-primary-foreground">
+                <span>Takip Et</span>
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </div>
+            </a>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-foreground transition-colors group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
-              <span>Formu Doldur</span>
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </div>
-          </a>
+            <a
+              href={FEEDBACK_FORM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm transition-all duration-500 hover:border-primary/50 lg:p-12"
+            >
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-secondary text-primary shadow-[0_0_25px_rgba(255,255,255,0.05)] transition-transform duration-500 group-hover:scale-110 group-hover:border-primary">
+                <MessageSquareHeart className="h-7 w-7" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-display text-2xl font-bold">İletişim & Geri Bildirim</h3>
+                <p className="text-sm font-semibold text-primary">Fikirlerini Paylaş</p>
+                <p className="text-xs text-muted-foreground">
+                  Topluluk önerileri, iş birliği veya ürün geri bildirimleri için bize yazabilirsin.
+                </p>
+              </div>
+
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-foreground transition-colors group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
+                <span>Formu Doldur</span>
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </div>
+            </a>
+          </div>
         </div>
       </section>
     </div>
