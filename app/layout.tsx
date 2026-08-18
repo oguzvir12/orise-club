@@ -22,6 +22,11 @@ export const metadata: Metadata = {
     'ORISE — Şehrin enerjisini birlikte yükselten yeni nesil topluluk hareketi. Koşu, voleybol, yoga, tenis ve haftalık etkinlikler. Kulübe özel sınırlı üretim tekstil koleksiyonları.',
   generator: 'v0.app',
   metadataBase: new URL('https://oriseclub.com'),
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
   openGraph: {
     title: 'ORISE CLUB — More Than a Brand, a Club',
     description:
