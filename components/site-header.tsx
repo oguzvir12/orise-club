@@ -5,14 +5,13 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Menu, ShoppingBag, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { InstagramIcon } from '@/components/icons/instagram-icon'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
 
 const NAV = [
   { href: '/', label: 'Ana Sayfa' },
-  { href: '/community', label: 'Community' },
-  { href: '/store', label: 'Store' },
+  { href: '/community', label: 'Topluluk' },
+  { href: '/store', label: 'Mağaza' },
 ]
 
 export function SiteHeader() {
@@ -20,12 +19,6 @@ export function SiteHeader() {
   const { count, openCart } = useCart()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-
-  const isStore = pathname.startsWith('/store')
-  const instagramUrl = isStore
-    ? 'https://www.instagram.com/orisestore/'
-    : 'https://www.instagram.com/orisecommunity/'
-  const instagramLabel = isStore ? '@orisestore' : '@orisecommunity'
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16)
@@ -48,7 +41,7 @@ export function SiteHeader() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" aria-label="ORISE CLUB ana sayfa">
+        <Link href="/" aria-label="ORISE CLUB Ana Sayfa">
           <Logo />
         </Link>
 
@@ -62,7 +55,7 @@ export function SiteHeader() {
                 className={cn(
                   'relative px-4 py-2 text-sm font-medium tracking-wide transition-colors',
                   active
-                    ? 'text-foreground'
+                    ? 'text-foreground font-semibold'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >
@@ -76,16 +69,6 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <a
-            href={instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Instagram ${instagramLabel}`}
-            className="hidden h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary sm:inline-flex"
-          >
-            <InstagramIcon className="h-[18px] w-[18px]" />
-          </a>
-
           <button
             type="button"
             onClick={openCart}
@@ -129,22 +112,13 @@ export function SiteHeader() {
                 className={cn(
                   'rounded-lg px-4 py-3 text-base font-medium transition-colors',
                   pathname === item.href
-                    ? 'bg-secondary text-foreground'
+                    ? 'bg-secondary text-foreground font-semibold'
                     : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                 )}
               >
                 {item.label}
               </Link>
             ))}
-            <a
-              href={instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-1 flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium text-primary"
-            >
-              <InstagramIcon className="h-5 w-5" />
-              {instagramLabel}
-            </a>
           </nav>
         </div>
       )}
