@@ -15,13 +15,17 @@ const NAV = [
   { href: '/store', label: 'Store' },
 ]
 
-const INSTAGRAM = 'https://www.instagram.com/orisecommunity/'
-
 export function SiteHeader() {
   const pathname = usePathname()
   const { count, openCart } = useCart()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const isStore = pathname.startsWith('/store')
+  const instagramUrl = isStore
+    ? 'https://www.instagram.com/orisestore/'
+    : 'https://www.instagram.com/orisecommunity/'
+  const instagramLabel = isStore ? '@orisestore' : '@orisecommunity'
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16)
@@ -73,10 +77,10 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-2">
           <a
-            href={INSTAGRAM}
+            href={instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Instagram @orisecommunity"
+            aria-label={`Instagram ${instagramLabel}`}
             className="hidden h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary sm:inline-flex"
           >
             <InstagramIcon className="h-[18px] w-[18px]" />
@@ -133,13 +137,13 @@ export function SiteHeader() {
               </Link>
             ))}
             <a
-              href={INSTAGRAM}
+              href={instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-1 flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium text-primary"
             >
               <InstagramIcon className="h-5 w-5" />
-              @orisecommunity
+              {instagramLabel}
             </a>
           </nav>
         </div>
