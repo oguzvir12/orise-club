@@ -11,12 +11,12 @@ const PANELS = [
   {
     id: 'community',
     href: '/community',
-    badge: 'Haftalık Etkinlikler & Koşu',
+    badge: 'Aktif Kulüp Takvimi',
     badgeColor: 'bg-emerald-500',
     title: 'ORISE COMMUNITY',
     subtitle:
-      'Koşu, voleybol, yoga, tenis ve antrenman buluşmaları. Şehrin enerjisini birlikte yükselten kulüp hareketi.',
-    cta: 'Topluluğa Katıl & Takvim',
+      'Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.',
+    cta: 'Kulübe Katıl',
     icon: Users,
     bgImage:
       'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1600&auto=format&fit=crop',
@@ -25,12 +25,12 @@ const PANELS = [
   {
     id: 'store',
     href: '/store',
-    badge: 'Yeni Drop — 2026 Koleksiyonu',
+    badge: 'Sınırlı Üretim Drop',
     badgeColor: 'bg-primary',
     title: 'ORISE STORE',
     subtitle:
-      'Kulübe özel teknik kumaşlar, 280-450 GSM gramajlı ağır parçalar ve sınırlı sayıda drop koleksiyonları.',
-    cta: 'Koleksiyonu Keşfet',
+      'Kulüp kültüründen ilham alan özel tasarım spor ve sokak parçaları.',
+    cta: 'Koleksiyonu İncele',
     icon: ShoppingBag,
     bgImage:
       'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1600&auto=format&fit=crop',
@@ -43,7 +43,7 @@ export function SplitHero() {
 
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row">
-      {/* İki Tarafa Duyarlı Reaktif Merkez Logo */}
+      {/* Reaktif Merkez Logo */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-x-1/2 -translate-y-1/2 md:block">
         <div
           className={cn(
@@ -83,7 +83,7 @@ export function SplitHero() {
                 : 'md:p-12 md:pl-20 lg:p-20 lg:pl-28',
             )}
           >
-            {/* Sinematik Arka Plan Görseli */}
+            {/* Sinematik Arka Plan */}
             <div className="absolute inset-0 z-0 overflow-hidden">
               <Image
                 src={panel.bgImage}
@@ -111,9 +111,9 @@ export function SplitHero() {
               />
             </div>
 
-            {/* İçerik Kutusu */}
+            {/* İçerik */}
             <div className="relative z-10 max-w-lg">
-              {/* Birleşik Rozet & İkon */}
+              {/* Sadeleştirilmiş Rozet */}
               <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-border/80 bg-secondary/80 px-3.5 py-1.5 text-xs font-medium text-foreground backdrop-blur-md transition-colors group-hover:border-primary/50">
                 <Icon className="h-3.5 w-3.5 text-primary" />
                 <span className="opacity-30">|</span>
@@ -126,12 +126,12 @@ export function SplitHero() {
                 {panel.title}
               </h2>
 
-              {/* Açıklama */}
+              {/* Vurucu Kısa Açıklama */}
               <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground text-pretty sm:text-base">
                 {panel.subtitle}
               </p>
 
-              {/* Manyetik Hap Buton (CTA) */}
+              {/* Net Aksiyon Butonu */}
               <div className="mt-8">
                 <div className="inline-flex items-center gap-2.5 rounded-full border border-border/80 bg-foreground/5 px-6 py-3 text-xs font-bold uppercase tracking-widest text-foreground backdrop-blur-sm transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-[0_0_25px_rgba(249,115,22,0.35)]">
                   <span>{panel.cta}</span>
