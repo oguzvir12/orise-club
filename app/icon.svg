@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <!-- Siyah Dairesel Arka Plan -->
+  <rect width="32" height="32" rx="16" fill="#09090b"/>
+  <!-- Turuncu ORISE Çemberi -->
+  <circle cx="16" cy="16" r="10" stroke="#f97316" stroke-width="3" stroke-linecap="round" stroke-dasharray="45 15"/>
+  <!-- Merkez Nokta -->
+  <circle cx="16" cy="16" r="2.5" fill="#f97316"/>
+</svg>
