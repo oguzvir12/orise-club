@@ -22,6 +22,15 @@ export const CATEGORIES: { id: ProductCategory | 'all'; label: string }[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    id: 'trail-running-singlet',
+    name: 'ORISE Pro Trail Running Singlet',
+    category: 'tshirt-sweatshirt',
+    fabric: 'Ultra-Light Breathable Micro-Mesh (90 GSM)',
+    price: 950,
+    image: '/products/Athlete_sprinting_uphill_on_trail_202608180854.jpeg',
+    limited: true,
+  },
+  {
     id: 'tee-heavyweight-black',
     name: 'ORISE Heavyweight Tee — Black',
     category: 'tshirt-sweatshirt',
