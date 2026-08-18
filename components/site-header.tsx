@@ -9,7 +9,6 @@ import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
 
 const NAV = [
-  { href: '/', label: 'Ana Sayfa' },
   { href: '/community', label: 'Topluluk' },
   { href: '/store', label: 'Mağaza' },
 ]
@@ -45,9 +44,10 @@ export function SiteHeader() {
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Ana menü">
+        {/* Sadece Topluluk ve Mağaza Linkleri */}
+        <nav className="hidden items-center gap-2 md:flex" aria-label="Ana menü">
           {NAV.map((item) => {
-            const active = pathname === item.href
+            const active = pathname.startsWith(item.href)
             return (
               <Link
                 key={item.href}
@@ -111,7 +111,7 @@ export function SiteHeader() {
                 href={item.href}
                 className={cn(
                   'rounded-lg px-4 py-3 text-base font-medium transition-colors',
-                  pathname === item.href
+                  pathname.startsWith(item.href)
                     ? 'bg-secondary text-foreground font-semibold'
                     : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                 )}
