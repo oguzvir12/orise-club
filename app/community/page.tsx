@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Flame, Compass, ArrowUpRight, MessageSquareHeart } from 'lucide-react'
 import { EVENTS } from '@/lib/events'
-import { EventCard } from '@/components/community/event-card'
+import { EventList } from '@/components/community/event-list'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ const FEEDBACK_FORM_URL =
 export default function CommunityPage() {
   return (
     <div className="pt-16">
-      {/* Hero Alanı */}
+      {/* Sinematik Hero */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image
@@ -83,10 +83,10 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* Canlı Etkinlik Takvimi */}
+      {/* Canlı Takvim ve Branş Filtre Alanı */}
       <section className="border-t border-border bg-card/30">
         <div className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
-          <div className="mb-10 flex flex-col gap-3">
+          <div className="mb-8 flex flex-col gap-3">
             <span className="inline-flex items-center gap-2 self-start rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
@@ -98,22 +98,18 @@ export default function CommunityPage() {
               Bu Haftanın Buluşmaları
             </h2>
             <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Tüm kulüp etkinliklerine katılım ücretsizdir. Kontenjan dolmadan formdan kaydını tamamla.
+              Tüm kulüp etkinliklerine katılım ücretsizdir. Branş seçerek sana uygun buluşmaya kaydolabilirsin.
             </p>
           </div>
 
-          <div className="flex flex-col gap-4">
-            {EVENTS.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
+          {/* Branş Filtreli Liste Bileşeni */}
+          <EventList events={EVENTS} />
         </div>
       </section>
 
-      {/* Alt Bölüm: Instagram ve İletişim & Geri Bildirim Formu */}
+      {/* Alt Alan: Instagram ve Geri Bildirim */}
       <section className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Instagram Kutusu */}
           <a
             href={INSTAGRAM}
             target="_blank"
@@ -138,7 +134,6 @@ export default function CommunityPage() {
             </div>
           </a>
 
-          {/* Geri Bildirim & İletişim Kutusu */}
           <a
             href={FEEDBACK_FORM_URL}
             target="_blank"
