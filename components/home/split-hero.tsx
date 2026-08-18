@@ -45,10 +45,10 @@ export function SplitHero() {
 
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row">
-      {/* Merkez Logo */}
+      {/* Merkez Logo (Tam Ortada Sabit ve Asla Yazıları Kapatmaz) */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-x-1/2 -translate-y-1/2 md:block">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border/80 bg-background/90 shadow-[0_0_50px_rgba(249,115,22,0.25)] backdrop-blur-md">
-          <OriseMark className="h-10 w-10 text-primary" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-border/80 bg-background/90 shadow-[0_0_40px_rgba(249,115,22,0.25)] backdrop-blur-md lg:h-20 lg:w-20">
+          <OriseMark className="h-8 w-8 text-primary lg:h-10 lg:w-10" />
         </div>
       </div>
 
@@ -64,15 +64,13 @@ export function SplitHero() {
             onMouseEnter={() => setHovered(panel.id as 'community' | 'store')}
             onMouseLeave={() => setHovered(null)}
             className={cn(
-              'group relative flex flex-col justify-center border-b border-border/40 p-8 transition-all duration-700 ease-out last:border-b-0 md:h-full md:border-b-0 md:border-r md:p-14 lg:p-20 md:last:border-r-0',
-              hovered === null
-                ? 'md:w-1/2'
-                : isHovered
-                  ? 'md:w-[56%]'
-                  : 'md:w-[44%]',
+              'group relative flex w-full flex-col justify-center border-b border-border/40 p-8 transition-colors duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0',
+              panel.align === 'left'
+                ? 'md:p-12 md:pr-16 lg:p-20 lg:pr-24'
+                : 'md:p-12 md:pl-16 lg:p-20 lg:pl-24',
             )}
           >
-            {/* Sinematik Arka Plan Görseli & Gradyan Filtresi */}
+            {/* Sinematik Arka Plan Görseli */}
             <div className="absolute inset-0 z-0 overflow-hidden">
               <Image
                 src={panel.bgImage}
@@ -80,19 +78,19 @@ export function SplitHero() {
                 fill
                 priority
                 className={cn(
-                  'object-cover grayscale contrast-125 transition-transform duration-1000 ease-out',
-                  isHovered ? 'scale-105 opacity-30' : 'scale-100 opacity-20',
+                  'object-cover grayscale contrast-125 transition-all duration-700 ease-out',
+                  isHovered ? 'scale-105 opacity-30' : 'scale-100 opacity-15',
                   isOtherHovered && 'opacity-10',
                 )}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/40" />
             </div>
 
-            {/* Ambient Glow */}
+            {/* Ambient Glow Efekti */}
             <div className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100">
               <div
                 className={cn(
-                  'absolute h-[420px] w-[420px] rounded-full bg-primary/15 blur-[120px]',
+                  'absolute h-[400px] w-[400px] rounded-full bg-primary/15 blur-[120px]',
                   panel.align === 'left'
                     ? '-left-20 top-1/2 -translate-y-1/2'
                     : '-right-20 top-1/2 -translate-y-1/2',
