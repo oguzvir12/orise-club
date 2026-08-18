@@ -3,8 +3,6 @@ import { Mail } from 'lucide-react'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
 import { Logo } from '@/components/logo'
 
-const INSTAGRAM = 'https://www.instagram.com/orisecommunity/'
-
 export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-card">
@@ -16,15 +14,26 @@ export function SiteFooter() {
               More than a brand, a club. Şehrin enerjisini birlikte yükselten
               yeni nesil topluluk hareketi.
             </p>
-            <a
-              href={INSTAGRAM}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
-            >
-              <InstagramIcon className="h-4 w-4" />
-              @orisecommunity
-            </a>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href="https://www.instagram.com/orisecommunity/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border px-3.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                <InstagramIcon className="h-3.5 w-3.5" />
+                @orisecommunity
+              </a>
+              <a
+                href="https://www.instagram.com/orisestore/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border px-3.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                <InstagramIcon className="h-3.5 w-3.5" />
+                @orisestore
+              </a>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -47,16 +56,6 @@ export function SiteFooter() {
                 >
                   Store
                 </Link>
-              </li>
-              <li>
-                <a
-                  href={INSTAGRAM}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Instagram
-                </a>
               </li>
             </ul>
           </div>
