@@ -43,10 +43,25 @@ export function SplitHero() {
 
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row">
-      {/* Merkez Logo */}
+      {/* İki Tarafa Duyarlı Reaktif Merkez Logo */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-x-1/2 -translate-y-1/2 md:block">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-border/80 bg-background/90 shadow-[0_0_40px_rgba(249,115,22,0.25)] backdrop-blur-md lg:h-20 lg:w-20">
-          <OriseMark className="h-8 w-8 text-primary lg:h-10 lg:w-10" />
+        <div
+          className={cn(
+            'flex h-16 w-16 items-center justify-center rounded-full border bg-background/95 backdrop-blur-md transition-all duration-500 lg:h-20 lg:w-20',
+            hovered === 'community'
+              ? 'border-primary/80 -translate-x-1 shadow-[-15px_0_40px_rgba(249,115,22,0.45)]'
+              : hovered === 'store'
+                ? 'border-primary/80 translate-x-1 shadow-[15px_0_40px_rgba(249,115,22,0.45)]'
+                : 'border-border/80 shadow-[0_0_30px_rgba(249,115,22,0.15)]',
+          )}
+        >
+          <OriseMark
+            className={cn(
+              'h-8 w-8 transition-transform duration-500 lg:h-10 lg:w-10 text-primary',
+              hovered === 'community' && '-rotate-12 scale-110',
+              hovered === 'store' && 'rotate-12 scale-110',
+            )}
+          />
         </div>
       </div>
 
@@ -64,8 +79,8 @@ export function SplitHero() {
             className={cn(
               'group relative flex w-full flex-col justify-center border-b border-border/40 p-8 transition-colors duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0',
               panel.align === 'left'
-                ? 'md:p-12 md:pr-16 lg:p-20 lg:pr-24'
-                : 'md:p-12 md:pl-16 lg:p-20 lg:pl-24',
+                ? 'md:p-12 md:pr-20 lg:p-20 lg:pr-28'
+                : 'md:p-12 md:pl-20 lg:p-20 lg:pl-28',
             )}
           >
             {/* Sinematik Arka Plan Görseli */}
@@ -77,7 +92,7 @@ export function SplitHero() {
                 priority
                 className={cn(
                   'object-cover grayscale contrast-125 transition-all duration-700 ease-out',
-                  isHovered ? 'scale-105 opacity-30' : 'scale-100 opacity-15',
+                  isHovered ? 'scale-105 opacity-35' : 'scale-100 opacity-15',
                   isOtherHovered && 'opacity-10',
                 )}
               />
@@ -88,7 +103,7 @@ export function SplitHero() {
             <div className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100">
               <div
                 className={cn(
-                  'absolute h-[420px] w-[420px] rounded-full bg-primary/15 blur-[120px]',
+                  'absolute h-[450px] w-[450px] rounded-full bg-primary/20 blur-[130px]',
                   panel.align === 'left'
                     ? '-left-20 top-1/2 -translate-y-1/2'
                     : '-right-20 top-1/2 -translate-y-1/2',
@@ -98,27 +113,27 @@ export function SplitHero() {
 
             {/* İçerik Kutusu */}
             <div className="relative z-10 max-w-lg">
-              {/* Birleşik Kompakt Rozet & İkon */}
+              {/* Birleşik Rozet & İkon */}
               <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-border/80 bg-secondary/80 px-3.5 py-1.5 text-xs font-medium text-foreground backdrop-blur-md transition-colors group-hover:border-primary/50">
                 <Icon className="h-3.5 w-3.5 text-primary" />
-                <span className="opacity-40">|</span>
+                <span className="opacity-30">|</span>
                 <span className={cn('h-1.5 w-1.5 rounded-full animate-pulse', panel.badgeColor)} />
                 <span>{panel.badge}</span>
               </div>
 
-              {/* Dev Başlık */}
+              {/* Başlık */}
               <h2 className="font-display text-3xl font-extrabold tracking-tight text-balance sm:text-4xl lg:text-5xl">
                 {panel.title}
               </h2>
 
-              {/* Açıklama Metni */}
+              {/* Açıklama */}
               <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground text-pretty sm:text-base">
                 {panel.subtitle}
               </p>
 
-              {/* Cam Efektli Modern Hap Buton (CTA) */}
+              {/* Manyetik Hap Buton (CTA) */}
               <div className="mt-8">
-                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/5 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-foreground backdrop-blur-sm transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+                <div className="inline-flex items-center gap-2.5 rounded-full border border-border/80 bg-foreground/5 px-6 py-3 text-xs font-bold uppercase tracking-widest text-foreground backdrop-blur-sm transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-[0_0_25px_rgba(249,115,22,0.35)]">
                   <span>{panel.cta}</span>
                   <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </div>
