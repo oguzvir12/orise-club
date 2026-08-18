@@ -13,7 +13,7 @@ export type OriseEvent = {
 }
 
 export const EVENT_FORM_URL =
-  'https://docs.google.com/forms/d/e/1FAIpQLSdcp3BeDFhOf4p0sKa5wZ8-QfgoBp52EjtQ9PWxdoOjHQ262Q/viewform'
+  'https://docs.google.com/forms/d/e/1FAIpQLScZCPu5QAblNjO7m3KS-lzvGhvQul2yGW4vyNX3Fd3_z3-eIw/viewform'
 
 export const EVENTS: OriseEvent[] = [
   {
