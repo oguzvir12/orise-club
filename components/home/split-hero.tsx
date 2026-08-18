@@ -11,7 +11,6 @@ const PANELS = [
   {
     id: 'community',
     href: '/community',
-    num: '01',
     badge: 'Haftalık Etkinlikler & Koşu',
     badgeColor: 'bg-emerald-500',
     eyebrow: 'Topluluk & Hareket',
@@ -21,13 +20,12 @@ const PANELS = [
     cta: 'Topluluğa Katıl & Takvim',
     icon: Users,
     bgImage:
-      'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1600&auto=format&fit=crop', // Koşu & Sporcu atmosferi
+      'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1600&auto=format&fit=crop',
     align: 'left',
   },
   {
     id: 'store',
     href: '/store',
-    num: '02',
     badge: 'Yeni Drop — 2026 Serisi',
     badgeColor: 'bg-primary',
     eyebrow: 'Koleksiyon & Drop',
@@ -37,7 +35,7 @@ const PANELS = [
     cta: 'Koleksiyonu Keşfet',
     icon: ShoppingBag,
     bgImage:
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1600&auto=format&fit=crop', // Moda & Kumaş dokusu
+      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1600&auto=format&fit=crop',
     align: 'right',
   },
 ]
@@ -67,7 +65,6 @@ export function SplitHero() {
             onMouseLeave={() => setHovered(null)}
             className={cn(
               'group relative flex flex-col justify-center border-b border-border/40 p-8 transition-all duration-700 ease-out last:border-b-0 md:h-full md:border-b-0 md:border-r md:p-14 lg:p-20 md:last:border-r-0',
-              // Dinamik genişleme efekti
               hovered === null
                 ? 'md:w-1/2'
                 : isHovered
@@ -84,7 +81,7 @@ export function SplitHero() {
                 priority
                 className={cn(
                   'object-cover grayscale contrast-125 transition-transform duration-1000 ease-out',
-                  isHovered ? 'scale-105 opacity-25' : 'scale-100 opacity-15',
+                  isHovered ? 'scale-105 opacity-30' : 'scale-100 opacity-20',
                   isOtherHovered && 'opacity-10',
                 )}
               />
@@ -102,11 +99,6 @@ export function SplitHero() {
                 )}
               />
             </div>
-
-            {/* 01 - 02 Devasa Sayılar */}
-            <span className="pointer-events-none absolute right-8 top-1/2 z-0 -translate-y-1/2 select-none font-display text-[24vw] font-black leading-none text-foreground/[0.03] transition-transform duration-700 group-hover:scale-105 md:text-[15vw]">
-              {panel.num}
-            </span>
 
             {/* İçerik Kutusu */}
             <div className="relative z-10 max-w-lg">
