@@ -22,7 +22,7 @@ export default function HomePage() {
             className="inline-flex items-center gap-1.5 font-medium text-foreground transition-colors hover:text-primary"
             title="Instagram Topluluk Sayfası"
           >
-            <InstagramIcon className="h-3.5 w-3.5" />
+            <InstagramIcon className="h-3.5 w-3.5 text-primary" />
             <span>@orisecommunity</span>
           </a>
           <span className="opacity-30">·</span>
@@ -37,8 +37,10 @@ export default function HomePage() {
           </a>
         </div>
 
-        {/* Orta: Telif Bilgisi */}
-        <span className="hidden xl:inline text-[11px] opacity-60">© 2026 ORISE CLUB</span>
+        {/* Orta: Kulüp İmzası */}
+        <span className="hidden xl:inline text-[11px] font-medium tracking-wider uppercase opacity-60">
+          © 2026 ORISE CLUB · ALL RIGHTS RESERVED
+        </span>
 
         {/* Sağ Taraf: Store İletişim */}
         <div className="flex items-center gap-4">
@@ -50,7 +52,7 @@ export default function HomePage() {
             className="inline-flex items-center gap-1.5 font-medium text-foreground transition-colors hover:text-primary"
             title="Instagram Mağaza Sayfası"
           >
-            <InstagramIcon className="h-3.5 w-3.5" />
+            <InstagramIcon className="h-3.5 w-3.5 text-primary" />
             <span>@orisestore</span>
           </a>
           <span className="opacity-30">·</span>
