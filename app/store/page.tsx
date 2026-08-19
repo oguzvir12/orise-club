@@ -11,133 +11,45 @@ import {
   Truck,
   ShoppingBag,
   Check,
+  Star,
+  X,
+  Maximize2,
+  Activity,
+  Heart,
 } from 'lucide-react'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
 
 const STORE_INSTAGRAM = 'https://www.instagram.com/orisestore/'
 
-// Sadeleştirilmiş ve Birbirinden Ayrılmış Net Kategoriler
-const CATEGORIES = [
-  { id: 'all', label: 'TÜMÜ' },
-  { id: 'tank', label: 'KOŞU ATLETİ' },
-  { id: 'sweatshirt', label: 'SWEATSHIRT' },
-  { id: 'socks', label: 'PERFORMANS ÇORAP' },
-  { id: 'hat', label: 'ŞAPKA' },
-  { id: 'bag', label: 'ÇANTA' },
-  { id: 'equipment', label: 'TERMOS & MATARA' },
-]
-
-// Çoklu Fotoğraf ve Renk Desteğine Sahip Ürün Kataloğu
-interface Product {
-  id: string
-  title: string
-  category: string
-  categoryLabel: string
-  price: number
-  description: string
-  images: string[] // [Ön Görsel, Arka Görsel, Detay]
-  colors: { name: string; hex: string }[]
+// Tek Odaklı Geliştirilen Amiral Gemisi Ürün
+const HERO_PRODUCT = {
+  id: 'pro-tank-01',
+  title: 'ORISE Pro Koşu Atleti',
+  subtitle: 'Ultralight Race-Day Mesh Edition',
+  categoryLabel: 'KOŞU ATLETİ · EDİTİON 01',
+  price: 950,
+  rating: 4.9,
+  reviewsCount: 128,
+  description:
+    'Yüksek tempolu koşularda ve sıcak hava antrenmanlarında maksimum hava sirkülasyonu sağlayan 120 GSM mikro gözenekli teknik kumaş. Lazer kesim sırt havalandırma kanalları ve sürtünmeyi önleyen dikişsiz yaka mimarisi.',
+  specs: [
+    { label: 'Kumaş Ağırlığı', value: '120 GSM Ultra Hafif' },
+    { label: 'Nem Yönetimi', value: 'Hızlı Kuruyan Mikro File' },
+    { label: 'Kalıp / Fit', value: 'Atletik Slim-Fit' },
+    { label: 'Yansıtıcı Detay', value: '3M Reflektif Kulüp Logosu' },
+  ],
+  images: [
+    'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop', // Ön
+    'https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=1200&auto=format&fit=crop', // Arka
+    'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1200&auto=format&fit=crop', // Detay
+  ],
+  colors: [
+    { name: 'Mat Siyah', hex: '#18181b' },
+    { name: 'Kulüp Turuncusu', hex: '#f97316' },
+    { name: 'Tebeşir Beyazı', hex: '#e4e4e7' },
+  ],
+  sizes: ['S', 'M', 'L', 'XL'],
 }
-
-const STORE_PRODUCTS: Product[] = [
-  {
-    id: 'pro-tank-black',
-    title: 'ORISE Pro Koşu Atleti',
-    category: 'tank',
-    categoryLabel: 'KOŞU ATLETİ',
-    price: 950,
-    description: 'Ultra hafif nefes alabilir mikro file kumaş (120 GSM). Sırt havalandırma paneli.',
-    images: [
-      'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=800&auto=format&fit=crop', // Ön
-      'https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=800&auto=format&fit=crop', // Arka
-    ],
-    colors: [
-      { name: 'Siyah', hex: '#18181b' },
-      { name: 'Kulüp Turuncusu', hex: '#f97316' },
-      { name: 'Tebeşir Beyazı', hex: '#e4e4e7' },
-    ],
-  },
-  {
-    id: 'club-sweatshirt-black',
-    title: 'ORISE Bisiklet Yaka Sweatshirt',
-    category: 'sweatshirt',
-    categoryLabel: 'SWEATSHIRT',
-    price: 2490,
-    description: '450 GSM ağır gramaj şardonlu pamuk. Göğüste kabartma silikon kulüp amblemi.',
-    images: [
-      'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=800&auto=format&fit=crop',
-    ],
-    colors: [
-      { name: 'Mat Siyah', hex: '#09090b' },
-      { name: 'Füme', hex: '#27272a' },
-    ],
-  },
-  {
-    id: 'club-cap-black',
-    title: 'ORISE Atletik Kulüp Şapkası',
-    category: 'hat',
-    categoryLabel: 'ŞAPKA',
-    price: 890,
-    description: '6 panelli pamuklu dimi kumaş, ayarlanabilir metal tokalı arka kayış.',
-    images: [
-      'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1575428652377-a2d80e2277fc?q=80&w=800&auto=format&fit=crop',
-    ],
-    colors: [
-      { name: 'Siyah', hex: '#18181b' },
-      { name: 'Taş Rengi', hex: '#d4d4d8' },
-    ],
-  },
-  {
-    id: 'tote-bag-black',
-    title: 'ORISE Ağır Kanvas Bez Çanta',
-    category: 'bag',
-    categoryLabel: 'ÇANTA',
-    price: 750,
-    description: '16 oz yüksek dayanımlı organik kanvas kumaş. Turuncu güçlendirilmiş omuz askısı.',
-    images: [
-      'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1597484661643-2f5fef640dd1?q=80&w=800&auto=format&fit=crop',
-    ],
-    colors: [
-      { name: 'Siyah / Turuncu', hex: '#18181b' },
-      { name: 'Ham Kanvas', hex: '#f5f5f4' },
-    ],
-  },
-  {
-    id: 'crew-socks-white',
-    title: 'ORISE Performans Koşu Çorabı',
-    category: 'socks',
-    categoryLabel: 'PERFORMANS ÇORAP',
-    price: 320,
-    description: 'Coolmax nefes alabilir örgü dokuma. Topuk ve burun çift katman darbe emici takviye.',
-    images: [
-      'https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1582966772680-860e372bb558?q=80&w=800&auto=format&fit=crop',
-    ],
-    colors: [
-      { name: 'Optik Beyaz', hex: '#f8fafc' },
-      { name: 'Koyu Grafit', hex: '#1e293b' },
-    ],
-  },
-  {
-    id: 'steel-bottle-black',
-    title: 'ORISE Çift Duvarlı Termos Matara 750ml',
-    category: 'equipment',
-    categoryLabel: 'TERMOS & MATARA',
-    price: 1150,
-    description: 'Mat siyah çift cidarlı paslanmaz çelik. 24 saat soğuk, 12 saat sıcak tutma performansı.',
-    images: [
-      'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1523362628745-0c100150b504?q=80&w=800&auto=format&fit=crop',
-    ],
-    colors: [
-      { name: 'Mat Siyah', hex: '#09090b' },
-      { name: 'Fırçalanmış Çelik', hex: '#a1a1aa' },
-    ],
-  },
-]
 
 const FEATURES = [
   {
@@ -158,30 +70,17 @@ const FEATURES = [
 ]
 
 export default function StorePage() {
-  const [activeCategory, setActiveCategory] = useState<string>('all')
-  const [selectedColors, setSelectedColors] = useState<Record<string, string>>({})
-  const [activeImageIndex, setActiveImageIndex] = useState<Record<string, number>>({})
-  const [addedItems, setAddedItems] = useState<Record<string, boolean>>({})
+  const [selectedColor, setSelectedColor] = useState<string>(HERO_PRODUCT.colors[0].name)
+  const [selectedSize, setSelectedSize] = useState<string>('M')
+  const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+  const [isAdded, setIsAdded] = useState<boolean>(false)
+  const [isLiked, setIsLiked] = useState<boolean>(false)
 
-  const handleColorChange = (productId: string, colorName: string) => {
-    setSelectedColors((prev) => ({ ...prev, [productId]: colorName }))
+  const handleAddToCart = () => {
+    setIsAdded(true)
+    setTimeout(() => setIsAdded(false), 2000)
   }
-
-  const handleImageSwitch = (productId: string, imgIdx: number) => {
-    setActiveImageIndex((prev) => ({ ...prev, [productId]: imgIdx }))
-  }
-
-  const handleAddToCart = (id: string) => {
-    setAddedItems((prev) => ({ ...prev, [id]: true }))
-    setTimeout(() => {
-      setAddedItems((prev) => ({ ...prev, [id]: false }))
-    }, 1500)
-  }
-
-  const filteredProducts =
-    activeCategory === 'all'
-      ? STORE_PRODUCTS
-      : STORE_PRODUCTS.filter((p) => p.category === activeCategory)
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
@@ -196,8 +95,8 @@ export default function StorePage() {
         </Link>
       </div>
 
-      {/* 1. SİNEMATİK ASİMETRİK HERO */}
-      <section className="relative overflow-hidden border-b border-white/10 pt-32 pb-20 lg:pt-40 lg:pb-28">
+      {/* 1. SİNEMATİK HERO */}
+      <section className="relative overflow-hidden border-b border-white/10 pt-32 pb-16 lg:pt-36 lg:pb-20">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image
             src="/store-hero.jpeg"
@@ -211,8 +110,8 @@ export default function StorePage() {
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-end">
-            <div className="lg:col-span-8 space-y-6">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-8 space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
@@ -230,177 +129,268 @@ export default function StorePage() {
               </h1>
 
               <p className="max-w-2xl text-base font-normal leading-relaxed text-zinc-300 sm:text-lg">
-                Sınırlı üretim teknik tekstil ve aksesuar parçaları. Yüksek gramajlı kumaşlar,
-                kulüp ruhuyla tasarlanmış detaylar — hepsi club-only.
+                Yalnızca kulüp üyelerine özel, sınırlı sayıda üretilen teknik spor tekstili.
               </p>
             </div>
 
             <div className="hidden lg:col-span-4 lg:flex flex-col items-end justify-end space-y-2 text-right">
               <div className="text-xs font-mono tracking-[0.3em] text-primary/80 uppercase">
-                [ EDITION 01 / DROP 2026 ]
+                [ DROP NO: 01 / 2026 ]
               </div>
               <div className="text-[11px] font-mono tracking-[0.2em] text-zinc-500 uppercase">
-                TECHNICAL APPAREL · ATHLETIC WEAR
+                RACE-DAY PERFORMANCE LAB
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. SADELEŞTİRİLMİŞ AYRIK KATEGORİ SEÇİCİ & ÜRÜN IZGARASI */}
-      <section className="border-b border-white/10 bg-zinc-950/40 py-16 sm:py-20">
+      {/* 2. TEK ÜRÜN EDİTORYAL VİTRİNİ & DETAYLI İNCELEME */}
+      <section className="border-b border-white/10 bg-zinc-950/40 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           
-          {/* Ayrık Kategori Hapları */}
-          <div className="mb-12 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
-                    activeCategory === cat.id
-                      ? 'bg-primary text-black shadow-[0_0_20px_rgba(249,115,22,0.4)] scale-105'
-                      : 'border border-white/10 bg-zinc-900/60 text-zinc-400 hover:border-white/30 hover:text-white'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+            
+            {/* SOL: ÇOKLU FOTOĞRAF GALERİSİ & BÜYÜTME */}
+            <div className="lg:col-span-7 space-y-4">
+              {/* Ana Büyük Görsel */}
+              <div
+                onClick={() => setIsModalOpen(true)}
+                className="group relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-zinc-900 cursor-zoom-in shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+              >
+                <Image
+                  src={HERO_PRODUCT.images[activeImageIdx]}
+                  alt={HERO_PRODUCT.title}
+                  fill
+                  priority
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+
+                <div className="absolute top-4 left-4 rounded-full border border-primary/40 bg-black/80 px-3.5 py-1 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur-md">
+                  LIMITED DROP · 01
+                </div>
+
+                {/* Büyüt İkonu */}
+                <div className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/70 border border-white/10 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all">
+                  <Maximize2 className="h-4 w-4 text-primary" />
+                </div>
+
+                <div className="absolute bottom-4 left-4 rounded-full bg-black/70 border border-white/10 px-3 py-1 text-[10px] font-mono text-zinc-300 backdrop-blur-md">
+                  FOTOĞRAFA TIKLA & BÜYÜT [{activeImageIdx + 1}/3]
+                </div>
+              </div>
+
+              {/* Küçük Küçük 3'lü Küçük Fotoğraflar (Ön / Arka / Detay) */}
+              <div className="grid grid-cols-3 gap-4">
+                {HERO_PRODUCT.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveImageIdx(idx)}
+                    className={`relative aspect-square w-full overflow-hidden rounded-2xl border transition-all ${
+                      activeImageIdx === idx
+                        ? 'border-primary ring-2 ring-primary/40 scale-95'
+                        : 'border-white/10 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <Image src={img} alt={`Görsel ${idx + 1}`} fill className="object-cover" />
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <span className="text-xs font-mono text-zinc-500 uppercase">
-              [{filteredProducts.length} PARÇA]
-            </span>
-          </div>
+            {/* SAĞ: DETAYLAR, PUANLAR, RENKLER & SATIN ALMA */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
+              <div>
+                {/* Kategori & Beğeni */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono tracking-widest text-primary uppercase">
+                    {HERO_PRODUCT.categoryLabel}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsLiked(!isLiked)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-zinc-900/60 text-zinc-400 hover:text-red-500 transition-colors"
+                  >
+                    <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                  </button>
+                </div>
 
-          {/* Ürün Kartları Grid'i */}
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredProducts.map((product) => {
-              const currentImgIdx = activeImageIndex[product.id] || 0
-              const selectedColor = selectedColors[product.id] || product.colors[0]?.name
-              const isAdded = addedItems[product.id]
+                {/* Başlık */}
+                <h2 className="mt-2 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl">
+                  {HERO_PRODUCT.title}
+                </h2>
+                <p className="text-sm font-mono text-zinc-400 mt-1">{HERO_PRODUCT.subtitle}</p>
 
-              return (
-                <div
-                  key={product.id}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all duration-500 hover:border-primary/50 hover:bg-zinc-900/70"
-                >
-                  <div>
-                    {/* Önlü / Arkalı Fotoğraf Galerisi Alanı */}
-                    <div
-                      className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950 cursor-pointer"
-                      onMouseEnter={() => product.images.length > 1 && handleImageSwitch(product.id, 1)}
-                      onMouseLeave={() => handleImageSwitch(product.id, 0)}
-                    >
-                      <Image
-                        src={product.images[currentImgIdx] || product.images[0]}
-                        alt={product.title}
-                        fill
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                      />
-
-                      <div className="absolute top-3 left-3 rounded-full border border-primary/40 bg-black/80 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary backdrop-blur-md">
-                        LIMITED DROP
-                      </div>
-
-                      {/* Çoklu Fotoğraf / Açı Geçiş Noktaları (Ön / Arka) */}
-                      {product.images.length > 1 && (
-                        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1 backdrop-blur-md border border-white/10">
-                          {product.images.map((_, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleImageSwitch(product.id, idx)
-                              }}
-                              className={`h-1.5 rounded-full transition-all ${
-                                currentImgIdx === idx ? 'w-4 bg-primary' : 'w-1.5 bg-zinc-500'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Renk Seçim Paleti */}
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {product.colors.map((color) => (
-                          <button
-                            key={color.name}
-                            type="button"
-                            title={color.name}
-                            onClick={() => handleColorChange(product.id, color.name)}
-                            className={`relative h-4 w-4 rounded-full border transition-all ${
-                              selectedColor === color.name
-                                ? 'scale-125 border-primary ring-2 ring-primary/40'
-                                : 'border-white/20 hover:scale-110'
-                            }`}
-                            style={{ backgroundColor: color.hex }}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-                        {selectedColor}
-                      </span>
-                    </div>
-
-                    {/* Ürün Detayları */}
-                    <div className="mt-3 space-y-1">
-                      <div className="text-[10px] font-mono text-primary uppercase tracking-widest">
-                        {product.categoryLabel}
-                      </div>
-                      <h3 className="font-sans text-lg font-bold text-white tracking-tight group-hover:text-primary transition-colors">
-                        {product.title}
-                      </h3>
-                      <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
-                        {product.description}
-                      </p>
-                    </div>
+                {/* PUANLAMA VE DEĞERLENDİRME ŞERİDİ */}
+                <div className="mt-4 flex items-center gap-3 border-y border-white/10 py-3">
+                  <div className="flex items-center gap-1 text-amber-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-amber-400" />
+                    ))}
                   </div>
+                  <span className="font-mono text-sm font-bold text-white">
+                    {HERO_PRODUCT.rating}
+                  </span>
+                  <span className="text-xs text-zinc-500">·</span>
+                  <span className="text-xs font-mono text-zinc-400 underline cursor-pointer hover:text-primary">
+                    {HERO_PRODUCT.reviewsCount} Kulüp Değerlendirmesi
+                  </span>
+                </div>
 
-                  {/* Fiyat & Sepete Ekle */}
-                  <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
-                    <div>
-                      <div className="text-[10px] font-mono uppercase text-zinc-500">Fiyat</div>
-                      <div className="text-lg font-black text-white">
-                        ₺{product.price.toLocaleString('tr-TR')}
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleAddToCart(product.id)}
-                      className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
-                        isAdded
-                          ? 'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]'
-                          : 'bg-primary text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:scale-105'
-                      }`}
-                    >
-                      {isAdded ? (
-                        <>
-                          <Check className="h-3.5 w-3.5" />
-                          <span>Eklendi</span>
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingBag className="h-3.5 w-3.5" />
-                          <span>Sepete Ekle</span>
-                        </>
-                      )}
-                    </button>
+                {/* Fiyat */}
+                <div className="mt-6">
+                  <span className="text-xs font-mono text-zinc-500 uppercase">Kulüp Satış Fiyatı</span>
+                  <div className="text-3xl font-black text-white">
+                    ₺{HERO_PRODUCT.price.toLocaleString('tr-TR')}
                   </div>
                 </div>
-              )
-            })}
+
+                {/* Açıklama */}
+                <p className="mt-4 text-sm leading-relaxed text-zinc-300">
+                  {HERO_PRODUCT.description}
+                </p>
+
+                {/* RENK SEÇİMİ */}
+                <div className="mt-6 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="text-zinc-400 uppercase">Seçili Renk</span>
+                    <span className="font-bold text-primary">{selectedColor}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {HERO_PRODUCT.colors.map((c) => (
+                      <button
+                        key={c.name}
+                        type="button"
+                        onClick={() => setSelectedColor(c.name)}
+                        className={`h-7 w-7 rounded-full border transition-all ${
+                          selectedColor === c.name
+                            ? 'scale-125 border-primary ring-2 ring-primary/40'
+                            : 'border-white/20 hover:scale-110'
+                        }`}
+                        style={{ backgroundColor: c.hex }}
+                        title={c.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* BEDEN SEÇİMİ */}
+                <div className="mt-6 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="text-zinc-400 uppercase">Beden Seçimi</span>
+                    <span className="text-zinc-500 underline cursor-pointer hover:text-white">
+                      Beden Tablosu
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {HERO_PRODUCT.sizes.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setSelectedSize(s)}
+                        className={`rounded-xl py-3 text-xs font-bold transition-all ${
+                          selectedSize === s
+                            ? 'border border-primary bg-primary text-black shadow-[0_0_15px_rgba(249,115,22,0.3)]'
+                            : 'border border-white/10 bg-zinc-900 text-zinc-300 hover:border-white/30'
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* TEKNİK SPESİFİKASYONLAR */}
+                <div className="mt-8 rounded-2xl border border-white/5 bg-zinc-900/40 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider mb-2">
+                    <Activity className="h-3.5 w-3.5" />
+                    <span>Teknik Laboratuvar Verileri</span>
+                  </div>
+                  {HERO_PRODUCT.specs.map((sp, idx) => (
+                    <div key={idx} className="flex justify-between text-xs font-mono">
+                      <span className="text-zinc-500">{sp.label}</span>
+                      <span className="text-zinc-200">{sp.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SEPETE EKLEME BUTONU */}
+              <div className="pt-4">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className={`flex w-full items-center justify-center gap-3 rounded-full py-4 text-xs font-bold uppercase tracking-widest transition-all duration-300 ${
+                    isAdded
+                      ? 'bg-emerald-500 text-black shadow-[0_0_25px_rgba(16,185,129,0.5)]'
+                      : 'bg-primary text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:scale-[1.02]'
+                  }`}
+                >
+                  {isAdded ? (
+                    <>
+                      <Check className="h-4 w-4" />
+                      <span>{selectedSize} Beden Sepete Eklendi</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="h-4 w-4" />
+                      <span>Siparişe Ekle — ₺{HERO_PRODUCT.price}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+            </div>
+
           </div>
+
         </div>
       </section>
 
-      {/* 3. KALİTE & KUMAŞ PRENSİPLERİ */}
+      {/* 3. BÜYÜTME MODALI (LIGHTBOX) */}
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 sm:p-8 backdrop-blur-2xl animate-fadeIn"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(false)}
+            className="absolute top-6 right-6 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors"
+          >
+            <X className="h-6 w-6" />
+          </button>
+
+          <div
+            className="relative h-[85vh] w-full max-w-4xl overflow-hidden rounded-3xl border border-white/20 bg-zinc-950"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={HERO_PRODUCT.images[activeImageIdx]}
+              alt={HERO_PRODUCT.title}
+              fill
+              className="object-contain"
+            />
+
+            {/* Modal İçi Fotoğraf Geçiş Noktaları */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 rounded-full bg-black/80 px-4 py-2 border border-white/10 backdrop-blur-md">
+              {HERO_PRODUCT.images.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setActiveImageIdx(idx)}
+                  className={`h-2 rounded-full transition-all ${
+                    activeImageIdx === idx ? 'w-8 bg-primary' : 'w-2 bg-zinc-600'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. KALİTE PRENSİPLERİ */}
       <section className="py-24 sm:py-28 border-b border-white/10 bg-black">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <div className="grid gap-8 md:grid-cols-3">
@@ -429,7 +419,7 @@ export default function StorePage() {
         </div>
       </section>
 
-      {/* 4. INSTAGRAM HUB (@orisestore) */}
+      {/* 5. INSTAGRAM HUB (@orisestore) */}
       <section className="bg-zinc-950 py-24 sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <a
