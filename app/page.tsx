@@ -1,6 +1,6 @@
 import { SplitHero } from '@/components/home/split-hero'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
-import { Mail } from 'lucide-react'
+import { Mail, Linkedin } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -10,8 +10,8 @@ export default function HomePage() {
         <SplitHero />
       </div>
 
-      {/* Ekranın En Altındaki İki Taraflı İletişim Barı */}
-      <div className="absolute inset-x-0 bottom-0 z-30 flex h-14 items-center justify-between border-t border-border/40 bg-background/85 px-6 backdrop-blur-md text-xs text-muted-foreground sm:px-12">
+      {/* Ekranın En Altındaki İki Taraflı İletişim & Kurumsal Barı */}
+      <div className="absolute inset-x-0 bottom-0 z-30 flex h-14 items-center justify-between border-t border-border/40 bg-background/85 px-6 backdrop-blur-md text-xs text-muted-foreground sm:px-10 lg:px-14">
         {/* Sol Taraf: Community İletişim */}
         <div className="flex items-center gap-4">
           <span className="hidden font-semibold text-foreground md:inline">Topluluk:</span>
@@ -37,10 +37,21 @@ export default function HomePage() {
           </a>
         </div>
 
-        {/* Orta: Kulüp İmzası */}
-        <span className="hidden xl:inline text-[11px] font-medium tracking-wider uppercase opacity-60">
-          © 2026 ORISE CLUB · ALL RIGHTS RESERVED
-        </span>
+        {/* Orta: Telif & LinkedIn */}
+        <div className="hidden lg:flex items-center gap-2.5 text-[11px] font-medium tracking-wider uppercase opacity-70">
+          <span>© 2026 ORISE CLUB</span>
+          <span className="opacity-40">·</span>
+          <a
+            href="https://www.linkedin.com/company/orisecommunity"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 normal-case transition-colors hover:text-primary hover:opacity-100"
+            title="ORISE Community LinkedIn"
+          >
+            <Linkedin className="h-3.5 w-3.5 text-primary" />
+            <span>LinkedIn</span>
+          </a>
+        </div>
 
         {/* Sağ Taraf: Store İletişim */}
         <div className="flex items-center gap-4">
