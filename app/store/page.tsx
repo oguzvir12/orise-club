@@ -16,20 +16,50 @@ import {
   Maximize2,
   Activity,
   Heart,
+  MessageSquare,
+  UserCheck,
 } from 'lucide-react'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
 
 const STORE_INSTAGRAM = 'https://www.instagram.com/orisestore/'
 
-// Tek Odaklı Geliştirilen Amiral Gemisi Ürün
+// Renge Göre Değişen Çoklu Fotoğraf Seti
+const COLOR_VARIANTS = [
+  {
+    name: 'Mat Siyah',
+    hex: '#18181b',
+    images: [
+      'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1200&auto=format&fit=crop',
+    ],
+  },
+  {
+    name: 'Kulüp Turuncusu',
+    hex: '#f97316',
+    images: [
+      'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=1200&auto=format&fit=crop',
+    ],
+  },
+  {
+    name: 'Tebeşir Beyazı',
+    hex: '#e4e4e7',
+    images: [
+      'https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1200&auto=format&fit=crop',
+    ],
+  },
+]
+
 const HERO_PRODUCT = {
   id: 'pro-tank-01',
   title: 'ORISE Pro Koşu Atleti',
   subtitle: 'Ultralight Race-Day Mesh Edition',
   categoryLabel: 'KOŞU ATLETİ · EDİTİON 01',
   price: 950,
-  rating: 4.9,
-  reviewsCount: 128,
   description:
     'Yüksek tempolu koşularda ve sıcak hava antrenmanlarında maksimum hava sirkülasyonu sağlayan 120 GSM mikro gözenekli teknik kumaş. Lazer kesim sırt havalandırma kanalları ve sürtünmeyi önleyen dikişsiz yaka mimarisi.',
   specs: [
@@ -38,48 +68,79 @@ const HERO_PRODUCT = {
     { label: 'Kalıp / Fit', value: 'Atletik Slim-Fit' },
     { label: 'Yansıtıcı Detay', value: '3M Reflektif Kulüp Logosu' },
   ],
-  images: [
-    'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop', // Ön
-    'https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=1200&auto=format&fit=crop', // Arka
-    'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=1200&auto=format&fit=crop', // Detay
-  ],
-  colors: [
-    { name: 'Mat Siyah', hex: '#18181b' },
-    { name: 'Kulüp Turuncusu', hex: '#f97316' },
-    { name: 'Tebeşir Beyazı', hex: '#e4e4e7' },
-  ],
   sizes: ['S', 'M', 'L', 'XL'],
 }
 
-const FEATURES = [
+const INITIAL_REVIEWS = [
   {
-    icon: Sparkles,
-    title: 'Sınırlı Üretim & Drop',
-    desc: 'Her parça kulüp üyelerine özel sınırlı adetlerde, tekrarı olmayan koleksiyonlar halinde üretilir.',
+    id: 1,
+    author: 'Kaan V.',
+    verified: true,
+    rating: 5,
+    date: '14 Ağustos 2026',
+    comment: 'Maltepe sahil koşusunda denedim. Ter tutmuyor ve rüzgarı hissettiriyor, kalıbı tam oturuyor.',
   },
   {
-    icon: ShieldCheck,
-    title: 'Teknik Kumaş Standartı',
-    desc: 'Yüksek gramajlı organik pamuk, nem transferli mikro fileler ve dayanıklı dikiş mimarisi.',
-  },
-  {
-    icon: Truck,
-    title: 'Hızlı & Güvenli Teslimat',
-    desc: 'Tüm siparişler özel korumalı kulüp ambalajında 1-3 iş günü içerisinde kargoya teslim edilir.',
+    id: 2,
+    author: 'Selin D.',
+    verified: true,
+    rating: 5,
+    date: '10 Ağustos 2026',
+    comment: 'Kumaşı aşırı hafif, yok gibi. Turuncu rengin canlılığı fotoğraftakinden bile daha iyi.',
   },
 ]
 
 export default function StorePage() {
-  const [selectedColor, setSelectedColor] = useState<string>(HERO_PRODUCT.colors[0].name)
+  const [selectedColorIdx, setSelectedColorIdx] = useState<number>(0)
   const [selectedSize, setSelectedSize] = useState<string>('M')
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [isAdded, setIsAdded] = useState<boolean>(false)
   const [isLiked, setIsLiked] = useState<boolean>(false)
 
+  // Gerçek Yorum & Değerlendirme State'i
+  const [reviews, setReviews] = useState(INITIAL_REVIEWS)
+  const [newAuthor, setNewAuthor] = useState('')
+  const [newRating, setNewRating] = useState(5)
+  const [newComment, setNewComment] = useState('')
+  const [commentSuccess, setCommentSuccess] = useState(false)
+
+  const activeColor = COLOR_VARIANTS[selectedColorIdx]
+  const currentImages = activeColor.images
+
+  // Dinamik Ortalama Puan Hesaplama
+  const averageRating = (
+    reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+  ).toFixed(1)
+
+  const handleColorSelect = (idx: number) => {
+    setSelectedColorIdx(idx)
+    setActiveImageIdx(0) // Renk değişince ilk fotoğrafa geç
+  }
+
   const handleAddToCart = () => {
     setIsAdded(true)
     setTimeout(() => setIsAdded(false), 2000)
+  }
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newAuthor.trim() || !newComment.trim()) return
+
+    const newEntry = {
+      id: Date.now(),
+      author: newAuthor.trim(),
+      verified: true,
+      rating: newRating,
+      date: 'Bugün',
+      comment: newComment.trim(),
+    }
+
+    setReviews([newEntry, ...reviews])
+    setNewAuthor('')
+    setNewComment('')
+    setCommentSuccess(true)
+    setTimeout(() => setCommentSuccess(false), 3000)
   }
 
   return (
@@ -145,32 +206,29 @@ export default function StorePage() {
         </div>
       </section>
 
-      {/* 2. TEK ÜRÜN EDİTORYAL VİTRİNİ & DETAYLI İNCELEME */}
+      {/* 2. ÜRÜN VİTRİNİ & RENGE DUYARLI GALERİ */}
       <section className="border-b border-white/10 bg-zinc-950/40 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-          
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             
-            {/* SOL: ÇOKLU FOTOĞRAF GALERİSİ & BÜYÜTME */}
+            {/* SOL: DİNAMİK FOTOĞRAF GALERİSİ */}
             <div className="lg:col-span-7 space-y-4">
-              {/* Ana Büyük Görsel */}
               <div
                 onClick={() => setIsModalOpen(true)}
                 className="group relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-zinc-900 cursor-zoom-in shadow-[0_0_50px_rgba(0,0,0,0.8)]"
               >
                 <Image
-                  src={HERO_PRODUCT.images[activeImageIdx]}
-                  alt={HERO_PRODUCT.title}
+                  src={currentImages[activeImageIdx]}
+                  alt={`${HERO_PRODUCT.title} - ${activeColor.name}`}
                   fill
                   priority
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
 
                 <div className="absolute top-4 left-4 rounded-full border border-primary/40 bg-black/80 px-3.5 py-1 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur-md">
-                  LIMITED DROP · 01
+                  {activeColor.name} · DROP 01
                 </div>
 
-                {/* Büyüt İkonu */}
                 <div className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/70 border border-white/10 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all">
                   <Maximize2 className="h-4 w-4 text-primary" />
                 </div>
@@ -180,9 +238,9 @@ export default function StorePage() {
                 </div>
               </div>
 
-              {/* Küçük Küçük 3'lü Küçük Fotoğraflar (Ön / Arka / Detay) */}
+              {/* 3'lü Açı Küçük Resimleri */}
               <div className="grid grid-cols-3 gap-4">
-                {HERO_PRODUCT.images.map((img, idx) => (
+                {currentImages.map((img, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -199,10 +257,9 @@ export default function StorePage() {
               </div>
             </div>
 
-            {/* SAĞ: DETAYLAR, PUANLAR, RENKLER & SATIN ALMA */}
+            {/* SAĞ: DETAYLAR, RENK VE SATIN ALMA */}
             <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
               <div>
-                {/* Kategori & Beğeni */}
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono tracking-widest text-primary uppercase">
                     {HERO_PRODUCT.categoryLabel}
@@ -216,29 +273,37 @@ export default function StorePage() {
                   </button>
                 </div>
 
-                {/* Başlık */}
                 <h2 className="mt-2 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl">
                   {HERO_PRODUCT.title}
                 </h2>
                 <p className="text-sm font-mono text-zinc-400 mt-1">{HERO_PRODUCT.subtitle}</p>
 
-                {/* PUANLAMA VE DEĞERLENDİRME ŞERİDİ */}
+                {/* PUAN ŞERİDİ (GERÇEK DİNAMİK PUAN) */}
                 <div className="mt-4 flex items-center gap-3 border-y border-white/10 py-3">
                   <div className="flex items-center gap-1 text-amber-400">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-amber-400" />
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < Math.round(Number(averageRating))
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-zinc-600'
+                        }`}
+                      />
                     ))}
                   </div>
                   <span className="font-mono text-sm font-bold text-white">
-                    {HERO_PRODUCT.rating}
+                    {averageRating}
                   </span>
                   <span className="text-xs text-zinc-500">·</span>
-                  <span className="text-xs font-mono text-zinc-400 underline cursor-pointer hover:text-primary">
-                    {HERO_PRODUCT.reviewsCount} Kulüp Değerlendirmesi
-                  </span>
+                  <a
+                    href="#reviews-section"
+                    className="text-xs font-mono text-zinc-400 underline hover:text-primary transition-colors"
+                  >
+                    {reviews.length} Kulüp Değerlendirmesi
+                  </a>
                 </div>
 
-                {/* Fiyat */}
                 <div className="mt-6">
                   <span className="text-xs font-mono text-zinc-500 uppercase">Kulüp Satış Fiyatı</span>
                   <div className="text-3xl font-black text-white">
@@ -246,27 +311,26 @@ export default function StorePage() {
                   </div>
                 </div>
 
-                {/* Açıklama */}
                 <p className="mt-4 text-sm leading-relaxed text-zinc-300">
                   {HERO_PRODUCT.description}
                 </p>
 
-                {/* RENK SEÇİMİ */}
+                {/* RENK SEÇİMİ (FOTOĞRAFI DEĞİŞTİRİR) */}
                 <div className="mt-6 space-y-2">
                   <div className="flex items-center justify-between text-xs font-mono">
                     <span className="text-zinc-400 uppercase">Seçili Renk</span>
-                    <span className="font-bold text-primary">{selectedColor}</span>
+                    <span className="font-bold text-primary">{activeColor.name}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {HERO_PRODUCT.colors.map((c) => (
+                    {COLOR_VARIANTS.map((c, idx) => (
                       <button
                         key={c.name}
                         type="button"
-                        onClick={() => setSelectedColor(c.name)}
-                        className={`h-7 w-7 rounded-full border transition-all ${
-                          selectedColor === c.name
-                            ? 'scale-125 border-primary ring-2 ring-primary/40'
-                            : 'border-white/20 hover:scale-110'
+                        onClick={() => handleColorSelect(idx)}
+                        className={`h-8 w-8 rounded-full border transition-all ${
+                          selectedColorIdx === idx
+                            ? 'scale-125 border-primary ring-2 ring-primary/40 shadow-[0_0_15px_rgba(249,115,22,0.4)]'
+                            : 'border-white/20 hover:scale-110 opacity-70'
                         }`}
                         style={{ backgroundColor: c.hex }}
                         title={c.name}
@@ -279,9 +343,7 @@ export default function StorePage() {
                 <div className="mt-6 space-y-2">
                   <div className="flex items-center justify-between text-xs font-mono">
                     <span className="text-zinc-400 uppercase">Beden Seçimi</span>
-                    <span className="text-zinc-500 underline cursor-pointer hover:text-white">
-                      Beden Tablosu
-                    </span>
+                    <span className="text-zinc-500 text-[11px]">Race-Fit</span>
                   </div>
                   <div className="grid grid-cols-4 gap-2">
                     {HERO_PRODUCT.sizes.map((s) => (
@@ -316,7 +378,7 @@ export default function StorePage() {
                 </div>
               </div>
 
-              {/* SEPETE EKLEME BUTONU */}
+              {/* SEPETE EKLEME */}
               <div className="pt-4">
                 <button
                   type="button"
@@ -330,7 +392,7 @@ export default function StorePage() {
                   {isAdded ? (
                     <>
                       <Check className="h-4 w-4" />
-                      <span>{selectedSize} Beden Sepete Eklendi</span>
+                      <span>{selectedSize} Beden ({activeColor.name}) Eklendi</span>
                     </>
                   ) : (
                     <>
@@ -340,15 +402,143 @@ export default function StorePage() {
                   )}
                 </button>
               </div>
-
             </div>
-
           </div>
-
         </div>
       </section>
 
-      {/* 3. BÜYÜTME MODALI (LIGHTBOX) */}
+      {/* 3. GERÇEK KULLANICI YORUM & DEĞERLENDİRME ALANI (YASAL & ETKİLEŞİMLİ) */}
+      <section id="reviews-section" className="border-b border-white/10 bg-black py-20 sm:py-24">
+        <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
+          <div className="mb-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-white/10 pb-6">
+            <div>
+              <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span>KULÜP DENEYİMLERİ</span>
+              </div>
+              <h2 className="mt-2 font-sans text-3xl font-black tracking-tight text-white">
+                Üye Değerlendirmeleri
+              </h2>
+            </div>
+            <div className="flex items-center gap-2 text-sm font-mono text-zinc-400">
+              <span>Ortalama Puan:</span>
+              <span className="text-xl font-bold text-primary">{averageRating} / 5.0</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
+            {/* Yorum Ekleme Formu */}
+            <div className="lg:col-span-5 rounded-3xl border border-white/10 bg-zinc-900/40 p-6 md:p-8 backdrop-blur-md">
+              <h3 className="text-lg font-bold text-white mb-2">Deneyimini Paylaş</h3>
+              <p className="text-xs text-zinc-400 mb-6">
+                Ürünü kullandıktan sonra kalıp ve performans hakkındaki düşüncelerini kulüple paylaş.
+              </p>
+
+              <form onSubmit={handleReviewSubmit} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">
+                    İsim Soyisim / Rumuz
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newAuthor}
+                    onChange={(e) => setNewAuthor(e.target.value)}
+                    placeholder="Örn: Burak T."
+                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">
+                    Puanın
+                  </label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setNewRating(star)}
+                        className="p-1 text-amber-400 hover:scale-125 transition-transform"
+                      >
+                        <Star
+                          className={`h-5 w-5 ${
+                            star <= newRating ? 'fill-amber-400' : 'text-zinc-600'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">
+                    Yorumun
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Kumaş hissi, nefes alabilirlik ve kalıp hakkında..."
+                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full rounded-full bg-primary py-3 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:scale-[1.02] transition-transform"
+                >
+                  Değerlendirmeyi Gönder
+                </button>
+
+                {commentSuccess && (
+                  <p className="text-center text-xs font-bold text-emerald-400 animate-fadeIn">
+                    ✓ Yorumun eklendi, teşekkürler!
+                  </p>
+                )}
+              </form>
+            </div>
+
+            {/* Mevcut Yorumlar Listesi */}
+            <div className="lg:col-span-7 space-y-4">
+              {reviews.map((rev) => (
+                <div
+                  key={rev.id}
+                  className="rounded-2xl border border-white/10 bg-zinc-900/30 p-5 backdrop-blur-md"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-white">{rev.author}</span>
+                      {rev.verified && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/30 px-2 py-0.5 text-[9px] font-mono text-primary">
+                          <UserCheck className="h-3 w-3" /> Doğrulanmış Koşucu
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-mono text-zinc-500">{rev.date}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 text-amber-400 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-3.5 w-3.5 ${
+                          i < rev.rating ? 'fill-amber-400' : 'text-zinc-600'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <p className="text-xs leading-relaxed text-zinc-300">{rev.comment}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. LIGHTBOX BÜYÜTME MODALI */}
       {isModalOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 sm:p-8 backdrop-blur-2xl animate-fadeIn"
@@ -367,15 +557,14 @@ export default function StorePage() {
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={HERO_PRODUCT.images[activeImageIdx]}
+              src={currentImages[activeImageIdx]}
               alt={HERO_PRODUCT.title}
               fill
               className="object-contain"
             />
 
-            {/* Modal İçi Fotoğraf Geçiş Noktaları */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 rounded-full bg-black/80 px-4 py-2 border border-white/10 backdrop-blur-md">
-              {HERO_PRODUCT.images.map((_, idx) => (
+              {currentImages.map((_, idx) => (
                 <button
                   key={idx}
                   type="button"
@@ -390,36 +579,7 @@ export default function StorePage() {
         </div>
       )}
 
-      {/* 4. KALİTE PRENSİPLERİ */}
-      <section className="py-24 sm:py-28 border-b border-white/10 bg-black">
-        <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-          <div className="grid gap-8 md:grid-cols-3">
-            {FEATURES.map((feat, idx) => {
-              const Icon = feat.icon
-              return (
-                <div
-                  key={idx}
-                  className="group relative flex flex-col justify-between border-l border-white/15 pl-6 transition-all duration-300 hover:border-primary"
-                >
-                  <div>
-                    <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-primary transition-colors group-hover:bg-primary group-hover:text-black">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-sans text-xl font-bold text-white tracking-tight group-hover:text-primary transition-colors">
-                      {feat.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-                      {feat.desc}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* 5. INSTAGRAM HUB (@orisestore) */}
+      {/* 5. INSTAGRAM HUB */}
       <section className="bg-zinc-950 py-24 sm:py-28">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <a
