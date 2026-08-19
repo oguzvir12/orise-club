@@ -47,20 +47,20 @@ const PHILOSOPHY = [
 
 export default function CommunityPage() {
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
-      {/* 1. ASİMETRİK EDİTORYAL HERO */}
-      <section className="relative overflow-hidden border-b border-white/10 pt-28 pb-20 lg:pt-36 lg:pb-28">
-        {/* Sol Üst Ana Sayfa Geçiş Butonu */}
-        <div className="absolute top-6 left-6 z-30 sm:left-10 lg:left-14">
-          <Link
-            href="/"
-            className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/60 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-zinc-300 backdrop-blur-md transition-all duration-300 hover:border-primary/60 hover:bg-black/90 hover:text-white hover:shadow-[0_0_20px_rgba(249,115,22,0.3)]"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-x-1 text-primary" />
-            <span>Ana Sayfa</span>
-          </Link>
-        </div>
+    <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
+      {/* Sol Üst Sabit Ana Sayfa Butonu (Header üstü z-index ve doğrudan yönlendirme) */}
+      <div className="fixed top-4 left-6 z-[60] sm:left-8">
+        <Link
+          href="/"
+          className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-black hover:text-white hover:shadow-[0_0_20px_rgba(249,115,22,0.35)]"
+        >
+          <ArrowLeft className="h-3.5 w-3.5 text-primary transition-transform duration-300 group-hover:-translate-x-1" />
+          <span>Ana Sayfa</span>
+        </Link>
+      </div>
 
+      {/* 1. ASİMETRİK EDİTORYAL HERO */}
+      <section className="relative overflow-hidden border-b border-white/10 pt-32 pb-20 lg:pt-40 lg:pb-28">
         {/* Arka Plan Sinematik Görsel */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image
@@ -74,7 +74,7 @@ export default function CommunityPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60" />
         </div>
 
-        {/* Asimetrik İçerik Bloğu (Ortada sıkışmayan, geniş açılı) */}
+        {/* Asimetrik İçerik Bloğu */}
         <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-end">
             <div className="lg:col-span-8 space-y-6">
