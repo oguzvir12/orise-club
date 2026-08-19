@@ -10,7 +10,6 @@ import {
   Mail,
   ShieldCheck,
   RefreshCw,
-  Calendar,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
