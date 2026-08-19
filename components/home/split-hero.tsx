@@ -12,11 +12,11 @@ const PANELS = [
     id: 'community',
     href: '/community',
     slogan: 'KULÜBE KATIL · RİTMİNİ BUL',
-    title: 'ORISE COMMUNITY',
+    title: 'TOPLULUK',
     subtitle:
       'Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.',
     cta: 'Buluşmaları Keşfet',
-    meta: 'RUN · TENNIS · PILATES · SAILING',
+    meta: 'KOŞU · TENİS · PİLATES · YELKEN',
     icon: Users,
     bgImage: '/community-hero.jpeg',
     align: 'left',
@@ -25,11 +25,11 @@ const PANELS = [
     id: 'store',
     href: '/store',
     slogan: 'HAREKET KULÜBÜ & STÜDYO',
-    title: 'ORISE STORE',
+    title: 'MAĞAZA',
     subtitle:
-      'Kulüp kültüründen ilham alan özel tasarım spor ve sokak parçaları.',
+      'Kulüp kültüründen ilham alan özel tasarım teknik spor ve sokak parçaları.',
     cta: 'Koleksiyonu İncele',
-    meta: 'TECHNICAL APPAREL · ATHLETIC WEAR',
+    meta: 'TEKNİK GİYİM · ATLETİK STİL',
     icon: ShoppingBag,
     bgImage: '/store-hero.jpeg',
     align: 'right',
@@ -130,16 +130,16 @@ export function SplitHero() {
 
             {/* İçerik Bloğu */}
             <div className="relative z-10 flex w-full max-w-md flex-col items-center space-y-4">
-              {/* Üst Manifesto Rozeti (Kırılmayan Temiz Font) */}
+              {/* Üst Manifesto Rozeti */}
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-[11px] font-bold tracking-[0.18em] text-primary backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary/20">
                   <Sparkles className="h-3 w-3 text-primary" />
-                  <span className="font-sans">{panel.slogan}</span>
+                  <span>{panel.slogan}</span>
                 </div>
               </div>
 
-              {/* Başlık */}
-              <h2 className="font-sans text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl text-foreground transition-all duration-300 group-hover:text-white">
+              {/* Başlık (Tek Satır, Asla Bölünmez) */}
+              <h2 className="whitespace-nowrap font-sans text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl text-foreground transition-all duration-300 group-hover:text-white">
                 {panel.title}
               </h2>
 
