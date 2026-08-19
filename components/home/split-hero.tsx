@@ -18,8 +18,7 @@ const PANELS = [
     cta: 'Buluşmaları Keşfet',
     meta: 'RUN · TENNIS · PILATES · SAILING',
     icon: Users,
-    bgImage:
-      'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1600&auto=format&fit=crop',
+    bgImage: '/community-hero.jpeg',
     align: 'left',
   },
   {
@@ -32,8 +31,7 @@ const PANELS = [
     cta: 'Koleksiyonu İncele',
     meta: 'TECHNICAL APPAREL · ATHLETIC WEAR',
     icon: ShoppingBag,
-    bgImage:
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1600&auto=format&fit=crop',
+    bgImage: '/store-hero.jpeg',
     align: 'right',
   },
 ]
