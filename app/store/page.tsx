@@ -12,46 +12,129 @@ import {
   ShoppingBag,
   Check,
 } from 'lucide-react'
-import { PRODUCTS } from '@/lib/products'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
 
 const STORE_INSTAGRAM = 'https://www.instagram.com/orisestore/'
 
-// 2 Kademeli Hiyerarşik Kategori ve Alt Kategori Tanımları
+// Sadeleştirilmiş ve Birbirinden Ayrılmış Net Kategoriler
 const CATEGORIES = [
+  { id: 'all', label: 'TÜMÜ' },
+  { id: 'tank', label: 'KOŞU ATLETİ' },
+  { id: 'sweatshirt', label: 'SWEATSHIRT' },
+  { id: 'socks', label: 'PERFORMANS ÇORAP' },
+  { id: 'hat', label: 'ŞAPKA' },
+  { id: 'bag', label: 'ÇANTA' },
+  { id: 'equipment', label: 'TERMOS & MATARA' },
+]
+
+// Çoklu Fotoğraf ve Renk Desteğine Sahip Ürün Kataloğu
+interface Product {
+  id: string
+  title: string
+  category: string
+  categoryLabel: string
+  price: number
+  description: string
+  images: string[] // [Ön Görsel, Arka Görsel, Detay]
+  colors: { name: string; hex: string }[]
+}
+
+const STORE_PRODUCTS: Product[] = [
   {
-    id: 'all',
-    title: 'TÜMÜ',
-    subCategories: [],
-  },
-  {
-    id: 'tops',
-    title: 'ÜST GİYİM',
-    tagline: 'TEKNİK ATLET · SWEATSHIRT · T-SHIRT',
-    subCategories: [
-      { id: 'all-tops', label: 'Tüm Üstler', keywords: ['t-shirt', 'sweatshirt', 'atlet', 'top', 'üst'] },
-      { id: 'tshirt', label: 'T-Shirt & Atlet', keywords: ['t-shirt', 'atlet', 'pro koşu'] },
-      { id: 'sweatshirt', label: 'Sweatshirt', keywords: ['sweatshirt', 'bisiklet yaka'] },
+    id: 'pro-tank-black',
+    title: 'ORISE Pro Koşu Atleti',
+    category: 'tank',
+    categoryLabel: 'KOŞU ATLETİ',
+    price: 950,
+    description: 'Ultra hafif nefes alabilir mikro file kumaş (120 GSM). Sırt havalandırma paneli.',
+    images: [
+      'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=800&auto=format&fit=crop', // Ön
+      'https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=800&auto=format&fit=crop', // Arka
+    ],
+    colors: [
+      { name: 'Siyah', hex: '#18181b' },
+      { name: 'Kulüp Turuncusu', hex: '#f97316' },
+      { name: 'Tebeşir Beyazı', hex: '#e4e4e7' },
     ],
   },
   {
-    id: 'bottoms-equipment',
-    title: 'ALT GİYİM & EKİPMAN',
-    tagline: 'ŞORT · TAYT · ÇORAP · MATARA',
-    subCategories: [
-      { id: 'all-bottoms', label: 'Tüm Alt & Ekipman', keywords: ['çorap', 'matara', 'şort', 'tayt', 'alt', 'socks', 'equipment'] },
-      { id: 'socks', label: 'Performans Çorap', keywords: ['çorap', 'socks'] },
-      { id: 'equipment', label: 'Termos & Matara', keywords: ['matara', 'termos', 'ekipman'] },
+    id: 'club-sweatshirt-black',
+    title: 'ORISE Bisiklet Yaka Sweatshirt',
+    category: 'sweatshirt',
+    categoryLabel: 'SWEATSHIRT',
+    price: 2490,
+    description: '450 GSM ağır gramaj şardonlu pamuk. Göğüste kabartma silikon kulüp amblemi.',
+    images: [
+      'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=800&auto=format&fit=crop',
+    ],
+    colors: [
+      { name: 'Mat Siyah', hex: '#09090b' },
+      { name: 'Füme', hex: '#27272a' },
     ],
   },
   {
-    id: 'accessories',
-    title: 'AKSESUAR & ÇANTA',
-    tagline: 'KULÜP ŞAPKASI · BEZ ÇANTA · DETAYLAR',
-    subCategories: [
-      { id: 'all-acc', label: 'Tüm Aksesuarlar', keywords: ['şapka', 'çanta', 'aksesuar', 'hat', 'bag', 'accessory'] },
-      { id: 'hats', label: 'Kulüp Şapkası', keywords: ['şapka', 'hat'] },
-      { id: 'bags', label: 'Bez Çanta / Tote', keywords: ['çanta', 'bag', 'kanvas'] },
+    id: 'club-cap-black',
+    title: 'ORISE Atletik Kulüp Şapkası',
+    category: 'hat',
+    categoryLabel: 'ŞAPKA',
+    price: 890,
+    description: '6 panelli pamuklu dimi kumaş, ayarlanabilir metal tokalı arka kayış.',
+    images: [
+      'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1575428652377-a2d80e2277fc?q=80&w=800&auto=format&fit=crop',
+    ],
+    colors: [
+      { name: 'Siyah', hex: '#18181b' },
+      { name: 'Taş Rengi', hex: '#d4d4d8' },
+    ],
+  },
+  {
+    id: 'tote-bag-black',
+    title: 'ORISE Ağır Kanvas Bez Çanta',
+    category: 'bag',
+    categoryLabel: 'ÇANTA',
+    price: 750,
+    description: '16 oz yüksek dayanımlı organik kanvas kumaş. Turuncu güçlendirilmiş omuz askısı.',
+    images: [
+      'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1597484661643-2f5fef640dd1?q=80&w=800&auto=format&fit=crop',
+    ],
+    colors: [
+      { name: 'Siyah / Turuncu', hex: '#18181b' },
+      { name: 'Ham Kanvas', hex: '#f5f5f4' },
+    ],
+  },
+  {
+    id: 'crew-socks-white',
+    title: 'ORISE Performans Koşu Çorabı',
+    category: 'socks',
+    categoryLabel: 'PERFORMANS ÇORAP',
+    price: 320,
+    description: 'Coolmax nefes alabilir örgü dokuma. Topuk ve burun çift katman darbe emici takviye.',
+    images: [
+      'https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1582966772680-860e372bb558?q=80&w=800&auto=format&fit=crop',
+    ],
+    colors: [
+      { name: 'Optik Beyaz', hex: '#f8fafc' },
+      { name: 'Koyu Grafit', hex: '#1e293b' },
+    ],
+  },
+  {
+    id: 'steel-bottle-black',
+    title: 'ORISE Çift Duvarlı Termos Matara 750ml',
+    category: 'equipment',
+    categoryLabel: 'TERMOS & MATARA',
+    price: 1150,
+    description: 'Mat siyah çift cidarlı paslanmaz çelik. 24 saat soğuk, 12 saat sıcak tutma performansı.',
+    images: [
+      'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1523362628745-0c100150b504?q=80&w=800&auto=format&fit=crop',
+    ],
+    colors: [
+      { name: 'Mat Siyah', hex: '#09090b' },
+      { name: 'Fırçalanmış Çelik', hex: '#a1a1aa' },
     ],
   },
 ]
@@ -75,18 +158,17 @@ const FEATURES = [
 ]
 
 export default function StorePage() {
-  const [selectedMainCat, setSelectedMainCat] = useState<string>('all')
-  const [selectedSubCat, setSelectedSubCat] = useState<string>('')
+  const [activeCategory, setActiveCategory] = useState<string>('all')
+  const [selectedColors, setSelectedColors] = useState<Record<string, string>>({})
+  const [activeImageIndex, setActiveImageIndex] = useState<Record<string, number>>({})
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({})
 
-  const handleMainCatChange = (catId: string) => {
-    setSelectedMainCat(catId)
-    const cat = CATEGORIES.find((c) => c.id === catId)
-    if (cat && cat.subCategories.length > 0) {
-      setSelectedSubCat(cat.subCategories[0].id)
-    } else {
-      setSelectedSubCat('')
-    }
+  const handleColorChange = (productId: string, colorName: string) => {
+    setSelectedColors((prev) => ({ ...prev, [productId]: colorName }))
+  }
+
+  const handleImageSwitch = (productId: string, imgIdx: number) => {
+    setActiveImageIndex((prev) => ({ ...prev, [productId]: imgIdx }))
   }
 
   const handleAddToCart = (id: string) => {
@@ -96,27 +178,10 @@ export default function StorePage() {
     }, 1500)
   }
 
-  // Filtreleme Algoritması
-  const currentMainCategory = CATEGORIES.find((c) => c.id === selectedMainCat)
-
-  const filteredProducts = PRODUCTS.filter((product) => {
-    const searchTarget = `${product.category} ${product.title} ${product.description}`.toLowerCase()
-
-    // 1. Durum: Tümü seçiliyse
-    if (selectedMainCat === 'all') return true
-
-    // 2. Durum: Alt kategori seçiliyse ona göre filtrele
-    if (currentMainCategory && currentMainCategory.subCategories.length > 0) {
-      const activeSub = currentMainCategory.subCategories.find((s) => s.id === selectedSubCat)
-      if (activeSub) {
-        return activeSub.keywords.some((kw) => searchTarget.includes(kw))
-      }
-    }
-
-    // 3. Durum: Sadece ana kategoriye göre
-    const allKeywords = currentMainCategory?.subCategories.flatMap((s) => s.keywords) || []
-    return allKeywords.some((kw) => searchTarget.includes(kw))
-  })
+  const filteredProducts =
+    activeCategory === 'all'
+      ? STORE_PRODUCTS
+      : STORE_PRODUCTS.filter((p) => p.category === activeCategory)
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
@@ -182,110 +247,111 @@ export default function StorePage() {
         </div>
       </section>
 
-      {/* 2. ÇİFT KADEMELİ HİYERARŞİK FİLTRE & ÜRÜNLER */}
+      {/* 2. SADELEŞTİRİLMİŞ AYRIK KATEGORİ SEÇİCİ & ÜRÜN IZGARASI */}
       <section className="border-b border-white/10 bg-zinc-950/40 py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           
-          {/* FİLTRE KONTROL PANELİ */}
-          <div className="mb-12 space-y-4 rounded-3xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur-xl">
-            {/* 1. Kademe: Ana Kategoriler */}
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
-              <div className="text-xs font-mono tracking-[0.2em] text-primary uppercase">
-                ANA KATEGORİ
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => handleMainCatChange(cat.id)}
-                    className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
-                      selectedMainCat === cat.id
-                        ? 'bg-primary text-black shadow-[0_0_20px_rgba(249,115,22,0.4)] scale-105'
-                        : 'border border-white/10 bg-black/60 text-zinc-400 hover:border-white/30 hover:text-white'
-                    }`}
-                  >
-                    {cat.title}
-                  </button>
-                ))}
-              </div>
+          {/* Ayrık Kategori Hapları */}
+          <div className="mb-12 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+                    activeCategory === cat.id
+                      ? 'bg-primary text-black shadow-[0_0_20px_rgba(249,115,22,0.4)] scale-105'
+                      : 'border border-white/10 bg-zinc-900/60 text-zinc-400 hover:border-white/30 hover:text-white'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
             </div>
 
-            {/* 2. Kademe: Alt Kategori Seçenekleri (Seçili kategoriye göre dinamik açılır) */}
-            {currentMainCategory && currentMainCategory.subCategories.length > 0 && (
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-1 animate-fadeIn">
-                <div className="text-[11px] font-mono tracking-wider text-zinc-500 uppercase">
-                  ALT BAŞLIK SEÇİMİ
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {currentMainCategory.subCategories.map((sub) => (
-                    <button
-                      key={sub.id}
-                      type="button"
-                      onClick={() => setSelectedSubCat(sub.id)}
-                      className={`rounded-xl px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
-                        selectedSubCat === sub.id
-                          ? 'border border-primary bg-primary/20 text-primary font-semibold'
-                          : 'border border-white/5 bg-zinc-950/60 text-zinc-400 hover:text-zinc-200'
-                      }`}
-                    >
-                      {sub.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* BAŞLIK & ADET BİLGİSİ */}
-          <div className="mb-8 flex items-center justify-between border-b border-white/10 pb-4">
-            <div>
-              <div className="text-xs font-mono tracking-[0.2em] text-primary uppercase">
-                {currentMainCategory?.tagline || 'TÜM PARÇALAR'}
-              </div>
-              <h2 className="mt-1 font-sans text-2xl font-black tracking-tight text-white sm:text-3xl">
-                {currentMainCategory?.title === 'TÜMÜ' ? 'Koleksiyon' : currentMainCategory?.title}
-              </h2>
-            </div>
             <span className="text-xs font-mono text-zinc-500 uppercase">
-              [{filteredProducts.length} PARÇA LİSTELENDİ]
+              [{filteredProducts.length} PARÇA]
             </span>
           </div>
 
-          {/* ÜRÜN IZGARASI */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Ürün Kartları Grid'i */}
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((product) => {
+              const currentImgIdx = activeImageIndex[product.id] || 0
+              const selectedColor = selectedColors[product.id] || product.colors[0]?.name
               const isAdded = addedItems[product.id]
+
               return (
                 <div
                   key={product.id}
                   className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all duration-500 hover:border-primary/50 hover:bg-zinc-900/70"
                 >
                   <div>
-                    {/* Görsel Alanı */}
-                    <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950">
-                      {product.image && !product.image.includes('placeholder') ? (
-                        <Image
-                          src={product.image}
-                          alt={product.title}
-                          fill
-                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-950 text-zinc-600 space-y-2">
-                          <ShoppingBag className="h-10 w-10 text-primary/40" />
-                          <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">ORISE DROP</span>
-                        </div>
-                      )}
+                    {/* Önlü / Arkalı Fotoğraf Galerisi Alanı */}
+                    <div
+                      className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950 cursor-pointer"
+                      onMouseEnter={() => product.images.length > 1 && handleImageSwitch(product.id, 1)}
+                      onMouseLeave={() => handleImageSwitch(product.id, 0)}
+                    >
+                      <Image
+                        src={product.images[currentImgIdx] || product.images[0]}
+                        alt={product.title}
+                        fill
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+
                       <div className="absolute top-3 left-3 rounded-full border border-primary/40 bg-black/80 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary backdrop-blur-md">
                         LIMITED DROP
                       </div>
+
+                      {/* Çoklu Fotoğraf / Açı Geçiş Noktaları (Ön / Arka) */}
+                      {product.images.length > 1 && (
+                        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1 backdrop-blur-md border border-white/10">
+                          {product.images.map((_, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleImageSwitch(product.id, idx)
+                              }}
+                              className={`h-1.5 rounded-full transition-all ${
+                                currentImgIdx === idx ? 'w-4 bg-primary' : 'w-1.5 bg-zinc-500'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Renk Seçim Paleti */}
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {product.colors.map((color) => (
+                          <button
+                            key={color.name}
+                            type="button"
+                            title={color.name}
+                            onClick={() => handleColorChange(product.id, color.name)}
+                            className={`relative h-4 w-4 rounded-full border transition-all ${
+                              selectedColor === color.name
+                                ? 'scale-125 border-primary ring-2 ring-primary/40'
+                                : 'border-white/20 hover:scale-110'
+                            }`}
+                            style={{ backgroundColor: color.hex }}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                        {selectedColor}
+                      </span>
                     </div>
 
                     {/* Ürün Detayları */}
-                    <div className="mt-5 space-y-1">
-                      <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                        {product.category}
+                    <div className="mt-3 space-y-1">
+                      <div className="text-[10px] font-mono text-primary uppercase tracking-widest">
+                        {product.categoryLabel}
                       </div>
                       <h3 className="font-sans text-lg font-bold text-white tracking-tight group-hover:text-primary transition-colors">
                         {product.title}
@@ -331,19 +397,6 @@ export default function StorePage() {
               )
             })}
           </div>
-
-          {filteredProducts.length === 0 && (
-            <div className="my-16 flex flex-col items-center justify-center text-center space-y-3">
-              <ShoppingBag className="h-10 w-10 text-zinc-600" />
-              <p className="text-zinc-400 text-sm">Bu filtreye uygun parça henüz yüklenmedi.</p>
-              <button
-                onClick={() => handleMainCatChange('all')}
-                className="text-xs font-mono text-primary uppercase underline"
-              >
-                Tüm Koleksiyonu Gör
-              </button>
-            </div>
-          )}
         </div>
       </section>
 
