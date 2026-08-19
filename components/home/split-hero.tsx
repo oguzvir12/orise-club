@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-import { ArrowUpRight, ShoppingBag, Users } from 'lucide-react'
+import { ArrowUpRight, ShoppingBag, Users, Sparkles } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
 
@@ -13,6 +13,7 @@ const PANELS = [
     href: '/community',
     badge: 'Aktif Kulüp Takvimi',
     badgeColor: 'bg-emerald-500',
+    slogan: 'Kulübe Katıl, Ritmini Bul.',
     title: 'ORISE COMMUNITY',
     subtitle:
       'Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.',
@@ -27,6 +28,7 @@ const PANELS = [
     href: '/store',
     badge: 'Sınırlı Üretim Drop',
     badgeColor: 'bg-primary',
+    slogan: 'Bir markadan fazlası, bir hareket kulübü.',
     title: 'ORISE STORE',
     subtitle:
       'Kulüp kültüründen ilham alan özel tasarım spor ve sokak parçaları.',
@@ -45,11 +47,11 @@ export function SplitHero() {
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row">
       {/* Büyütülmüş & Canlandırılmış Merkez Reaktör Logo */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-x-1/2 -translate-y-1/2 md:block">
-        {/* Arkadaki Glow / Parıltı */}
+        {/* Arkadaki Glow / Işık Parıltısı */}
         <div
           className={cn(
-            'absolute inset-0 -m-6 rounded-full bg-primary/25 blur-2xl transition-all duration-700',
-            hovered ? 'scale-150 opacity-100 bg-primary/40' : 'scale-100 opacity-60',
+            'absolute inset-0 -m-6 rounded-full bg-primary/30 blur-2xl transition-all duration-700',
+            hovered ? 'scale-150 opacity-100 bg-primary/45' : 'scale-100 opacity-60',
           )}
         />
 
@@ -60,7 +62,7 @@ export function SplitHero() {
               ? 'border-primary -translate-x-2 shadow-[-20px_0_50px_rgba(249,115,22,0.5)]'
               : hovered === 'store'
                 ? 'border-primary translate-x-2 shadow-[20px_0_50px_rgba(249,115,22,0.5)]'
-                : 'border-border/80 shadow-[0_0_35px_rgba(249,115,22,0.2)]',
+                : 'border-border/80 shadow-[0_0_35px_rgba(249,115,22,0.25)]',
           )}
         >
           <OriseMark
@@ -91,7 +93,7 @@ export function SplitHero() {
                 : 'md:p-14 md:pl-24 lg:p-24 lg:pl-32',
             )}
           >
-            {/* Sinematik & Canlı Arka Plan */}
+            {/* Arka Plan Görseli */}
             <div className="absolute inset-0 z-0 overflow-hidden">
               <Image
                 src={panel.bgImage}
@@ -126,16 +128,22 @@ export function SplitHero() {
               />
             </div>
 
-            {/* İçerik */}
-            <div className="relative z-10 max-w-xl space-y-6">
+            {/* İçerik Bloğu */}
+            <div className="relative z-10 max-w-xl space-y-5">
               {/* Rozet */}
-              <div>
-                <div className="inline-flex items-center gap-2.5 rounded-full border border-border/80 bg-secondary/80 px-4 py-1.5 text-xs font-semibold text-foreground backdrop-blur-md transition-all duration-300 group-hover:border-primary/60 group-hover:bg-secondary">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center gap-2.5 rounded-full border border-border/80 bg-secondary/80 px-3.5 py-1.5 text-xs font-semibold text-foreground backdrop-blur-md transition-all duration-300 group-hover:border-primary/60 group-hover:bg-secondary">
                   <Icon className="h-3.5 w-3.5 text-primary" />
                   <span className="opacity-30">|</span>
                   <span className={cn('h-2 w-2 rounded-full animate-pulse', panel.badgeColor)} />
                   <span>{panel.badge}</span>
                 </div>
+              </div>
+
+              {/* İmza Slogan / Kulüp Manifestosu */}
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary/90">
+                <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
+                <span>{panel.slogan}</span>
               </div>
 
               {/* Başlık */}
@@ -149,8 +157,8 @@ export function SplitHero() {
               </p>
 
               {/* Aksiyon Butonu */}
-              <div className="pt-2">
-                <div className="inline-flex items-center gap-3 rounded-full border border-border/80 bg-card/60 px-7 py-3.5 text-xs font-bold uppercase tracking-widest text-foreground backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] group-hover:scale-105">
+              <div className="pt-3">
+                <div className="inline-flex items-center gap-3 rounded-full border border-border/80 bg-card/60 px-7 py-3.5 text-xs font-bold uppercase tracking-widest text-foreground backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-[0_0_30px_rgba(249,115,22,0.45)] group-hover:scale-105">
                   <span>{panel.cta}</span>
                   <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
                 </div>
