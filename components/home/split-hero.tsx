@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-import { ArrowUpRight, ShoppingBag, Users, Sparkles, Mail } from 'lucide-react'
+import { ArrowUpRight, ShoppingBag, Users, Sparkles, Mail, X, ShieldCheck } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
 
@@ -36,8 +36,32 @@ const PANELS = [
   },
 ]
 
+const LEGAL_DOCS: Record<string, { title: string; content: string }> = {
+  kvkk: {
+    title: 'KVKK Aydınlatma & Açık Rıza Metni',
+    content:
+      '6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca, ORISE CLUB tarafından toplanan ad, soyad, e-posta, telefon numarası ve etkinlik katılım verileriniz; yalnızca kulüp organizasyonlarının yönetilmesi, katılım doğrulaması yapılması ve üyelik bilgilendirmelerinin iletilmesi amacıyla güvenli sunucularda şifreli olarak işlenmektedir. Verileriniz üçüncü şahıslarla pazarlama amacıyla paylaşılmaz.',
+  },
+  privacy: {
+    title: 'Gizlilik ve Çerez Politikası',
+    content:
+      'ORISE CLUB, kullanıcılarının gizliliğine ve kişisel haklarına saygı duyar. Web sitemizde kullanıcı deneyimini iyileştirmek, oturum durumunu korumak ve güvenliği sağlamak amacıyla zorunlu teknik çerezler kullanılmaktadır. Sitemizi kullanarak bu çerezlerin kullanımını kabul etmiş sayılırsınız.',
+  },
+  terms: {
+    title: 'Mesafeli Satış ve Hizmet Sözleşmesi',
+    content:
+      'İşbu sözleşme, ORISE CLUB üzerinden gerçekleştirilen ürün siparişleri ve etkinlik katılımlarının şartlarını düzenler. Tüketici, sipariş vermeden önce ürün niteliklerini, satış fiyatını ve teslimat koşullarını incelediğini teyit eder.',
+  },
+  refund: {
+    title: 'İptal ve İade Koşulları',
+    content:
+      'Mağazadan satın alınan ürünler, teslimat tarihinden itibaren 14 gün içerisinde orijinal ambalajı bozulmamış olarak iade edilebilir. Etkinlik katılımlarında ise etkinlik saatinden 24 saat öncesine kadar yapılan iptallerde üyelik hakları muhafaza edilir.',
+  },
+}
+
 export function SplitHero() {
   const [hovered, setHovered] = useState<'community' | 'store' | null>(null)
+  const [activeLegalModal, setActiveLegalModal] = useState<string | null>(null)
 
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
@@ -55,23 +79,18 @@ export function SplitHero() {
               : '-translate-x-1/2',
         )}
       >
-        {/* Glow */}
         <div
           className={cn(
             'absolute inset-0 -m-6 rounded-full bg-primary/25 blur-2xl transition-all duration-500',
             hovered ? 'scale-125 opacity-100 bg-primary/45' : 'scale-100 opacity-40',
           )}
         />
-
-        {/* Pusula Çemberi */}
         <div
           className={cn(
             'absolute inset-0 -m-2 rounded-full border border-primary/25 transition-all duration-500',
             hovered ? 'scale-110 border-primary/50 opacity-100' : 'scale-100 opacity-30',
           )}
         />
-
-        {/* Ana Cam Disk */}
         <div
           className={cn(
             'relative flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-black/85 backdrop-blur-2xl transition-all duration-500 lg:h-24 lg:w-24 shadow-[0_0_50px_rgba(0,0,0,0.9)]',
@@ -99,9 +118,8 @@ export function SplitHero() {
             href={panel.href}
             onMouseEnter={() => setHovered(panel.id as 'community' | 'store')}
             onMouseLeave={() => setHovered(null)}
-            className="group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16 pb-24 md:pb-24"
+            className="group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16 pb-28 md:pb-28"
           >
-            {/* Arka Plan Görseli */}
             <div className="absolute inset-0 z-0 overflow-hidden">
               <Image
                 src={panel.bgImage}
@@ -119,7 +137,6 @@ export function SplitHero() {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40" />
             </div>
 
-            {/* Yan Kenar Tipografisi */}
             <div
               className={cn(
                 'pointer-events-none absolute top-1/2 -translate-y-1/2 hidden 2xl:block text-[10px] font-mono tracking-[0.35em] text-zinc-600 uppercase [writing-mode:vertical-rl] transition-colors duration-500 group-hover:text-primary/80',
@@ -129,7 +146,6 @@ export function SplitHero() {
               {panel.meta}
             </div>
 
-            {/* İçerik Bloğu */}
             <div className="relative z-10 flex w-full max-w-md flex-col items-center space-y-4">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] text-primary backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary/20">
@@ -158,70 +174,125 @@ export function SplitHero() {
         )
       })}
 
-      {/* BELİRGİN & ÇAĞRI ODAKLI FOOTER BAR */}
+      {/* BELİRGİN FOOTER & YASAL SÖZLEŞME MODALLARI */}
       <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-4 px-6 sm:px-10 py-3.5 bg-black/80 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
-        {/* Sol: Telif & Marka Damgası */}
         <div className="flex items-center gap-2.5">
           <span className="font-bold text-white tracking-wider">ORISE CLUB</span>
           <span className="text-zinc-600">/</span>
           <span className="text-[11px] tracking-widest text-primary uppercase">ATHLETICS & STUDIO</span>
         </div>
 
-        {/* Sağ: Topluluğa Katıl, Mağazayı Keşfet & Sosyal Linkler */}
+        {/* Yasal Sözleşmeler / Gizlilik Metinleri */}
+        <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
+          <button
+            type="button"
+            onClick={() => setActiveLegalModal('kvkk')}
+            className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4"
+          >
+            KVKK
+          </button>
+          <span className="text-zinc-700">·</span>
+          <button
+            type="button"
+            onClick={() => setActiveLegalModal('privacy')}
+            className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4"
+          >
+            Gizlilik
+          </button>
+          <span className="text-zinc-700">·</span>
+          <button
+            type="button"
+            onClick={() => setActiveLegalModal('terms')}
+            className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4"
+          >
+            Mesafeli Satış
+          </button>
+          <span className="text-zinc-700">·</span>
+          <button
+            type="button"
+            onClick={() => setActiveLegalModal('refund')}
+            className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4"
+          >
+            İade Koşulları
+          </button>
+        </div>
+
+        {/* Sosyal Medya Butonları */}
         <div className="flex flex-wrap items-center justify-center gap-3">
-          {/* Topluluğa Katıl */}
           <a
             href="https://www.instagram.com/orisecommunity/"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-4 py-1.5 text-xs text-zinc-200 backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-white hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+            className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-3.5 py-1 text-xs text-zinc-200 backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-white"
           >
-            <svg
-              className="h-3.5 w-3.5 fill-current text-primary transition-transform group-hover:scale-110"
-              viewBox="0 0 24 24"
-            >
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069Zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073Zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324Zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998Zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881Z" />
-            </svg>
             <span className="font-semibold text-white group-hover:text-primary">Topluluğa Katıl</span>
-            <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300 font-normal">(@orisecommunity)</span>
           </a>
 
-          {/* Mağazayı Keşfet */}
           <a
             href="https://www.instagram.com/orisestore/"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-4 py-1.5 text-xs text-zinc-200 backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-white hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+            className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-3.5 py-1 text-xs text-zinc-200 backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-white"
           >
-            <ShoppingBag className="h-3.5 w-3.5 text-primary transition-transform group-hover:scale-110" />
             <span className="font-semibold text-white group-hover:text-primary">Mağazayı Keşfet</span>
-            <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300 font-normal">(@orisestore)</span>
           </a>
 
-          {/* İletişim & LinkedIn (Şirket Sayfası) */}
           <div className="flex items-center gap-2 pl-1 border-l border-white/10">
             <a
               href="mailto:oguzvir12@gmail.com"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-400 transition-colors hover:border-primary hover:text-white"
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-400 transition-colors hover:border-primary hover:text-white"
               title="E-posta İletişim"
             >
               <Mail className="h-3.5 w-3.5" />
             </a>
-
-            <a
-              href="https://www.linkedin.com/company/orisecommunity"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-400 transition-colors hover:border-primary hover:text-white"
-              title="LinkedIn Şirket Sayfası"
-            >
-              <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0 0-3.28 1.64 1.64 0 0 0 0 3.28M7.85 18.5V10.13H5.06V18.5h2.79Z" />
-              </svg>
-            </a>
           </div>
         </div>
       </footer>
+
+      {/* HUKUKİ METİN POP-UP MODAL */}
+      {activeLegalModal && LEGAL_DOCS[activeLegalModal] && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-md animate-fadeIn"
+          onClick={() => setActiveLegalModal(null)}
+        >
+          <div
+            className="relative w-full max-w-xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                <ShieldCheck className="h-4 w-4" />
+                <span>Yasal Bilgilendirme</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveLegalModal(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <h3 className="font-sans text-xl font-black text-white">
+              {LEGAL_DOCS[activeLegalModal].title}
+            </h3>
+
+            <p className="text-xs font-sans leading-relaxed text-zinc-300 whitespace-pre-line">
+              {LEGAL_DOCS[activeLegalModal].content}
+            </p>
+
+            <div className="pt-2 text-right">
+              <button
+                type="button"
+                onClick={() => setActiveLegalModal(null)}
+                className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black hover:scale-105 transition-transform"
+              >
+                Anladım
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
