@@ -11,7 +11,7 @@ const PANELS = [
   {
     id: 'community',
     href: '/community',
-    slogan: 'Kulübe Katıl · Ritmini Bul',
+    slogan: 'KULÜBE KATIL · RİTMİNİ BUL',
     title: 'ORISE COMMUNITY',
     subtitle:
       'Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.',
@@ -24,7 +24,7 @@ const PANELS = [
   {
     id: 'store',
     href: '/store',
-    slogan: 'Hareket Kulübü & Tasarım Stüdyosu',
+    slogan: 'HAREKET KULÜBÜ & STÜDYO',
     title: 'ORISE STORE',
     subtitle:
       'Kulüp kültüründen ilham alan özel tasarım spor ve sokak parçaları.',
@@ -40,7 +40,7 @@ export function SplitHero() {
   const [hovered, setHovered] = useState<'community' | 'store' | null>(null)
 
   return (
-    <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none">
+    <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
       {/* Merkez Dikey Ayrım Lazer Çizgisi */}
       <div className="pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border/40 to-transparent md:block" />
 
@@ -63,7 +63,7 @@ export function SplitHero() {
           )}
         />
 
-        {/* Dış Pusula Halkası */}
+        {/* Dış Pusula Çemberi */}
         <div
           className={cn(
             'absolute inset-0 -m-2 rounded-full border border-primary/20 transition-all duration-500',
@@ -98,9 +98,7 @@ export function SplitHero() {
             href={panel.href}
             onMouseEnter={() => setHovered(panel.id as 'community' | 'store')}
             onMouseLeave={() => setHovered(null)}
-            className={cn(
-              'group relative flex w-full flex-col items-center justify-center border-b border-border/30 p-8 text-center transition-all duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16',
-            )}
+            className="group relative flex w-full flex-col items-center justify-center border-b border-border/30 p-8 text-center transition-all duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16"
           >
             {/* Arka Plan Görseli */}
             <div className="absolute inset-0 z-0 overflow-hidden">
@@ -117,7 +115,7 @@ export function SplitHero() {
                   isOtherHovered && 'opacity-10 blur-[2px]',
                 )}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/30" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/40" />
             </div>
 
             {/* Yan Kenar Editoryal Damgası */}
@@ -130,18 +128,18 @@ export function SplitHero() {
               {panel.meta}
             </div>
 
-            {/* İçerik Bloğu (Her İki Panel Kendi İçinde Mükemmel Dengeli) */}
+            {/* İçerik Bloğu */}
             <div className="relative z-10 flex w-full max-w-md flex-col items-center space-y-4">
-              {/* Üst Manifesto Rozeti */}
+              {/* Üst Manifesto Rozeti (Kırılmayan Temiz Font) */}
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-primary backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary/20">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
-                  <span>{panel.slogan}</span>
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-[11px] font-bold tracking-[0.18em] text-primary backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary/20">
+                  <Sparkles className="h-3 w-3 text-primary" />
+                  <span className="font-sans">{panel.slogan}</span>
                 </div>
               </div>
 
               {/* Başlık */}
-              <h2 className="font-sans text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl text-foreground transition-all duration-300 group-hover:text-white">
+              <h2 className="font-sans text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl text-foreground transition-all duration-300 group-hover:text-white">
                 {panel.title}
               </h2>
 
