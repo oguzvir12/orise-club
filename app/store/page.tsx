@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useSearchParams, useRouter } from 'next/navigation'
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -20,6 +21,7 @@ import {
   UserCheck,
   Flame,
   AlertCircle,
+  Share2,
 } from 'lucide-react'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
 
@@ -43,6 +45,7 @@ interface ProductColor {
 
 interface ProductData {
   id: string
+  slug: string
   title: string
   subtitle: string
   category: string
@@ -59,13 +62,14 @@ interface ProductData {
 const PRODUCTS: ProductData[] = [
   {
     id: 'pro-tank-01',
+    slug: 'pro-tank-01',
     title: 'ORISE Pro Koşu Atleti',
     subtitle: 'Ultralight Race-Day Mesh Edition',
     category: 'tank',
     categoryLabel: 'KOŞU ATLETİ',
     price: 950,
     stock: 50,
-    soldCount: 42, // Kalan 8 (Son Adet Uyarısı)
+    soldCount: 42,
     description:
       'Yüksek tempolu koşularda ve sıcak hava antrenmanlarında maksimum hava sirkülasyonu sağlayan 120 GSM mikro gözenekli teknik kumaş. Lazer kesim sırt havalandırma kanalları ve sürtünmeyi önleyen dikişsiz yaka mimarisi.',
     specs: [
@@ -104,6 +108,7 @@ const PRODUCTS: ProductData[] = [
   },
   {
     id: 'club-sweatshirt-01',
+    slug: 'club-sweatshirt-01',
     title: 'ORISE Bisiklet Yaka Sweatshirt',
     subtitle: '450 GSM Heavyweight Cotton',
     category: 'sweatshirt',
@@ -112,7 +117,7 @@ const PRODUCTS: ProductData[] = [
     stock: 30,
     soldCount: 12,
     description:
-      '450 GSM ağır gramaj şardonlu %100 pamuk dokuma. Antrenman öncesi ve sonrası vücut ısısını koruyan, dökümlü sokak kalıbı.',
+      '450 GSM ağır gramaj şardonlu %100 pamuk dokuma. Antrenman öncesi ve sonrası vücut ısısını koruyan dökümlü sokak kalıbı.',
     specs: [
       { label: 'Kumaş', value: '450 GSM Ağır Gramaj Pamuk' },
       { label: 'Astar', value: 'Şardonlu Sıcak Tutan İç Doku' },
@@ -139,13 +144,14 @@ const PRODUCTS: ProductData[] = [
   },
   {
     id: 'club-cap-01',
+    slug: 'club-cap-01',
     title: 'ORISE Atletik Kulüp Şapkası',
     subtitle: '6-Panel Unstructured Twill',
     category: 'hat',
     categoryLabel: 'ŞAPKA',
     price: 890,
     stock: 40,
-    soldCount: 40, // TÜKENDİ
+    soldCount: 40,
     description:
       '6 panelli pamuklu dimi kumaş, ter bandı takviyeli iç yapı ve ayarlanabilir mat metal tokalı arka kayış.',
     specs: [
@@ -172,6 +178,7 @@ const PRODUCTS: ProductData[] = [
   },
   {
     id: 'crew-socks-01',
+    slug: 'crew-socks-01',
     title: 'ORISE Performans Koşu Çorabı',
     subtitle: 'Coolmax Cushion Arch Support',
     category: 'socks',
@@ -205,6 +212,7 @@ const PRODUCTS: ProductData[] = [
   },
   {
     id: 'tote-bag-01',
+    slug: 'tote-bag-01',
     title: 'ORISE Ağır Kanvas Bez Çanta',
     subtitle: '16 oz Organic Heavy Canvas',
     category: 'bag',
@@ -238,6 +246,7 @@ const PRODUCTS: ProductData[] = [
   },
   {
     id: 'steel-bottle-01',
+    slug: 'steel-bottle-01',
     title: 'ORISE Çift Duvarlı Matara 750ml',
     subtitle: 'Vacuum Insulated Stainless Steel',
     category: 'equipment',
@@ -246,7 +255,7 @@ const PRODUCTS: ProductData[] = [
     stock: 45,
     soldCount: 10,
     description:
-      'Çift cidarlı vakumlu 18/8 gıda sınıfı paslanmaz çelik. 24 saat soğuk, 12 saat sıcak tutma performansı, sızdırmaz kulüp kapağı.',
+      'Çift cidarlı vakumlu 18/8 gıda sınıfı paslanmaz çelik. 24 saat soğuk, 12 saat sıcak tutma performansı.',
     specs: [
       { label: 'Gövde', value: '18/8 Paslanmaz Çelik' },
       { label: 'Kapasite', value: '750 ml' },
@@ -289,24 +298,55 @@ const FEATURES = [
   },
 ]
 
-export default function StorePage() {
+function StoreContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const productParam = searchParams.get('product')
+
   const [activeCategory, setActiveCategory] = useState<string>('all')
   const [selectedProduct, setSelectedProduct] = useState<ProductData | null>(null)
 
-  // Seçili Ürün Detay State'leri
   const [selectedColorIdx, setSelectedColorIdx] = useState<number>(0)
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [isAdded, setIsAdded] = useState<boolean>(false)
   const [isLiked, setIsLiked] = useState<boolean>(false)
+  const [copiedLink, setCopiedLink] = useState<boolean>(false)
 
-  // Canlı Gerçek Yorum State'i (Ürün bazlı)
+  // Kalıcı Yorum Yönetimi (Local Storage Altyapısı)
   const [productReviews, setProductReviews] = useState<Record<string, any[]>>({})
   const [newAuthor, setNewAuthor] = useState('')
   const [newRating, setNewRating] = useState(5)
   const [newComment, setNewComment] = useState('')
   const [commentSuccess, setCommentSuccess] = useState(false)
+
+  // 1. URL'den Ürünü Çek (Doğrudan Linkleme Desteği)
+  useEffect(() => {
+    if (productParam) {
+      const match = PRODUCTS.find((p) => p.slug === productParam || p.id === productParam)
+      if (match) {
+        setSelectedProduct(match)
+        setSelectedColorIdx(0)
+        setSelectedSize(match.sizes[0])
+        setActiveImageIdx(0)
+      }
+    } else {
+      setSelectedProduct(null)
+    }
+  }, [productParam])
+
+  // 2. Yorumları Tarayıcı Hafızasından Yükle
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('orise_store_reviews')
+      if (saved) {
+        setProductReviews(JSON.parse(saved))
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }, [])
 
   const openProductDetail = (product: ProductData) => {
     setSelectedProduct(product)
@@ -314,11 +354,13 @@ export default function StorePage() {
     setSelectedSize(product.sizes[0])
     setActiveImageIdx(0)
     setIsAdded(false)
+    router.push(`/store?product=${product.slug}`, { scroll: false })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const closeProductDetail = () => {
     setSelectedProduct(null)
+    router.push('/store', { scroll: false })
   }
 
   const handleColorSelect = (idx: number) => {
@@ -334,6 +376,14 @@ export default function StorePage() {
     setTimeout(() => setIsAdded(false), 2000)
   }
 
+  const handleShareLink = () => {
+    if (typeof window !== 'undefined') {
+      navigator.clipboard.writeText(window.location.href)
+      setCopiedLink(true)
+      setTimeout(() => setCopiedLink(false), 2500)
+    }
+  }
+
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedProduct || !newAuthor.trim() || !newComment.trim()) return
@@ -347,15 +397,18 @@ export default function StorePage() {
       comment: newComment.trim(),
     }
 
-    setProductReviews((prev) => ({
-      ...prev,
-      [selectedProduct.id]: [newEntry, ...(prev[selectedProduct.id] || [])],
-    }))
+    const updatedReviews = {
+      ...productReviews,
+      [selectedProduct.id]: [newEntry, ...(productReviews[selectedProduct.id] || [])],
+    }
+
+    setProductReviews(updatedReviews)
+    localStorage.setItem('orise_store_reviews', JSON.stringify(updatedReviews))
 
     setNewAuthor('')
     setNewComment('')
     setCommentSuccess(true)
-    setTimeout(() => setCommentSuccess(false), 3000)
+    setTimeout(() => setCommentSuccess(false), 3500)
   }
 
   const filteredProducts =
@@ -363,7 +416,6 @@ export default function StorePage() {
       ? PRODUCTS
       : PRODUCTS.filter((p) => p.category === activeCategory)
 
-  // Seçili Ürün Değişkenleri
   const currentProduct = selectedProduct
   const activeColor = currentProduct?.colors[selectedColorIdx] || currentProduct?.colors[0]
   const currentImages = activeColor?.images || []
@@ -382,8 +434,7 @@ export default function StorePage() {
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
-      
-      {/* Sol Üst Sabit Buton */}
+      {/* Sol Üst Sabit Navigasyon Butonu */}
       <div className="fixed top-4 left-6 z-[60] sm:left-8">
         {selectedProduct ? (
           <button
@@ -406,16 +457,15 @@ export default function StorePage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* DURUM 1: BİR ÜRÜN SEÇİLDİYSE -> DETAYLI İNCELEME EKRANI                    */}
+      {/* 1. ÜRÜN DETAY SAYFASI (ÖZEL LINK İLE PAYLAŞILABİLİR)                       */}
       {/* ========================================================================= */}
-      {selectedProduct && activeColor && (
+      {selectedProduct && activeColor ? (
         <div>
-          {/* ÜRÜN DETAY ALANI */}
           <section className="pt-28 pb-20 sm:pt-36 sm:pb-24 border-b border-white/10">
             <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
               <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
                 
-                {/* SOL: DİNAMİK GALERİ */}
+                {/* SOL: GALERİ */}
                 <div className="lg:col-span-7 space-y-4">
                   <div
                     onClick={() => setIsModalOpen(true)}
@@ -456,7 +506,7 @@ export default function StorePage() {
                     </div>
                   </div>
 
-                  {/* Çoklu Fotoğraflar */}
+                  {/* Küçük Fotoğraflar */}
                   {currentImages.length > 1 && (
                     <div className="grid grid-cols-3 gap-4">
                       {currentImages.map((img, idx) => (
@@ -484,13 +534,35 @@ export default function StorePage() {
                       <span className="text-xs font-mono tracking-widest text-primary uppercase">
                         {selectedProduct.categoryLabel}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => setIsLiked(!isLiked)}
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-zinc-900/60 text-zinc-400 hover:text-red-500 transition-colors"
-                      >
-                        <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {/* Link Kopyalama Butonu */}
+                        <button
+                          type="button"
+                          onClick={handleShareLink}
+                          title="Ürün Linkini Kopyala"
+                          className="flex h-9 items-center gap-1.5 rounded-full border border-white/10 bg-zinc-900/60 px-3 text-xs font-mono text-zinc-300 hover:border-primary hover:text-white transition-all"
+                        >
+                          {copiedLink ? (
+                            <>
+                              <Check className="h-3.5 w-3.5 text-emerald-400" />
+                              <span className="text-emerald-400">Kopyalandı</span>
+                            </>
+                          ) : (
+                            <>
+                              <Share2 className="h-3.5 w-3.5 text-primary" />
+                              <span>Paylaş</span>
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setIsLiked(!isLiked)}
+                          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-zinc-900/60 text-zinc-400 hover:text-red-500 transition-colors"
+                        >
+                          <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                        </button>
+                      </div>
                     </div>
 
                     <h1 className="mt-2 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl">
@@ -531,7 +603,7 @@ export default function StorePage() {
                       )}
                     </div>
 
-                    {/* Fiyat & Stok Durumu */}
+                    {/* Fiyat & Stok */}
                     <div className="mt-6 flex items-end justify-between">
                       <div>
                         <span className="text-xs font-mono text-zinc-500 uppercase">Kulüp Satış Fiyatı</span>
@@ -596,7 +668,7 @@ export default function StorePage() {
                       </div>
                     </div>
 
-                    {/* Teknik Özellikler */}
+                    {/* Teknik Laboratuvar Verileri */}
                     <div className="mt-8 rounded-2xl border border-white/5 bg-zinc-900/40 p-4 space-y-2">
                       <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider mb-2">
                         <Activity className="h-3.5 w-3.5" />
@@ -611,7 +683,7 @@ export default function StorePage() {
                     </div>
                   </div>
 
-                  {/* Sepete Ekle Butonu */}
+                  {/* Sepete Ekle */}
                   <div className="pt-4">
                     <button
                       type="button"
@@ -648,7 +720,7 @@ export default function StorePage() {
             </div>
           </section>
 
-          {/* GERÇEK YORUM VE DEĞERLENDİRME ALANI */}
+          {/* GERÇEK YORUM VE DEĞERLENDİRME BÖLÜMÜ */}
           <section id="reviews-section" className="border-b border-white/10 bg-zinc-950/60 py-20 sm:py-24">
             <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
               <div className="mb-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-white/10 pb-6">
@@ -729,13 +801,13 @@ export default function StorePage() {
 
                     {commentSuccess && (
                       <p className="text-center text-xs font-bold text-emerald-400 animate-fadeIn">
-                        ✓ Yorumun eklendi, teşekkürler!
+                        ✓ Yorumun eklendi, kaydedildi!
                       </p>
                     )}
                   </form>
                 </div>
 
-                {/* Yorumlar Listesi */}
+                {/* Yorum Listesi */}
                 <div className="lg:col-span-7 space-y-4">
                   {currentReviews.length > 0 ? (
                     currentReviews.map((rev) => (
@@ -814,12 +886,10 @@ export default function StorePage() {
             </div>
           )}
         </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* DURUM 2: ÜRÜN SEÇİLİ DEĞİLSE -> TÜM KOLEKSİYON VİTRİNİ                     */}
-      {/* ========================================================================= */}
-      {!selectedProduct && (
+      ) : (
+        /* ========================================================================= */
+        /* 2. MAĞAZA VİTRİNİ (TÜM PARÇALAR LİSTESİ)                                 */
+        /* ========================================================================= */
         <>
           {/* 1. SİNEMATİK HERO */}
           <section className="relative overflow-hidden border-b border-white/10 pt-32 pb-16 lg:pt-40 lg:pb-20">
@@ -1045,5 +1115,13 @@ export default function StorePage() {
         </>
       )}
     </div>
+  )
+}
+
+export default function StorePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <StoreContent />
+    </Suspense>
   )
 }
