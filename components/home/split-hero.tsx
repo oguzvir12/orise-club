@@ -16,7 +16,7 @@ const PANELS = [
     subtitle:
       'Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.',
     cta: 'Buluşmaları Keşfet',
-    meta: 'KOŞU · TENİS · PİLATES · YELKEN',
+    meta: 'KOŞU · VOLEYBOL · TENİS · PİLATES · YELKEN',
     icon: Users,
     bgImage: '/community-hero.jpeg',
     align: 'left',
@@ -143,7 +143,7 @@ export function SplitHero() {
                 {panel.title}
               </h2>
 
-              {/* Açıklama (Kristal Netliğinde Okunabilirlik) */}
+              {/* Açıklama */}
               <p className="max-w-sm text-sm font-normal leading-relaxed text-zinc-300/90 text-pretty transition-colors duration-300 group-hover:text-white drop-shadow">
                 {panel.subtitle}
               </p>
