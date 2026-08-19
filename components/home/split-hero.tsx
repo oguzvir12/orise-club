@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-import { ArrowUpRight, ShoppingBag, Users, Sparkles, Mail, Instagram } from 'lucide-react'
+import { ArrowUpRight, ShoppingBag, Users, Sparkles, Mail } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
 
@@ -41,10 +41,10 @@ export function SplitHero() {
 
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
-      {/* Merkez Dikey Ayrım Lazer Çizgisi */}
+      {/* Merkez Dikey Ayrım Çizgisi */}
       <div className="pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/10 to-transparent md:block" />
 
-      {/* Dinamik Sağa/Sola Kayan Merkez Çekirdek */}
+      {/* Dinamik Merkez Çekirdek */}
       <div
         className={cn(
           'pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-y-1/2 transition-all duration-500 ease-out md:block',
@@ -119,7 +119,7 @@ export function SplitHero() {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40" />
             </div>
 
-            {/* Yan Kenar Editoryal Damgası */}
+            {/* Yan Kenar Tipografisi */}
             <div
               className={cn(
                 'pointer-events-none absolute top-1/2 -translate-y-1/2 hidden 2xl:block text-[10px] font-mono tracking-[0.35em] text-zinc-600 uppercase [writing-mode:vertical-rl] transition-colors duration-500 group-hover:text-primary/80',
@@ -158,16 +158,16 @@ export function SplitHero() {
         )
       })}
 
-      {/* EN ALT SABİT EDİTORYAL FOOTER BAR */}
+      {/* EN ALT SABİT FOOTER */}
       <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 bg-gradient-to-t from-black via-black/80 to-transparent border-t border-white/5 backdrop-blur-md text-[11px] font-mono text-zinc-500">
-        {/* Sol: Telif & Konum */}
+        {/* Sol */}
         <div className="flex items-center gap-2 text-zinc-400">
           <span>© 2026 ORISE CLUB</span>
           <span className="text-zinc-600">·</span>
           <span className="text-zinc-500 uppercase tracking-widest text-[10px]">ISTANBUL / ATHLETICS</span>
         </div>
 
-        {/* Sağ: İletişim & Sosyal Linkler */}
+        {/* Sağ: İletişim & Sosyal Linkler (Saf SVG) */}
         <div className="flex items-center gap-5 text-zinc-400">
           <a
             href="mailto:oguzvir12@gmail.com"
@@ -198,7 +198,12 @@ export function SplitHero() {
             rel="noopener noreferrer"
             className="group flex items-center gap-1.5 hover:text-primary transition-colors"
           >
-            <Instagram className="h-3.5 w-3.5 text-zinc-500 group-hover:text-primary transition-colors" />
+            <svg
+              className="h-3.5 w-3.5 fill-current text-zinc-500 group-hover:text-primary transition-colors"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069Zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073Zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324Zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998Zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881Z" />
+            </svg>
             <span>@orisecommunity</span>
           </a>
         </div>
