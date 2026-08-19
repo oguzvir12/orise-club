@@ -1,16 +1,19 @@
-import type { Metadata } from 'next'
+'use client'
+
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, ArrowUpRight, ShieldCheck, Sparkles, Truck } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  ShieldCheck,
+  Sparkles,
+  Truck,
+  ShoppingBag,
+  Check,
+} from 'lucide-react'
 import { PRODUCTS } from '@/lib/products'
-import { ProductGrid } from '@/components/store/product-grid'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
-
-export const metadata: Metadata = {
-  title: 'Mağaza — ORISE CLUB',
-  description:
-    'Kulüp kültüründen ilham alan sınırlı üretim teknik spor ve sokak parçaları.',
-}
 
 const STORE_INSTAGRAM = 'https://www.instagram.com/orisestore/'
 
@@ -33,6 +36,30 @@ const FEATURES = [
 ]
 
 export default function StorePage() {
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [addedItems, setAddedItems] = useState<Record<string, boolean>>({})
+
+  // Kategorileri dinamik çıkar
+  const categories = [
+    { id: 'all', label: 'Tümü' },
+    ...Array.from(new Set(PRODUCTS.map((p) => p.category))).map((cat) => ({
+      id: cat,
+      label: cat,
+    })),
+  ]
+
+  const filteredProducts =
+    selectedCategory === 'all'
+      ? PRODUCTS
+      : PRODUCTS.filter((p) => p.category === selectedCategory)
+
+  const handleAddToCart = (id: string) => {
+    setAddedItems((prev) => ({ ...prev, [id]: true }))
+    setTimeout(() => {
+      setAddedItems((prev) => ({ ...prev, [id]: false }))
+    }, 1500)
+  }
+
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
       {/* Sol Üst Sabit Ana Sayfa Butonu */}
@@ -48,7 +75,6 @@ export default function StorePage() {
 
       {/* 1. SİNEMATİK ASİMETRİK HERO */}
       <section className="relative overflow-hidden border-b border-white/10 pt-32 pb-20 lg:pt-40 lg:pb-28">
-        {/* Arka Plan Sinematik Görsel */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image
             src="/store-hero.jpeg"
@@ -61,11 +87,9 @@ export default function StorePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60" />
         </div>
 
-        {/* Hero İçerik */}
         <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-end">
             <div className="lg:col-span-8 space-y-6">
-              {/* Rozet */}
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
@@ -74,7 +98,6 @@ export default function StorePage() {
                 <span>HAREKET KULÜBÜ & ATÖLYE</span>
               </div>
 
-              {/* Başlık */}
               <h1 className="font-sans text-4xl font-black tracking-tighter text-white sm:text-6xl lg:text-7xl leading-[1.05]">
                 Kulübe Özel{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">
@@ -83,14 +106,12 @@ export default function StorePage() {
                 Koleksiyonu.
               </h1>
 
-              {/* Açıklama */}
               <p className="max-w-2xl text-base font-normal leading-relaxed text-zinc-300 sm:text-lg">
                 Sınırlı üretim teknik tekstil ve aksesuar parçaları. Yüksek gramajlı kumaşlar,
                 kulüp ruhuyla tasarlanmış detaylar — hepsi club-only.
               </p>
             </div>
 
-            {/* Sağ Köşe Editoryal Damgası */}
             <div className="hidden lg:col-span-4 lg:flex flex-col items-end justify-end space-y-2 text-right">
               <div className="text-xs font-mono tracking-[0.3em] text-primary/80 uppercase">
                 [ EDITION 01 / DROP 2026 ]
@@ -106,7 +127,7 @@ export default function StorePage() {
       {/* 2. ÜRÜN VİTRİNİ & KATEGORİ FİLTRESİ */}
       <section className="border-b border-white/10 bg-zinc-950/40 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-          <div className="mb-12 flex flex-col items-start justify-between gap-4 border-b border-white/10 pb-8 md:flex-row md:items-end">
+          <div className="mb-10 flex flex-col items-start justify-between gap-6 border-b border-white/10 pb-8 md:flex-row md:items-end">
             <div>
               <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -116,13 +137,103 @@ export default function StorePage() {
                 Tüm Parçalar
               </h2>
             </div>
-            <p className="text-xs font-mono uppercase tracking-widest text-zinc-500">
-              SEÇİLİ PARÇALAR · SINIRLI STOK
-            </p>
+
+            {/* Kategori Butonları */}
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
+                    selectedCategory === cat.id
+                      ? 'bg-primary text-black shadow-[0_0_15px_rgba(249,115,22,0.4)]'
+                      : 'border border-white/10 bg-zinc-900/60 text-zinc-400 hover:border-white/25 hover:text-white'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Dinamik Ürün Izgarası */}
-          <ProductGrid products={PRODUCTS} />
+          {/* Ürün Listesi */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredProducts.map((product) => {
+              const isAdded = addedItems[product.id]
+              return (
+                <div
+                  key={product.id}
+                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all duration-500 hover:border-primary/50 hover:bg-zinc-900/70"
+                >
+                  <div>
+                    {/* Görsel Alanı */}
+                    <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950/80">
+                      {product.image ? (
+                        <Image
+                          src={product.image}
+                          alt={product.title}
+                          fill
+                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-zinc-700">
+                          <ShoppingBag className="h-12 w-12" />
+                        </div>
+                      )}
+                      <div className="absolute top-3 left-3 rounded-full border border-primary/40 bg-black/70 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary backdrop-blur-md">
+                        LIMITED DROP
+                      </div>
+                    </div>
+
+                    {/* Ürün Başlığı & Açıklaması */}
+                    <div className="mt-5 space-y-1">
+                      <div className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
+                        {product.category}
+                      </div>
+                      <h3 className="font-sans text-lg font-bold text-white tracking-tight group-hover:text-primary transition-colors">
+                        {product.title}
+                      </h3>
+                      <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+                        {product.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Fiyat & Sepete Ekle Butonu */}
+                  <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
+                    <div>
+                      <div className="text-[10px] font-mono uppercase text-zinc-500">Fiyat</div>
+                      <div className="text-lg font-black text-white">
+                        ₺{product.price.toLocaleString('tr-TR')}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleAddToCart(product.id)}
+                      className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+                        isAdded
+                          ? 'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                          : 'bg-primary text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:scale-105'
+                      }`}
+                    >
+                      {isAdded ? (
+                        <>
+                          <Check className="h-3.5 w-3.5" />
+                          <span>Eklendi</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag className="h-3.5 w-3.5" />
+                          <span>Sepete Ekle</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </section>
 
