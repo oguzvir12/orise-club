@@ -3,89 +3,44 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-import { ArrowUpRight, ShoppingBag, Users, Sparkles, Globe } from 'lucide-react'
+import { ArrowUpRight, ShoppingBag, Users, Sparkles } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
 
-const CONTENT = {
-  tr: {
-    community: {
-      slogan: 'KULÜBE KATIL · RİTMİNİ BUL',
-      title: 'TOPLULUK',
-      subtitle:
-        'Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.',
-      cta: 'Buluşmaları Keşfet',
-      meta: 'KOŞU · VOLEYBOL · TENİS · PİLATES · YELKEN',
-    },
-    store: {
-      slogan: 'HAREKET KULÜBÜ & STÜDYO',
-      title: 'MAĞAZA',
-      subtitle:
-        'Kulüp kültüründen ilham alan özel tasarım teknik spor ve sokak parçaları.',
-      cta: 'Koleksiyonu İncele',
-      meta: 'TEKNİK GİYİM · ATLETİK STİL',
-    },
+const PANELS = [
+  {
+    id: 'community',
+    href: '/community',
+    slogan: 'KULÜBE KATIL · RİTMİNİ BUL',
+    title: 'TOPLULUK',
+    subtitle:
+      'Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.',
+    cta: 'Buluşmaları Keşfet',
+    meta: 'KOŞU · VOLEYBOL · TENİS · PİLATES · YELKEN',
+    icon: Users,
+    bgImage: '/community-hero.jpeg',
+    align: 'left',
   },
-  en: {
-    community: {
-      slogan: 'JOIN THE CLUB · FIND YOUR RHYTHM',
-      title: 'COMMUNITY',
-      subtitle:
-        'Break the routine, move with the city. A next-generation athletic collective.',
-      cta: 'Explore Sessions',
-      meta: 'RUN · VOLLEYBALL · TENNIS · PILATES · SAILING',
-    },
-    store: {
-      slogan: 'MOVEMENT CLUB & ATELIER',
-      title: 'STORE',
-      subtitle:
-        'Technical athletic and streetwear inspired by modern club culture.',
-      cta: 'Explore Drop',
-      meta: 'TECHNICAL APPAREL · ATHLETIC WEAR',
-    },
+  {
+    id: 'store',
+    href: '/store',
+    slogan: 'HAREKET KULÜBÜ & STÜDYO',
+    title: 'MAĞAZA',
+    subtitle:
+      'Kulüp kültüründen ilham alan özel tasarım teknik spor ve sokak parçaları.',
+    cta: 'Koleksiyonu İncele',
+    meta: 'TEKNİK GİYİM · ATLETİK STİL',
+    icon: ShoppingBag,
+    bgImage: '/store-hero.jpeg',
+    align: 'right',
   },
-}
+]
 
 export function SplitHero() {
-  const [lang, setLang] = useState<'tr' | 'en'>('tr')
   const [hovered, setHovered] = useState<'community' | 'store' | null>(null)
-
-  const t = CONTENT[lang]
 
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
-      {/* Sağ Üst / Header Altı Minimalist Dil Değiştirici */}
-      <div className="absolute top-5 right-16 z-40 hidden md:flex items-center gap-1 rounded-full border border-white/10 bg-black/60 px-2 py-1 backdrop-blur-md">
-        <Globe className="h-3 w-3 text-zinc-400 ml-1" />
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault()
-            setLang('tr')
-          }}
-          className={cn(
-            'px-2 py-0.5 text-[11px] font-semibold transition-colors rounded-full',
-            lang === 'tr' ? 'bg-primary text-black' : 'text-zinc-400 hover:text-white',
-          )}
-        >
-          TR
-        </button>
-        <span className="text-zinc-600 text-[10px]">/</span>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault()
-            setLang('en')
-          }}
-          className={cn(
-            'px-2 py-0.5 text-[11px] font-semibold transition-colors rounded-full',
-            lang === 'en' ? 'bg-primary text-black' : 'text-zinc-400 hover:text-white',
-          )}
-        >
-          EN
-        </button>
-      </div>
-
       {/* Merkez Dikey Ayrım Lazer Çizgisi */}
       <div className="pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/10 to-transparent md:block" />
 
@@ -100,18 +55,23 @@ export function SplitHero() {
               : '-translate-x-1/2',
         )}
       >
+        {/* Arkadaki Glow */}
         <div
           className={cn(
             'absolute inset-0 -m-6 rounded-full bg-primary/25 blur-2xl transition-all duration-500',
             hovered ? 'scale-125 opacity-100 bg-primary/45' : 'scale-100 opacity-40',
           )}
         />
+
+        {/* Dış Pusula Çemberi */}
         <div
           className={cn(
             'absolute inset-0 -m-2 rounded-full border border-primary/25 transition-all duration-500',
             hovered ? 'scale-110 border-primary/50 opacity-100' : 'scale-100 opacity-30',
           )}
         />
+
+        {/* Ana Cam Disk */}
         <div
           className={cn(
             'relative flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-black/85 backdrop-blur-2xl transition-all duration-500 lg:h-24 lg:w-24 shadow-[0_0_50px_rgba(0,0,0,0.9)]',
@@ -127,113 +87,79 @@ export function SplitHero() {
         </div>
       </div>
 
-      {/* SOL PANEL: COMMUNITY */}
-      <Link
-        href="/community"
-        onMouseEnter={() => setHovered('community')}
-        onMouseLeave={() => setHovered(null)}
-        className="group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16"
-      >
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <Image
-            src="/community-hero.jpeg"
-            alt={t.community.title}
-            fill
-            priority
-            className={cn(
-              'object-cover transition-all duration-1000 ease-out',
-              hovered === 'community'
-                ? 'scale-105 opacity-40 grayscale-0 contrast-115'
-                : 'scale-100 opacity-20 grayscale contrast-125',
-              hovered === 'store' && 'opacity-10 blur-[2px]',
-            )}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40" />
-        </div>
+      {PANELS.map((panel) => {
+        const Icon = panel.icon
+        const isHovered = hovered === panel.id
+        const isOtherHovered = hovered !== null && hovered !== panel.id
 
-        <div className="pointer-events-none absolute left-8 top-1/2 -translate-y-1/2 hidden 2xl:block text-[10px] font-mono tracking-[0.35em] text-zinc-600 uppercase [writing-mode:vertical-rl] rotate-180 transition-colors duration-500 group-hover:text-primary/80">
-          {t.community.meta}
-        </div>
-
-        <div className="relative z-10 flex w-full max-w-md flex-col items-center space-y-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] text-primary backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary/20">
-              <Sparkles className="h-3 w-3 text-primary" />
-              <span>{t.community.slogan}</span>
+        return (
+          <Link
+            key={panel.href}
+            href={panel.href}
+            onMouseEnter={() => setHovered(panel.id as 'community' | 'store')}
+            onMouseLeave={() => setHovered(null)}
+            className="group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16"
+          >
+            {/* Arka Plan Görseli */}
+            <div className="absolute inset-0 z-0 overflow-hidden">
+              <Image
+                src={panel.bgImage}
+                alt={panel.title}
+                fill
+                priority
+                className={cn(
+                  'object-cover transition-all duration-1000 ease-out',
+                  isHovered
+                    ? 'scale-105 opacity-40 grayscale-0 contrast-115'
+                    : 'scale-100 opacity-20 grayscale contrast-125',
+                  isOtherHovered && 'opacity-10 blur-[2px]',
+                )}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40" />
             </div>
-          </div>
 
-          <h2 className="whitespace-nowrap font-sans text-4xl font-black tracking-tighter text-white sm:text-5xl lg:text-6xl transition-all duration-300 drop-shadow-md">
-            {t.community.title}
-          </h2>
-
-          <p className="max-w-sm text-sm font-normal leading-relaxed text-zinc-300/90 text-pretty transition-colors duration-300 group-hover:text-white drop-shadow">
-            {t.community.subtitle}
-          </p>
-
-          <div className="pt-2">
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-zinc-900/80 px-7 py-3 text-xs font-bold tracking-wider uppercase text-zinc-100 backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-black group-hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] group-hover:scale-105">
-              <Users className="h-4 w-4 text-primary group-hover:text-black transition-colors" />
-              <span>{t.community.cta}</span>
-              <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            {/* Yan Kenar Editoryal Damgası */}
+            <div
+              className={cn(
+                'pointer-events-none absolute top-1/2 -translate-y-1/2 hidden 2xl:block text-[10px] font-mono tracking-[0.35em] text-zinc-600 uppercase [writing-mode:vertical-rl] transition-colors duration-500 group-hover:text-primary/80',
+                panel.align === 'left' ? 'left-8 rotate-180' : 'right-8',
+              )}
+            >
+              {panel.meta}
             </div>
-          </div>
-        </div>
-      </Link>
 
-      {/* SAĞ PANEL: STORE */}
-      <Link
-        href="/store"
-        onMouseEnter={() => setHovered('store')}
-        onMouseLeave={() => setHovered(null)}
-        className="group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16"
-      >
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <Image
-            src="/store-hero.jpeg"
-            alt={t.store.title}
-            fill
-            priority
-            className={cn(
-              'object-cover transition-all duration-1000 ease-out',
-              hovered === 'store'
-                ? 'scale-105 opacity-40 grayscale-0 contrast-115'
-                : 'scale-100 opacity-20 grayscale contrast-125',
-              hovered === 'community' && 'opacity-10 blur-[2px]',
-            )}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40" />
-        </div>
+            {/* İçerik Bloğu */}
+            <div className="relative z-10 flex w-full max-w-md flex-col items-center space-y-4">
+              {/* Üst Manifesto Rozeti */}
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] text-primary backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary/20">
+                  <Sparkles className="h-3 w-3 text-primary" />
+                  <span>{panel.slogan}</span>
+                </div>
+              </div>
 
-        <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 hidden 2xl:block text-[10px] font-mono tracking-[0.35em] text-zinc-600 uppercase [writing-mode:vertical-rl] transition-colors duration-500 group-hover:text-primary/80">
-          {t.store.meta}
-        </div>
+              {/* Başlık */}
+              <h2 className="whitespace-nowrap font-sans text-4xl font-black tracking-tighter text-white sm:text-5xl lg:text-6xl transition-all duration-300 drop-shadow-md">
+                {panel.title}
+              </h2>
 
-        <div className="relative z-10 flex w-full max-w-md flex-col items-center space-y-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] text-primary backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary/20">
-              <Sparkles className="h-3 w-3 text-primary" />
-              <span>{t.store.slogan}</span>
+              {/* Açıklama */}
+              <p className="max-w-sm text-sm font-normal leading-relaxed text-zinc-300/90 text-pretty transition-colors duration-300 group-hover:text-white drop-shadow">
+                {panel.subtitle}
+              </p>
+
+              {/* Aksiyon Butonu */}
+              <div className="pt-2">
+                <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-zinc-900/80 px-7 py-3 text-xs font-bold tracking-wider uppercase text-zinc-100 backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-black group-hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] group-hover:scale-105">
+                  <Icon className="h-4 w-4 text-primary group-hover:text-black transition-colors" />
+                  <span>{panel.cta}</span>
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </div>
+              </div>
             </div>
-          </div>
-
-          <h2 className="whitespace-nowrap font-sans text-4xl font-black tracking-tighter text-white sm:text-5xl lg:text-6xl transition-all duration-300 drop-shadow-md">
-            {t.store.title}
-          </h2>
-
-          <p className="max-w-sm text-sm font-normal leading-relaxed text-zinc-300/90 text-pretty transition-colors duration-300 group-hover:text-white drop-shadow">
-            {t.store.subtitle}
-          </p>
-
-          <div className="pt-2">
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-zinc-900/80 px-7 py-3 text-xs font-bold tracking-wider uppercase text-zinc-100 backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-black group-hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] group-hover:scale-105">
-              <ShoppingBag className="h-4 w-4 text-primary group-hover:text-black transition-colors" />
-              <span>{t.store.cta}</span>
-              <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </div>
-          </div>
-        </div>
-      </Link>
+          </Link>
+        )
+      })}
     </section>
   )
 }
