@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-import { ArrowUpRight, ShoppingBag, Users, Sparkles, Mail, Linkedin, Instagram } from 'lucide-react'
+import { ArrowUpRight, ShoppingBag, Users, Sparkles, Mail, Instagram } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
 
@@ -158,7 +158,7 @@ export function SplitHero() {
         )
       })}
 
-      {/* EN ALT SABİT EDİTORYAL FOOTER BAR (Mail, LinkedIn, Instagram & Telif) */}
+      {/* EN ALT SABİT EDİTORYAL FOOTER BAR */}
       <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 bg-gradient-to-t from-black via-black/80 to-transparent border-t border-white/5 backdrop-blur-md text-[11px] font-mono text-zinc-500">
         {/* Sol: Telif & Konum */}
         <div className="flex items-center gap-2 text-zinc-400">
@@ -183,7 +183,12 @@ export function SplitHero() {
             rel="noopener noreferrer"
             className="group flex items-center gap-1.5 hover:text-primary transition-colors"
           >
-            <Linkedin className="h-3.5 w-3.5 text-zinc-500 group-hover:text-primary transition-colors" />
+            <svg
+              className="h-3.5 w-3.5 fill-current text-zinc-500 group-hover:text-primary transition-colors"
+              viewBox="0 0 24 24"
+            >
+              <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0 0-3.28 1.64 1.64 0 0 0 0 3.28M7.85 18.5V10.13H5.06V18.5h2.79Z" />
+            </svg>
             <span>LinkedIn</span>
           </a>
 
