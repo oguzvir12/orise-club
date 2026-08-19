@@ -1,6 +1,17 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { Flame, Compass, ArrowUpRight, MessageSquareHeart, Zap, Handshake } from 'lucide-react'
+import {
+  Flame,
+  Compass,
+  ArrowUpRight,
+  MessageSquareHeart,
+  Zap,
+  Handshake,
+  Users,
+  Sparkles,
+  Layers,
+  HeartHandshake,
+} from 'lucide-react'
 import { EVENTS } from '@/lib/events'
 import { EventList } from '@/components/community/event-list'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
@@ -17,125 +28,179 @@ const FEEDBACK_FORM_URL =
 const COLLAB_FORM_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSckFjiI_x64YZ2n5R47cnKoZ48nxE9QZZOmWmBDDzN7Wx--yA/viewform'
 
+const STATS = [
+  { value: '+500', label: 'Aktif Kulüp Üyesi', icon: Users },
+  { value: '5+', label: 'Spor & Hareket Branşı', icon: Layers },
+  { value: '%100', label: 'Açık & Ücretsiz Buluşmalar', icon: HeartHandshake },
+]
+
+const PHILOSOPHY = [
+  {
+    icon: Flame,
+    title: 'Performans Baskısı Yok, Birlikte Hareket Var',
+    desc: 'Kimsenin geride kalmadığı, yarışmak yerine hareket etmenin ve birlikte sosyalleşmenin keyfine odaklanan samimi bir kulüp ekosistemi.',
+  },
+  {
+    icon: Compass,
+    title: 'Dört Duvarın Dışında, Şehrin Kalbinde',
+    desc: 'Klasik spor salonu rutinlerinden uzaklaşarak sahil şeridini, parkları ve açık hava tesislerini antrenman sahasına dönüştürüyoruz.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Antrenman Sonrası Kültür & Kahve',
+    desc: 'Spor bittiğinde dağılmıyoruz; lokal partnerlerimizde kahve, sağlıklı ikramlar ve topluluk sohbetleriyle şehri paylaşıyoruz.',
+  },
+]
+
 export default function CommunityPage() {
   return (
-    <div className="pt-16">
-      {/* 1. Sinematik Hero Alanı */}
-      <section className="relative overflow-hidden border-b border-border">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
+      {/* 1. SİNEMATİK HERO ALANI */}
+      <section className="relative overflow-hidden border-b border-white/10 pt-28 pb-20 lg:pt-36 lg:pb-28">
+        {/* Arka Plan Görseli & Gradyan Perdesi */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image
-            src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1600&auto=format&fit=crop"
-            alt="ORISE Topluluk Koşusu"
+            src="/community-hero.jpeg"
+            alt="ORISE Topluluk Hareketi"
             fill
             priority
-            className="object-cover grayscale contrast-125 opacity-15"
+            className="object-cover opacity-25 grayscale contrast-125 scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/90 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/85 to-black" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] w-[600px] rounded-full bg-primary/15 blur-[160px] pointer-events-none" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12 lg:py-28">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            ORISE Topluluk Hareketi
+        {/* Hero İçerik */}
+        <div className="relative z-10 mx-auto max-w-5xl px-6 text-center sm:px-8">
+          {/* Rozet */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+            </span>
+            <span>ORISE TOPLULUK HAREKETİ</span>
           </div>
-          <h1 className="font-display max-w-4xl text-4xl font-extrabold leading-tight tracking-tight text-balance sm:text-6xl lg:text-7xl">
+
+          {/* Ana Başlık */}
+          <h1 className="mt-6 font-sans text-4xl font-black tracking-tighter text-white sm:text-6xl lg:text-7xl leading-[1.05] drop-shadow-md">
             Şehrin Enerjisini{' '}
-            <span className="text-primary">Birlikte</span>{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">
+              Birlikte
+            </span>{' '}
             Yükseltiyoruz.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground text-pretty sm:text-xl">
-            Tek başınalıktan çık, şehre karış. Koşu, voleybol, yoga ve açık hava
+
+          {/* Açıklama Metni */}
+          <p className="mx-auto mt-6 max-w-2xl text-base font-normal leading-relaxed text-zinc-300 sm:text-lg">
+            Tek başınalıktan çık, şehre karış. Koşu, voleybol, tenis, yoga ve açık hava
             antrenmanlarını bir yaşam tarzına dönüştüren yeni nesil spor kulübü.
           </p>
+
+          {/* 3'lü Canlı Metrik Şeridi */}
+          <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6 pt-8 border-t border-white/10">
+            {STATS.map((stat, idx) => {
+              const Icon = stat.icon
+              return (
+                <div
+                  key={idx}
+                  className="flex flex-col items-center justify-center rounded-2xl border border-white/5 bg-zinc-950/60 p-5 backdrop-blur-md"
+                >
+                  <div className="flex items-center gap-2 text-primary">
+                    <Icon className="h-4 w-4" />
+                    <span className="text-2xl font-black tracking-tight text-white">{stat.value}</span>
+                  </div>
+                  <span className="mt-1 text-xs font-medium uppercase tracking-wider text-zinc-400">
+                    {stat.label}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </section>
 
-      {/* 2. Canlı Etkinlik Takvimi & Branş Filtresi */}
-      <section className="border-b border-border bg-card/30">
-        <div className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:px-12">
-          <div className="mb-8 flex flex-col gap-3">
-            <span className="inline-flex items-center gap-2 self-start rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-              </span>
-              Haftalık Takvim
-            </span>
-            <h2 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+      {/* 2. CANLI ETKİNLİK TAKVİMİ & BRANŞ FİLTRESİ */}
+      <section className="border-b border-white/10 bg-zinc-950/40 py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6 sm:px-8">
+          <div className="mb-10 flex flex-col items-center text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <span>HAFTALIK TAKVİM</span>
+            </div>
+            <h2 className="mt-4 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
               Bu Haftanın Buluşmaları
             </h2>
-            <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
               Tüm kulüp etkinliklerine katılım ücretsizdir. Branşını seç ve yerini ayırt.
             </p>
           </div>
 
+          {/* Dinamik Liste */}
           <EventList events={EVENTS} />
         </div>
       </section>
 
-      {/* 3. Kulüp Felsefesi */}
-      <section className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
-        <div className="mb-10 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
-            <Zap className="h-3.5 w-3.5" />
-            Kulüp Felsefesi
-          </div>
-          <h2 className="mt-2 font-display text-2xl font-bold tracking-tight sm:text-3xl">
-            Neden Birlikte Koşuyor ve Oynuyoruz?
-          </h2>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="group relative overflow-hidden rounded-3xl border border-border/80 bg-card/50 p-8 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:bg-card lg:p-10">
-            <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-secondary text-primary transition-transform duration-300 group-hover:scale-110">
-              <Flame className="h-5 w-5" />
+      {/* 3. KULÜP FELSEFESİ (3 SÜTUNLU MODERN MANİFESTO) */}
+      <section className="py-24 sm:py-28 border-b border-white/10">
+        <div className="mx-auto max-w-6xl px-6 sm:px-8">
+          <div className="mb-14 text-center">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              <Zap className="h-3.5 w-3.5" />
+              <span>KULÜP MANİFESTOSU</span>
             </div>
-            <h3 className="font-display text-xl font-bold text-foreground">
-              Performans Baskısı Yok, Birlikte Hareket Var
-            </h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Kimsenin geride kalmadığı, yarışmak yerine hareket etmenin ve birlikte sosyalleşmenin keyfine odaklanan samimi bir kulüp ekosistemi.
-            </p>
+            <h2 className="mt-3 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl">
+              Neden Birlikte Koşuyor ve Oynuyoruz?
+            </h2>
           </div>
 
-          <div className="group relative overflow-hidden rounded-3xl border border-border/80 bg-card/50 p-8 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:bg-card lg:p-10">
-            <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-secondary text-primary transition-transform duration-300 group-hover:scale-110">
-              <Compass className="h-5 w-5" />
-            </div>
-            <h3 className="font-display text-xl font-bold text-foreground">
-              Dört Duvarın Dışında, Şehrin Kalbinde
-            </h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Klasik spor salonu rutinlerinden uzaklaşarak sahil şeridini, parkları ve açık hava tesislerini antrenman sahasına dönüştürüyoruz.
-            </p>
+          <div className="grid gap-6 md:grid-cols-3">
+            {PHILOSOPHY.map((item, idx) => {
+              const Icon = item.icon
+              return (
+                <div
+                  key={idx}
+                  className="group relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-8 backdrop-blur-md transition-all duration-300 hover:border-primary/40 hover:bg-zinc-900/80"
+                >
+                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-black text-primary transition-transform duration-300 group-hover:scale-110 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-sans text-lg font-bold text-white tracking-tight">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                    {item.desc}
+                  </p>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
 
-      {/* 4. Katılım, İş Birliği & İletişim (3 Sütunlu Grid) */}
-      <section className="border-t border-border bg-card/20">
-        <div className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12">
+      {/* 4. KATILIM, İŞ BİRLİĞİ & GERİ BİLDİRİM (LÜKS 3 SÜTUNLU KARTLAR) */}
+      <section className="bg-zinc-950 py-24 sm:py-28">
+        <div className="mx-auto max-w-6xl px-6 sm:px-8">
           <div className="grid gap-6 md:grid-cols-3">
             {/* 1: Instagram */}
             <a
               href={INSTAGRAM}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm transition-all duration-500 hover:border-primary/50"
+              className="group relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-8 text-center backdrop-blur-md transition-all duration-500 hover:border-primary/50 hover:bg-zinc-900/70"
             >
-              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[0_0_25px_rgba(249,115,22,0.3)] transition-transform duration-500 group-hover:scale-110">
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-black shadow-[0_0_25px_rgba(249,115,22,0.35)] transition-transform duration-500 group-hover:scale-110">
                 <InstagramIcon className="h-7 w-7" />
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-display text-xl font-bold">Topluluğa Katıl</h3>
+                <h3 className="font-sans text-xl font-bold text-white tracking-tight">Topluluğa Katıl</h3>
                 <p className="text-sm font-semibold text-primary">@orisecommunity</p>
-                <p className="text-xs text-muted-foreground">
-                  Haftalık etkinlik duyuruları ve buluşma kareleri için bizi takip et.
+                <p className="text-xs leading-relaxed text-zinc-400">
+                  Haftalık etkinlik duyuruları ve buluşma hikayeleri için bizi takip et.
                 </p>
               </div>
 
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-primary-foreground">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-transform duration-300 group-hover:scale-105">
                 <span>Takip Et</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </div>
@@ -146,21 +211,21 @@ export default function CommunityPage() {
               href={COLLAB_FORM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl border border-primary/40 bg-card/80 p-8 text-center backdrop-blur-sm shadow-[0_0_30px_rgba(249,115,22,0.1)] transition-all duration-500 hover:border-primary hover:shadow-[0_0_40px_rgba(249,115,22,0.2)]"
+              className="group relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl border border-primary/50 bg-zinc-900/80 p-8 text-center backdrop-blur-md shadow-[0_0_35px_rgba(249,115,22,0.15)] transition-all duration-500 hover:border-primary hover:shadow-[0_0_45px_rgba(249,115,22,0.3)]"
             >
-              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/50 bg-primary/10 text-primary shadow-[0_0_25px_rgba(249,115,22,0.2)] transition-transform duration-500 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/40 bg-primary/10 text-primary shadow-[0_0_25px_rgba(249,115,22,0.2)] transition-transform duration-500 group-hover:scale-110 group-hover:bg-primary group-hover:text-black">
                 <Handshake className="h-7 w-7" />
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-display text-xl font-bold">Ekip & İş Birliği</h3>
+                <h3 className="font-sans text-xl font-bold text-white tracking-tight">Ekip & İş Birliği</h3>
                 <p className="text-sm font-semibold text-primary">Birlikte Büyütelim</p>
-                <p className="text-xs text-muted-foreground">
-                  Eğitmenlik, branş sorumluluğu, saha gönüllülüğü veya sponsorluk için başvur.
+                <p className="text-xs leading-relaxed text-zinc-400">
+                  Eğitmenlik, branş sorumluluğu, saha gönüllülüğü veya sponsorluk başvurusu.
                 </p>
               </div>
 
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-primary-foreground shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] transition-transform duration-300 group-hover:scale-105">
                 <span>Bize Katıl</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </div>
@@ -171,21 +236,21 @@ export default function CommunityPage() {
               href={FEEDBACK_FORM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl border border-border bg-card/60 p-8 text-center backdrop-blur-sm transition-all duration-500 hover:border-primary/50"
+              className="group relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-8 text-center backdrop-blur-md transition-all duration-500 hover:border-primary/50 hover:bg-zinc-900/70"
             >
-              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-secondary text-primary transition-transform duration-500 group-hover:scale-110 group-hover:border-primary">
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black text-primary transition-transform duration-500 group-hover:scale-110 group-hover:border-primary">
                 <MessageSquareHeart className="h-7 w-7" />
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-display text-xl font-bold">Geri Bildirim</h3>
+                <h3 className="font-sans text-xl font-bold text-white tracking-tight">Geri Bildirim</h3>
                 <p className="text-sm font-semibold text-primary">Fikirlerini Paylaş</p>
-                <p className="text-xs text-muted-foreground">
-                  Topluluk önerileri veya deneyiminle ilgili düşüncelerini bize yaz.
+                <p className="text-xs leading-relaxed text-zinc-400">
+                  Topluluk önerileri veya antrenman deneyiminle ilgili düşüncelerini bize ilet.
                 </p>
               </div>
 
-              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-foreground transition-colors group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-zinc-800/80 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-zinc-100 backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-black">
                 <span>Formu Aç</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </div>
