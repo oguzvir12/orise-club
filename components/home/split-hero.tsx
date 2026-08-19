@@ -158,8 +158,8 @@ export function SplitHero() {
         )
       })}
 
-      {/* BELİRGİN & LÜKS EDİTORYAL FOOTER BAR */}
-      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-4 px-6 sm:px-10 py-4 bg-black/75 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+      {/* BELİRGİN & ÇAĞRI ODAKLI FOOTER BAR */}
+      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-4 px-6 sm:px-10 py-3.5 bg-black/80 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
         {/* Sol: Telif & Marka Damgası */}
         <div className="flex items-center gap-2.5">
           <span className="font-bold text-white tracking-wider">ORISE CLUB</span>
@@ -167,14 +167,14 @@ export function SplitHero() {
           <span className="text-[11px] tracking-widest text-primary uppercase">ATHLETICS & STUDIO</span>
         </div>
 
-        {/* Sağ: Belirgin Hap Butonlar & Sosyal Linkler */}
+        {/* Sağ: Topluluğa Katıl & Mağazayı Keşfet Butonları */}
         <div className="flex flex-wrap items-center justify-center gap-3">
-          {/* Topluluk Instagram */}
+          {/* Topluluğa Katıl */}
           <a
             href="https://www.instagram.com/orisecommunity/"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-3.5 py-1.5 text-xs text-zinc-200 backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-white hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+            className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-4 py-1.5 text-xs text-zinc-200 backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-white hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]"
           >
             <svg
               className="h-3.5 w-3.5 fill-current text-primary transition-transform group-hover:scale-110"
@@ -182,18 +182,20 @@ export function SplitHero() {
             >
               <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069Zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073Zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324Zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998Zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881Z" />
             </svg>
-            <span className="font-semibold text-white group-hover:text-primary">@orisecommunity</span>
+            <span className="font-semibold text-white group-hover:text-primary">Topluluğa Katıl</span>
+            <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300 font-normal">(@orisecommunity)</span>
           </a>
 
-          {/* Mağaza Instagram */}
+          {/* Mağazayı Keşfet */}
           <a
             href="https://www.instagram.com/orisestore/"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-3.5 py-1.5 text-xs text-zinc-200 backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-white hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+            className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-4 py-1.5 text-xs text-zinc-200 backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-white hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]"
           >
             <ShoppingBag className="h-3.5 w-3.5 text-primary transition-transform group-hover:scale-110" />
-            <span className="font-semibold text-white group-hover:text-primary">@orisestore</span>
+            <span className="font-semibold text-white group-hover:text-primary">Mağazayı Keşfet</span>
+            <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300 font-normal">(@orisestore)</span>
           </a>
 
           {/* İletişim & LinkedIn */}
