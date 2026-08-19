@@ -21,29 +21,38 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        'fixed inset-x-0 top-0 z-50 transition-all duration-300',
+        'fixed inset-x-0 top-0 z-50 transition-all duration-500',
         scrolled
-          ? 'border-b border-border bg-background/80 backdrop-blur-xl'
-          : 'border-b border-transparent bg-transparent',
+          ? 'border-b border-border/80 bg-background/85 backdrop-blur-2xl py-3.5 shadow-2xl'
+          : 'border-b border-transparent bg-gradient-to-b from-background/90 via-background/40 to-transparent py-5',
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-        {/* Sol Üst Logo */}
-        <Link href="/" aria-label="ORISE CLUB Ana Sayfa">
-          <Logo />
-        </Link>
+      <div className="relative flex w-full items-center justify-between px-6 sm:px-10 lg:px-14">
+        {/* Sol Alan / İçi boş dengeleyici */}
+        <div className="flex w-10 items-center" />
 
-        {/* Sağ Üst Sepet Butonu */}
+        {/* Merkez: ORISE CLUB Logosu (Tam Ekran Ortası) */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <Link
+            href="/"
+            aria-label="ORISE CLUB Ana Sayfa"
+            className="transition-transform duration-300 hover:scale-105"
+          >
+            <Logo />
+          </Link>
+        </div>
+
+        {/* Sağ Üst: Sepet Butonu */}
         <div className="flex items-center">
           <button
             type="button"
             onClick={openCart}
             aria-label="Sepeti aç"
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-secondary/50 text-foreground backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-primary"
+            className="group relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-secondary/60 text-foreground backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-primary hover:shadow-[0_0_20px_rgba(249,115,22,0.25)]"
           >
-            <ShoppingBag className="h-[18px] w-[18px]" />
+            <ShoppingBag className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
             {count > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground">
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground shadow-[0_0_10px_rgba(249,115,22,0.6)]">
                 {count}
               </span>
             )}
