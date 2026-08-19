@@ -46,13 +46,22 @@ export function SplitHero() {
       {/* Merkez Dikey Ayrım Lazer Çizgisi */}
       <div className="pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border/40 to-transparent md:block" />
 
-      {/* Sabit Merkez Çekirdek (Asla Sağa Sola Kaymaz) */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-x-1/2 -translate-y-1/2 md:block">
-        {/* Odaklanmış Merkez Işık */}
+      {/* Dinamik Sağa/Sola Kayan Merkez Çekirdek */}
+      <div
+        className={cn(
+          'pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-y-1/2 transition-all duration-500 ease-out md:block',
+          hovered === 'community'
+            ? '-translate-x-[calc(50%+12px)]'
+            : hovered === 'store'
+              ? '-translate-x-[calc(50%-12px)]'
+              : '-translate-x-1/2',
+        )}
+      >
+        {/* Arkadaki Dinamik Glow */}
         <div
           className={cn(
-            'absolute inset-0 -m-5 rounded-full bg-primary/25 blur-2xl transition-all duration-500',
-            hovered ? 'opacity-100 scale-120 bg-primary/35' : 'opacity-40 scale-100',
+            'absolute inset-0 -m-6 rounded-full bg-primary/25 blur-2xl transition-all duration-500',
+            hovered ? 'scale-125 opacity-100 bg-primary/40' : 'scale-100 opacity-40',
           )}
         />
 
@@ -60,7 +69,7 @@ export function SplitHero() {
         <div
           className={cn(
             'absolute inset-0 -m-2 rounded-full border border-primary/20 transition-all duration-500',
-            hovered ? 'scale-110 border-primary/40 opacity-100' : 'scale-100 opacity-30',
+            hovered ? 'scale-110 border-primary/50 opacity-100' : 'scale-100 opacity-30',
           )}
         />
 
@@ -68,13 +77,15 @@ export function SplitHero() {
         <div
           className={cn(
             'relative flex h-20 w-20 items-center justify-center rounded-full border border-border/80 bg-background/95 backdrop-blur-2xl transition-all duration-500 lg:h-24 lg:w-24 shadow-[0_0_40px_rgba(0,0,0,0.9)]',
-            hovered ? 'border-primary/70 scale-105 shadow-[0_0_25px_rgba(249,115,22,0.25)]' : '',
+            hovered
+              ? 'border-primary/80 scale-105 shadow-[0_0_30px_rgba(249,115,22,0.35)]'
+              : '',
           )}
         >
           <OriseMark
             className={cn(
-              'h-10 w-10 text-primary transition-all duration-500 lg:h-11 lg:w-11',
-              hovered ? 'scale-110 drop-shadow-[0_0_10px_rgba(249,115,22,0.6)]' : 'scale-100',
+              'h-10 w-10 text-primary transition-transform duration-500 lg:h-11 lg:w-11',
+              hovered ? 'scale-110 drop-shadow-[0_0_12px_rgba(249,115,22,0.6)]' : 'scale-100',
             )}
           />
         </div>
