@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-import { ArrowUpRight, ShoppingBag, Users, Sparkles } from 'lucide-react'
+import { ArrowUpRight, ShoppingBag, Users, Sparkles, Mail, Linkedin, Instagram } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
 
@@ -55,7 +55,7 @@ export function SplitHero() {
               : '-translate-x-1/2',
         )}
       >
-        {/* Arkadaki Glow */}
+        {/* Glow */}
         <div
           className={cn(
             'absolute inset-0 -m-6 rounded-full bg-primary/25 blur-2xl transition-all duration-500',
@@ -63,7 +63,7 @@ export function SplitHero() {
           )}
         />
 
-        {/* Dış Pusula Çemberi */}
+        {/* Pusula Çemberi */}
         <div
           className={cn(
             'absolute inset-0 -m-2 rounded-full border border-primary/25 transition-all duration-500',
@@ -87,6 +87,7 @@ export function SplitHero() {
         </div>
       </div>
 
+      {/* Sol ve Sağ Paneller */}
       {PANELS.map((panel) => {
         const Icon = panel.icon
         const isHovered = hovered === panel.id
@@ -130,7 +131,6 @@ export function SplitHero() {
 
             {/* İçerik Bloğu */}
             <div className="relative z-10 flex w-full max-w-md flex-col items-center space-y-4">
-              {/* Üst Manifesto Rozeti */}
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] text-primary backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary/20">
                   <Sparkles className="h-3 w-3 text-primary" />
@@ -138,17 +138,14 @@ export function SplitHero() {
                 </div>
               </div>
 
-              {/* Başlık */}
               <h2 className="whitespace-nowrap font-sans text-4xl font-black tracking-tighter text-white sm:text-5xl lg:text-6xl transition-all duration-300 drop-shadow-md">
                 {panel.title}
               </h2>
 
-              {/* Açıklama */}
               <p className="max-w-sm text-sm font-normal leading-relaxed text-zinc-300/90 text-pretty transition-colors duration-300 group-hover:text-white drop-shadow">
                 {panel.subtitle}
               </p>
 
-              {/* Aksiyon Butonu */}
               <div className="pt-2">
                 <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-zinc-900/80 px-7 py-3 text-xs font-bold tracking-wider uppercase text-zinc-100 backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-black group-hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] group-hover:scale-105">
                   <Icon className="h-4 w-4 text-primary group-hover:text-black transition-colors" />
@@ -160,6 +157,47 @@ export function SplitHero() {
           </Link>
         )
       })}
+
+      {/* EN ALT SABİT EDİTORYAL FOOTER BAR (Mail, LinkedIn, Instagram & Telif) */}
+      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 bg-gradient-to-t from-black via-black/80 to-transparent border-t border-white/5 backdrop-blur-md text-[11px] font-mono text-zinc-500">
+        {/* Sol: Telif & Konum */}
+        <div className="flex items-center gap-2 text-zinc-400">
+          <span>© 2026 ORISE CLUB</span>
+          <span className="text-zinc-600">·</span>
+          <span className="text-zinc-500 uppercase tracking-widest text-[10px]">ISTANBUL / ATHLETICS</span>
+        </div>
+
+        {/* Sağ: İletişim & Sosyal Linkler */}
+        <div className="flex items-center gap-5 text-zinc-400">
+          <a
+            href="mailto:oguzvir12@gmail.com"
+            className="group flex items-center gap-1.5 hover:text-primary transition-colors"
+          >
+            <Mail className="h-3.5 w-3.5 text-zinc-500 group-hover:text-primary transition-colors" />
+            <span>İletişim</span>
+          </a>
+
+          <a
+            href="https://linkedin.com/in/oguzhanbeydogan"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-1.5 hover:text-primary transition-colors"
+          >
+            <Linkedin className="h-3.5 w-3.5 text-zinc-500 group-hover:text-primary transition-colors" />
+            <span>LinkedIn</span>
+          </a>
+
+          <a
+            href="https://www.instagram.com/orisecommunity/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-1.5 hover:text-primary transition-colors"
+          >
+            <Instagram className="h-3.5 w-3.5 text-zinc-500 group-hover:text-primary transition-colors" />
+            <span>@orisecommunity</span>
+          </a>
+        </div>
+      </footer>
     </section>
   )
 }
