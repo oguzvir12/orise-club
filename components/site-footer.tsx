@@ -1,96 +1,73 @@
-import Link from 'next/link'
-import { Mail } from 'lucide-react'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
-import { Logo } from '@/components/logo'
+import { Mail, Linkedin } from 'lucide-react'
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid gap-12 md:grid-cols-[1.5fr_1fr_1fr]">
-          <div className="space-y-4">
-            <Logo />
-            <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
-              More than a brand, a club. Şehrin enerjisini birlikte yükselten
-              yeni nesil topluluk hareketi.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <a
-                href="https://www.instagram.com/orisecommunity/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-border px-3.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
-              >
-                <InstagramIcon className="h-3.5 w-3.5" />
-                @orisecommunity
-              </a>
-              <a
-                href="https://www.instagram.com/orisestore/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-border px-3.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
-              >
-                <InstagramIcon className="h-3.5 w-3.5" />
-                @orisestore
-              </a>
-            </div>
-          </div>
+    <footer className="fixed inset-x-0 bottom-0 z-30 flex h-14 items-center justify-between border-t border-border/40 bg-background/90 px-6 backdrop-blur-xl text-xs text-muted-foreground sm:px-10 lg:px-14">
+      {/* Sol Taraf: Community İletişim */}
+      <div className="flex items-center gap-3 sm:gap-4">
+        <span className="hidden font-semibold text-foreground sm:inline">Topluluk:</span>
+        <a
+          href="https://www.instagram.com/orisecommunity/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 font-medium text-foreground transition-colors hover:text-primary"
+          title="Instagram Topluluk Sayfası"
+        >
+          <InstagramIcon className="h-3.5 w-3.5 text-primary" />
+          <span>@orisecommunity</span>
+        </a>
+        <span className="opacity-30">·</span>
+        <a
+          href="mailto:community@oriseclub.com"
+          className="inline-flex items-center gap-1.5 transition-colors hover:text-primary"
+          title="Topluluk E-posta"
+        >
+          <Mail className="h-3.5 w-3.5" />
+          <span className="hidden xl:inline">community@oriseclub.com</span>
+          <span className="xl:hidden">E-posta</span>
+        </a>
+      </div>
 
-          <div className="space-y-4">
-            <h3 className="font-display text-sm font-semibold uppercase tracking-widest text-foreground">
-              Keşfet
-            </h3>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <Link
-                  href="/community"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Community
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/store"
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  Store
-                </Link>
-              </li>
-            </ul>
-          </div>
+      {/* Merkez: Telif & LinkedIn */}
+      <div className="flex items-center gap-2.5 text-[11px] font-medium tracking-wider uppercase">
+        <span className="hidden md:inline opacity-70">© 2026 ORISE CLUB</span>
+        <span className="hidden md:inline opacity-30">·</span>
+        <a
+          href="https://www.linkedin.com/company/orisecommunity"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 font-semibold normal-case text-foreground transition-all hover:text-primary hover:scale-105"
+          title="ORISE Community LinkedIn"
+        >
+          <Linkedin className="h-3.5 w-3.5 text-primary" />
+          <span>LinkedIn</span>
+        </a>
+      </div>
 
-          <div className="space-y-4">
-            <h3 className="font-display text-sm font-semibold uppercase tracking-widest text-foreground">
-              İletişim
-            </h3>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <a
-                  href="mailto:community@oriseclub.com"
-                  className="inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
-                >
-                  <Mail className="h-4 w-4" />
-                  community@oriseclub.com
-                </a>
-              </li>
-              <li>
-                <a
-                  href="mailto:store@oriseclub.com"
-                  className="inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
-                >
-                  <Mail className="h-4 w-4" />
-                  store@oriseclub.com
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground sm:flex-row">
-          <p>© 2026 ORISE CLUB. All Rights Reserved.</p>
-          <p className="tracking-widest">ISTANBUL · TÜRKİYE</p>
-        </div>
+      {/* Sağ Taraf: Store İletişim */}
+      <div className="flex items-center gap-3 sm:gap-4">
+        <span className="hidden font-semibold text-foreground sm:inline">Mağaza:</span>
+        <a
+          href="https://www.instagram.com/orisestore/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 font-medium text-foreground transition-colors hover:text-primary"
+          title="Instagram Mağaza Sayfası"
+        >
+          <InstagramIcon className="h-3.5 w-3.5 text-primary" />
+          <span>@orisestore</span>
+        </a>
+        <span className="opacity-30">·</span>
+        <a
+          href="mailto:store@oriseclub.com"
+          className="inline-flex items-center gap-1.5 transition-colors hover:text-primary"
+          title="Mağaza E-posta"
+        >
+          <Mail className="h-3.5 w-3.5" />
+          <span className="hidden xl:inline">store@oriseclub.com</span>
+          <span className="xl:hidden">E-posta</span>
+        </a>
       </div>
     </footer>
   )
