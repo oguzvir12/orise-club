@@ -24,6 +24,23 @@ export function SiteHeader() {
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
 
+  // Profil verilerini çekmek için ortak fonksiyon
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiler')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    
+    if (data) {
+      setFullName(data.full_name || '')
+      setPhone(data.phone || '')
+      setInstagram(data.instagram || '')
+      setAddress(data.adres || '')
+      setBillingAddress(data.billing_address || '')
+    }
+  }
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16)
     onScroll()
@@ -36,25 +53,22 @@ export function SiteHeader() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setUser(session.user)
-        const { data } = await supabase
-          .from('profiler')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-        
-        if (data) {
-          setFullName(data.full_name || '')
-          setPhone(data.phone || '')
-          setInstagram(data.instagram || '')
-          setAddress(data.adres || '')
-          setBillingAddress(data.billing_address || '')
-        }
+        await fetchProfile(session.user.id)
       }
     }
     checkUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user ?? null)
+      if (session?.user) {
+        await fetchProfile(session.user.id)
+      } else {
+        setFullName('')
+        setPhone('')
+        setInstagram('')
+        setAddress('')
+        setBillingAddress('')
+      }
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -62,6 +76,11 @@ export function SiteHeader() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setUser(null)
+    setFullName('')
+    setPhone('')
+    setInstagram('')
+    setAddress('')
+    setBillingAddress('')
     window.location.reload()
   }
 
@@ -73,7 +92,6 @@ export function SiteHeader() {
     setSuccessMsg('')
 
     try {
-      // UPSERT mantığı: Kayıt varsa günceller, yoksa id ile yeni satır oluşturur
       const { error } = await supabase
         .from('profiler')
         .upsert({ 
@@ -265,8 +283,12 @@ export function SiteHeader() {
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
-        onSuccess={() => {
-          supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
+        onSuccess={async () => {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session?.user) {
+            setUser(session.user)
+            await fetchProfile(session.user.id)
+          }
         }}
       />
     </>
