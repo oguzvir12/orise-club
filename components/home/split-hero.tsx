@@ -75,54 +75,51 @@ export function SplitHero() {
   }
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-black text-white font-sans flex flex-col justify-between p-6 sm:p-10">
-      
-      {/* ÜST HEADER - Orijinal Yerleşimi Korundu */}
-      <div className="flex items-center justify-between w-full z-20">
-        <div className="flex items-center gap-2">
-          {/* Sol üst dengeleyici */}
+    <main className="relative h-screen w-full overflow-hidden bg-black text-white font-sans">
+      {/* HEADER - Orijinal Yerleşim ve Dikey Menüler Korundu */}
+      <header className="absolute inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-6 sm:px-10 lg:px-14">
+        {/* Sol Alan / Dengeleyici */}
+        <div className="flex items-center">
+          <Link href="/" className="font-black tracking-widest text-sm text-white">
+            ORISE CLUB
+          </Link>
         </div>
 
-        {/* Logo Ortada */}
-        <div className="absolute left-1/2 -translate-x-1/2 text-center">
-          <span className="font-black tracking-widest text-sm text-white">O R I S E CLUB</span>
-        </div>
-
-        {/* Sağ Üst Giriş / Profil Alanı */}
-        <div className="flex items-center gap-3">
+        {/* Sağ Üst: Sepet Kaldırıldı, Sadece Giriş / Profil Var */}
+        <div className="flex items-center gap-4">
           {user ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsProfileOpen(true)}
-                className="flex items-center gap-2 rounded-full border border-white/15 bg-black/60 px-4 py-2 text-xs font-mono text-zinc-300 hover:border-primary hover:text-white transition-all cursor-pointer"
+                className="flex items-center gap-2 rounded-full border border-white/15 bg-black/60 px-4 py-2 text-xs font-mono text-zinc-300 backdrop-blur-md hover:border-primary hover:text-white transition-all cursor-pointer"
               >
                 <User className="h-3.5 w-3.5 text-primary" />
-                <span className="truncate max-w-[130px]">{fullName || user.email}</span>
+                <span className="truncate max-w-[150px]">{fullName || user.email}</span>
               </button>
 
               <button
                 onClick={handleLogout}
-                className="rounded-full border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-mono text-red-400 hover:bg-red-500/20 transition-all cursor-pointer"
-                title="Çıkış Yap"
+                className="flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-mono text-red-400 hover:bg-red-500/20 transition-all cursor-pointer"
               >
                 <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">ÇIKIŞ</span>
               </button>
             </div>
           ) : (
             <Link
               href="/auth"
-              className="rounded-full border border-white/20 bg-black/60 px-5 py-2 text-xs font-bold uppercase tracking-widest text-white hover:border-primary hover:bg-primary hover:text-black transition-all"
+              className="rounded-full border border-white/20 bg-black/60 px-5 py-2 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-md hover:border-primary hover:bg-primary hover:text-black transition-all"
             >
               GİRİŞ YAP / ÜYE OL
             </Link>
           )}
         </div>
-      </div>
+      </header>
 
-      {/* ORTA BÖLÜM (Split Hero Kartları) */}
-      <div className="grid h-[70vh] w-full grid-cols-1 md:grid-cols-2 gap-4 my-auto">
-        {/* Sol: Topluluk */}
-        <div className="relative flex flex-col items-center justify-center p-8 text-center bg-zinc-950/60 rounded-3xl border border-white/10 group overflow-hidden">
+      {/* Orijinal Split Hero Grid Yapısı */}
+      <div className="grid h-full w-full grid-cols-1 md:grid-cols-2">
+        {/* Sol Taraf: Topluluk */}
+        <div className="relative flex flex-col items-center justify-center p-8 text-center bg-zinc-950/60 border-r border-white/10 group overflow-hidden">
           <div className="absolute inset-0 z-0 opacity-30 transition-transform duration-700 group-hover:scale-105">
             <Image
               src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop"
@@ -150,8 +147,8 @@ export function SplitHero() {
           </div>
         </div>
 
-        {/* Sağ: Mağaza */}
-        <div className="relative flex flex-col items-center justify-center p-8 text-center bg-zinc-950/60 rounded-3xl border border-white/10 group overflow-hidden">
+        {/* Sağ Taraf: Mağaza */}
+        <div className="relative flex flex-col items-center justify-center p-8 text-center bg-zinc-950/60 group overflow-hidden">
           <div className="absolute inset-0 z-0 opacity-30 transition-transform duration-700 group-hover:scale-105">
             <Image
               src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop"
@@ -180,20 +177,20 @@ export function SplitHero() {
         </div>
       </div>
 
-      {/* PROFİL GÜNCELLEME MODALİ */}
+      {/* PROFİL BİLGİ GÜNCELLEME MODALİ */}
       {isProfileOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
           onClick={() => setIsProfileOpen(false)}
         >
           <div
-            className="relative w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 text-white"
+            className="relative w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-primary" />
-                <h3 className="font-bold text-sm uppercase tracking-wider">Profili Düzenle</h3>
+                <h3 className="font-bold text-sm text-white uppercase tracking-wider">Profili Düzenle</h3>
               </div>
               <button
                 type="button"
@@ -255,6 +252,6 @@ export function SplitHero() {
           </div>
         </div>
       )}
-    </div>
+    </main>
   )
 }
