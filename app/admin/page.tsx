@@ -17,6 +17,7 @@ import {
   Layers,
   Edit3,
   X,
+  Upload,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -49,6 +50,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   // Yeni Ürün Form State'leri
   const [title, setTitle] = useState('')
@@ -110,6 +112,45 @@ export default function AdminPage() {
       console.error(e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Supabase Storage'a Dosya Yükleme Fonksiyonu
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
+    try {
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      setUploading(true)
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}.${fileExt}`
+      const filePath = `${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file)
+
+      if (uploadError) {
+        alert('Fotoğraf yüklenirken hata oluştu: ' + uploadError.message)
+        setUploading(false)
+        return
+      }
+
+      const { data } = supabase.storage.from('product-images').getPublicUrl(filePath)
+      
+      if (data?.publicUrl) {
+        if (isEdit) {
+          setEditImage(data.publicUrl)
+        } else {
+          setImageUrl(data.publicUrl)
+        }
+        alert('Fotoğraf başarıyla yüklendi!')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Dosya yükleme sırasında beklenmeyen bir hata oluştu.')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -287,7 +328,7 @@ export default function AdminPage() {
           <button
             type="button"
             onClick={fetchData}
-            className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:border-primary hover:text-white"
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:border-primary hover:text-white cursor-pointer"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Yenile</span>
@@ -296,7 +337,7 @@ export default function AdminPage() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20"
+            className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20 cursor-pointer"
           >
             <LogOut className="h-3.5 w-3.5" />
             <span>Çıkış</span>
@@ -345,13 +386,21 @@ export default function AdminPage() {
                   onChange={(e) => setStock(e.target.value)}
                   className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
                 />
-                <input
-                  type="text"
-                  placeholder="Fotoğraf URL (Görsel Bağlantısı)"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
-                />
+                
+                {/* DOSYA YÜKLEME ALANI */}
+                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black px-4 py-2.5">
+                  <label className="flex-1 cursor-pointer text-xs text-zinc-400 truncate">
+                    {uploading ? 'Yükleniyor...' : imageUrl ? '✓ Fotoğraf Yüklendi' : 'Bilgisayardan Fotoğraf Seç'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, false)}
+                      className="hidden"
+                    />
+                  </label>
+                  <Upload className="h-4 w-4 text-primary flex-none" />
+                </div>
+
                 <textarea
                   rows={1}
                   placeholder="Ürün Açıklaması"
@@ -361,7 +410,7 @@ export default function AdminPage() {
                 />
                 <button
                   type="submit"
-                  className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg hover:scale-[1.01] transition-transform"
+                  className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg hover:scale-[1.01] transition-transform cursor-pointer"
                 >
                   Ürünü Mağazada Yayınla
                 </button>
@@ -391,14 +440,14 @@ export default function AdminPage() {
                   <div className="flex items-center gap-2 pt-2 border-t border-white/5">
                     <button
                       onClick={() => openEditModal(prod)}
-                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 py-2 text-xs font-bold text-zinc-200 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 py-2 text-xs font-bold text-zinc-200 transition-colors cursor-pointer"
                     >
                       <Edit3 className="h-3.5 w-3.5 text-primary" />
                       <span>Düzenle</span>
                     </button>
                     <button
                       onClick={() => handleDeleteProduct(prod.id)}
-                      className="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                      className="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
                       title="Ürünü Sil"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -451,14 +500,14 @@ export default function AdminPage() {
                           <button
                             type="button"
                             onClick={() => handleUpdateOrderStatus(ord.id, 'Kargolandı')}
-                            className="rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 text-[10px] font-bold uppercase"
+                            className="rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 text-[10px] font-bold uppercase cursor-pointer"
                           >
                             Kargola
                           </button>
                           <button
                             type="button"
                             onClick={() => handleUpdateOrderStatus(ord.id, 'Teslim Edildi')}
-                            className="rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 text-[10px] font-bold uppercase"
+                            className="rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 text-[10px] font-bold uppercase cursor-pointer"
                           >
                             Teslim
                           </button>
@@ -517,7 +566,7 @@ export default function AdminPage() {
                           <button
                             type="button"
                             onClick={() => handleDeleteRegistration(reg.id)}
-                            className="p-2 text-zinc-500 hover:text-red-400 transition-colors"
+                            className="p-2 text-zinc-500 hover:text-red-400 transition-colors cursor-pointer"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -544,7 +593,7 @@ export default function AdminPage() {
               <h3 className="font-bold text-base text-white">Ürün Bilgilerini Düzenle</h3>
               <button
                 onClick={() => setEditingProduct(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -586,26 +635,32 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fotoğraf URL</label>
-                <input
-                  type="text"
-                  value={editImage}
-                  onChange={(e) => setEditImage(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-                />
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Yeni Fotoğraf Yükle (İsteğe Bağlı)</label>
+                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black px-4 py-2.5">
+                  <label className="flex-1 cursor-pointer text-xs text-zinc-400 truncate">
+                    {uploading ? 'Yükleniyor...' : 'Yeni Dosya Seç'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, true)}
+                      className="hidden"
+                    />
+                  </label>
+                  <Upload className="h-4 w-4 text-primary flex-none" />
+                </div>
               </div>
 
               <div className="pt-2 flex gap-3">
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  className="flex-1 rounded-full border border-white/10 bg-zinc-900 py-3 text-xs font-bold uppercase text-zinc-300 hover:bg-zinc-800"
+                  className="flex-1 rounded-full border border-white/10 bg-zinc-900 py-3 text-xs font-bold uppercase text-zinc-300 hover:bg-zinc-800 cursor-pointer"
                 >
                   İptal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 rounded-full bg-primary py-3 text-xs font-bold uppercase text-black shadow-lg hover:scale-[1.01]"
+                  className="flex-1 rounded-full bg-primary py-3 text-xs font-bold uppercase text-black shadow-lg hover:scale-[1.01] cursor-pointer"
                 >
                   Değişiklikleri Kaydet
                 </button>
