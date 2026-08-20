@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Settings, X } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Settings, X, Instagram } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -18,7 +18,9 @@ export function SiteHeader() {
   
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
+  const [instagram, setInstagram] = useState('')
   const [address, setAddress] = useState('')
+  const [billingAddress, setBillingAddress] = useState('')
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
 
@@ -43,7 +45,9 @@ export function SiteHeader() {
         if (data) {
           setFullName(data.full_name || '')
           setPhone(data.phone || '')
+          setInstagram(data.instagram || '')
           setAddress(data.adres || '')
+          setBillingAddress(data.billing_address || '')
         }
       }
     }
@@ -71,11 +75,17 @@ export function SiteHeader() {
     try {
       const { error } = await supabase
         .from('profiler')
-        .update({ full_name: fullName, phone: phone, adres: address })
+        .update({ 
+          full_name: fullName, 
+          phone: phone, 
+          instagram: instagram,
+          adres: address,
+          billing_address: billingAddress 
+        })
         .eq('email', user.email)
 
       if (error) throw error
-      setSuccessMsg('Profil bilgileriniz güncellendi!')
+      setSuccessMsg('Profil ve etkinlik bilgileriniz güncellendi!')
       setTimeout(() => { setIsProfileOpen(false); setSuccessMsg('') }, 2000)
     } catch (err: any) {
       alert('Hata: ' + err.message)
@@ -95,14 +105,11 @@ export function SiteHeader() {
         )}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-          {/* Orijinal Sol Üst Logo */}
           <Link href="/" aria-label="ORISE CLUB Ana Sayfa">
             <Logo />
           </Link>
 
-          {/* Sağ Alan: Sepet + Giriş / Profil Butonu */}
           <div className="flex items-center gap-3">
-            {/* Orijinal Sepet Butonu */}
             <button
               type="button"
               onClick={openCart}
@@ -117,7 +124,6 @@ export function SiteHeader() {
               )}
             </button>
 
-            {/* Kullanıcı Giriş Durumu / Giriş Yap Modali Açma Butonu */}
             {user ? (
               <div className="flex items-center gap-2">
                 <button
@@ -149,20 +155,20 @@ export function SiteHeader() {
         </div>
       </header>
 
-      {/* PROFİL GÜNCELLEME MODALİ */}
+      {/* GELİŞTİRİLMİŞ PROFİL GÜNCELLEME MODALİ */}
       {isProfileOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto"
           onClick={() => setIsProfileOpen(false)}
         >
           <div
-            className="relative w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 text-white"
+            className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-5 text-white my-8 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-primary" />
-                <h3 className="font-bold text-sm uppercase tracking-wider">Profili Düzenle</h3>
+                <h3 className="font-bold text-sm uppercase tracking-wider">Kulüp Profili & Etkinlik Bilgileri</h3>
               </div>
               <button
                 type="button"
@@ -173,34 +179,65 @@ export function SiteHeader() {
               </button>
             </div>
 
+            <p className="text-[11px] text-zinc-400">
+              Buraya girdiğiniz bilgiler; etkinliklere katılırken ve mağazadan alışveriş yaparken otomatik olarak kullanılacaktır.
+            </p>
+
             <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Ad Soyad"
+                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="05XX XXX XX XX"
+                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1 flex items-center gap-1.5">
+                  <Instagram className="h-3.5 w-3.5 text-primary" /> Instagram Kullanıcı Adı
+                </label>
                 <input
                   type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Ad Soyad"
+                  value={instagram}
+                  onChange={(e) => setInstagram(e.target.value)}
+                  placeholder="@kullaniciadi"
                   className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
                 />
               </div>
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası</label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="05XX XXX XX XX"
-                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-                />
-              </div>
+
               <div>
                 <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat Adresi</label>
                 <textarea
                   rows={2}
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Adres detayları..."
+                  placeholder="Sokak, bina no, daire, ilçe/şehir..."
+                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fatura Adresi / Kurumsal Bilgiler (Opsiyonel)</label>
+                <textarea
+                  rows={2}
+                  value={billingAddress}
+                  onChange={(e) => setBillingAddress(e.target.value)}
+                  placeholder="Fatura unvanı, vergi no veya adres..."
                   className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
                 />
               </div>
@@ -223,7 +260,6 @@ export function SiteHeader() {
         </div>
       )}
 
-      {/* GİRİŞ / KAYIT MODALİ */}
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
