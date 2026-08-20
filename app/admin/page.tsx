@@ -7,17 +7,16 @@ import {
   ArrowLeft,
   Users,
   Trash2,
-  Phone,
-  Mail,
   ShieldCheck,
   RefreshCw,
   Lock,
   LogOut,
   ShoppingBag,
-  Package,
   Truck,
   PlusCircle,
   Layers,
+  Edit3,
+  X,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -58,6 +57,13 @@ export default function AdminPage() {
   const [stock, setStock] = useState('')
   const [description, setDescription] = useState('')
   const [imageUrl, setImageUrl] = useState('')
+
+  // Düzenleme (Edit) Modal State'leri
+  const [editingProduct, setEditingProduct] = useState<any | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editPrice, setEditPrice] = useState('')
+  const [editStock, setEditStock] = useState('')
+  const [editImage, setEditImage] = useState('')
 
   useEffect(() => {
     const savedAuth = localStorage.getItem('orise_admin_user')
@@ -148,7 +154,7 @@ export default function AdminPage() {
     }
   }
 
-  // ÜRÜN KALICI SİLME VE LİSTEYİ GÜNCELLEME
+  // ÜRÜN KALICI SİLME
   const handleDeleteProduct = async (id: string) => {
     if (!confirm('Bu ürünü mağazadan kalıcı olarak silmek istiyor musunuz?')) return
     
@@ -159,6 +165,36 @@ export default function AdminPage() {
       await fetchData()
     } else {
       alert('Silme sırasında hata oluştu.')
+    }
+  }
+
+  // ÜRÜN DÜZENLEME MODALINI AÇ
+  const openEditModal = (prod: any) => {
+    setEditingProduct(prod)
+    setEditTitle(prod.title || '')
+    setEditPrice(prod.price || '')
+    setEditStock(prod.stock || '')
+    setEditImage(prod.image_urls?.[0] || '')
+  }
+
+  // ÜRÜN GÜNCELLEMEYİ KAYDET
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingProduct) return
+
+    const { error } = await supabase.from('products').update({
+      title: editTitle,
+      price: Number(editPrice),
+      stock: Number(editStock),
+      image_urls: editImage ? [editImage] : editingProduct.image_urls
+    }).eq('id', editingProduct.id)
+
+    if (!error) {
+      alert('Ürün başarıyla güncellendi!')
+      setEditingProduct(null)
+      fetchData()
+    } else {
+      alert('Güncelleme sırasında hata oluştu.')
     }
   }
 
@@ -230,7 +266,7 @@ export default function AdminPage() {
   })
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 sm:p-10 font-sans">
+    <div className="min-h-screen bg-black text-white p-6 sm:p-10 font-sans relative">
       <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
         <div className="flex items-center gap-4">
           <Link
@@ -333,7 +369,7 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* YÜKLÜ ÜRÜNLER LİSTESİ VE SİLME */}
+          {/* YÜKLÜ ÜRÜNLER LİSTESİ VE DÜZENLEME / SİLME */}
           <div className="space-y-4">
             <h2 className="text-base font-bold flex items-center gap-2">
               <Layers className="h-4 w-4 text-primary" />
@@ -341,23 +377,33 @@ export default function AdminPage() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {products.map((prod) => (
-                <div key={prod.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
+                <div key={prod.id} className="flex flex-col justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4 space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none">
+                    <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none">
                       <Image src={prod.image_urls?.[0] || '/placeholder.svg'} alt={prod.title} fill className="object-cover" />
                     </div>
                     <div>
                       <h4 className="font-bold text-xs text-white line-clamp-1">{prod.title}</h4>
-                      <span className="text-[11px] font-mono text-primary font-bold">₺{prod.price}</span>
+                      <div className="text-[11px] font-mono text-primary font-bold">₺{prod.price} · Stok: {prod.stock}</div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteProduct(prod.id)}
-                    className="p-2 text-zinc-500 hover:text-red-400 transition-colors"
-                    title="Ürünü Sil"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                    <button
+                      onClick={() => openEditModal(prod)}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 py-2 text-xs font-bold text-zinc-200 transition-colors"
+                    >
+                      <Edit3 className="h-3.5 w-3.5 text-primary" />
+                      <span>Düzenle</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(prod.id)}
+                      className="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                      title="Ürünü Sil"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -454,7 +500,7 @@ export default function AdminPage() {
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
                   {filteredRegistrations.length > 0 ? (
-                    filteredRegistrations.logreg ? null : filteredRegistrations.map((reg) => (
+                    filteredRegistrations.map((reg) => (
                       <tr key={reg.id} className="hover:bg-zinc-900/40 transition-colors">
                         <td className="p-4 font-bold text-white flex items-center gap-2">
                           <span>{reg.full_name}</span>
@@ -486,6 +532,85 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ÜRÜN DÜZENLEME (EDIT) MODALİ */}
+      {editingProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <h3 className="font-bold text-base text-white">Ürün Bilgilerini Düzenle</h3>
+              <button
+                onClick={() => setEditingProduct(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateProduct} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ürün Başlığı</label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fiyat (₺)</label>
+                  <input
+                    type="number"
+                    required
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Stok Adedi</label>
+                  <input
+                    type="number"
+                    required
+                    value={editStock}
+                    onChange={(e) => setEditStock(e.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fotoğraf URL</label>
+                <input
+                  type="text"
+                  value={editImage}
+                  onChange={(e) => setEditImage(e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingProduct(null)}
+                  className="flex-1 rounded-full border border-white/10 bg-zinc-900 py-3 text-xs font-bold uppercase text-zinc-300 hover:bg-zinc-800"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 rounded-full bg-primary py-3 text-xs font-bold uppercase text-black shadow-lg hover:scale-[1.01]"
+                >
+                  Değişiklikleri Kaydet
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
