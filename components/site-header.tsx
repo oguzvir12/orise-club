@@ -29,7 +29,6 @@ export function SiteHeader() {
 
   const fetchProfile = async (userId: string, userEmail?: string) => {
     try {
-      // Önce id ile profiler/profiles tablosundan çekmeyi dene
       let foundData = null
       const { data: p1 } = await supabase.from('profiler').select('*').eq('id', userId).maybeSingle()
       if (p1) {
@@ -39,7 +38,6 @@ export function SiteHeader() {
         if (p2) foundData = p2
       }
 
-      // Eğer id ile bulunamadıysa ve e-posta varsa e-posta ile ara
       if (!foundData && userEmail) {
         const { data: p3 } = await supabase.from('profiles').select('*').ilike('email', userEmail.trim()).maybeSingle()
         if (p3) foundData = p3
@@ -53,7 +51,6 @@ export function SiteHeader() {
         setBillingAddress(foundData.billing_address || '')
       }
 
-      // Katıldığı etkinlikleri e-posta ile çek
       if (userEmail) {
         const { data: regData } = await supabase
           .from('event_registrations')
@@ -209,7 +206,6 @@ export function SiteHeader() {
         </div>
       </header>
 
-      {/* Profil ve Katıldığım Etkinlikler Modalı */}
       {isProfileOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto"
@@ -233,7 +229,6 @@ export function SiteHeader() {
               </button>
             </div>
 
-            {/* Sekmeler */}
             <div className="flex gap-2 border-b border-white/10 pb-3">
               <button
                 onClick={() => setActiveTab('profile')}
@@ -344,7 +339,7 @@ export function SiteHeader() {
                       <div key={item.id} className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-mono uppercase text-primary tracking-widest bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
-                            {evt.branch || 'KULÜB'}
+                            {evt.branch || 'KULÜP'}
                           </span>
                           <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase">
                             Kayıt Onaylandı
