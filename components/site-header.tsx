@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Settings, X, AtSign, Calendar, Ticket } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Settings, X, AtSign, Calendar, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
 import AuthModal from './auth-modal'
+import Image from 'next/image'
 
 export function SiteHeader() {
   const { count, openCart } = useCart()
@@ -21,6 +22,9 @@ export function SiteHeader() {
   const [instagram, setInstagram] = useState('')
   const [address, setAddress] = useState('')
   const [billingAddress, setBillingAddress] = useState('')
+  const [title, setTitle] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   
@@ -41,6 +45,8 @@ export function SiteHeader() {
         setInstagram(data.instagram || '')
         setAddress(data.address || data.adres || '')
         setBillingAddress(data.billing_address || '')
+        setTitle(data.title || '')
+        setAvatarUrl(data.avatar_url || '')
       }
 
       if (userEmail) {
@@ -85,6 +91,8 @@ export function SiteHeader() {
         setInstagram('')
         setAddress('')
         setBillingAddress('')
+        setTitle('')
+        setAvatarUrl('')
         setMyEvents([])
       }
     })
@@ -94,13 +102,37 @@ export function SiteHeader() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setUser(null)
-    setFullName('')
-    setPhone('')
-    setInstagram('')
-    setAddress('')
-    setBillingAddress('')
-    setMyEvents([])
     window.location.reload()
+  }
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0]
+      if (!file || !user) return
+
+      setUploading(true)
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file)
+
+      if (uploadError) {
+        alert('Yükleme hatası: ' + uploadError.message)
+        return
+      }
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(fileName)
+      if (data?.publicUrl) {
+        setAvatarUrl(data.publicUrl)
+        alert('Profil fotoğrafı yüklendi! Kaydetmeyi unutmayın.')
+      }
+    } catch (err: any) {
+      alert('Hata: ' + err.message)
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -118,14 +150,15 @@ export function SiteHeader() {
         phone: phone, 
         instagram: instagram,
         address: address,
-        billing_address: billingAddress 
+        billing_address: billingAddress,
+        title: title,
+        avatar_url: avatarUrl
       }
 
       const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
-
       if (error) throw error
 
-      setSuccessMsg('Profil bilgileriniz kalıcı olarak kaydedildi!')
+      setSuccessMsg('Profil bilgileriniz güncellendi!')
       setTimeout(() => { 
         setSuccessMsg('')
         window.location.reload()
@@ -173,7 +206,13 @@ export function SiteHeader() {
                   onClick={() => setIsProfileOpen(true)}
                   className="flex items-center gap-2 rounded-full border border-white/15 bg-black/60 px-4 py-2 text-xs font-mono text-zinc-300 backdrop-blur-md hover:border-primary hover:text-white transition-all cursor-pointer"
                 >
-                  <User className="h-3.5 w-3.5 text-primary" />
+                  {avatarUrl ? (
+                    <div className="relative h-5 w-5 rounded-full overflow-hidden">
+                      <Image src={avatarUrl} alt="Avatar" fill className="object-cover" />
+                    </div>
+                  ) : (
+                    <User className="h-3.5 w-3.5 text-primary" />
+                  )}
                   <span className="truncate max-w-[120px]">{fullName || user.email}</span>
                 </button>
                 <button
@@ -188,7 +227,7 @@ export function SiteHeader() {
               <button
                 type="button"
                 onClick={() => setIsAuthOpen(true)}
-                className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-wider text-primary backdrop-blur-md hover:bg-primary/20 hover:border-primary transition-all duration-300 cursor-pointer"
+                className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-wider text-primary backdrop-blur-md hover:bg-primary/25 hover:border-primary transition-all duration-300 cursor-pointer"
               >
                 <User className="h-3.5 w-3.5" />
                 <span>Giriş Yap / Kayıt Ol</span>
@@ -242,9 +281,21 @@ export function SiteHeader() {
 
             {activeTab === 'profile' ? (
               <form onSubmit={handleUpdateProfile} className="space-y-4">
-                <p className="text-[11px] text-zinc-400">
-                  Buraya girdiğiniz bilgiler; etkinliklere katılırken ve mağazadan alışveriş yaparken otomatik olarak kullanılacaktır.
-                </p>
+                {/* Profil Fotoğrafı Yükleme Alanı */}
+                <div className="flex items-center gap-4 py-2">
+                  <div className="relative h-16 w-16 rounded-full overflow-hidden border border-white/20 bg-zinc-900 flex-shrink-0">
+                    <Image src={avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop'} alt="Avatar" fill className="object-cover" />
+                  </div>
+                  <div>
+                    <label className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-bold text-white hover:bg-white/10 cursor-pointer transition-all">
+                      <Upload className="h-3.5 w-3.5 text-primary" />
+                      <span>{uploading ? 'Yükleniyor...' : 'Fotoğraf Seç'}</span>
+                      <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                    </label>
+                    <p className="text-[10px] text-zinc-400 mt-1">Önerilen: Kare format, yüksek çözünürlük.</p>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
@@ -257,6 +308,19 @@ export function SiteHeader() {
                     />
                   </div>
                   <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ünvan / Rol (Örn: Run Lead)</label>
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Ünvanınız"
+                      className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
                     <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası</label>
                     <input
                       type="tel"
@@ -266,39 +330,27 @@ export function SiteHeader() {
                       className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
                     />
                   </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1 flex items-center gap-1.5">
+                      <AtSign className="h-3.5 w-3.5 text-primary" /> Instagram
+                    </label>
+                    <input
+                      type="text"
+                      value={instagram}
+                      onChange={(e) => setInstagram(e.target.value)}
+                      placeholder="@kullaniciadi"
+                      className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1 flex items-center gap-1.5">
-                    <AtSign className="h-3.5 w-3.5 text-primary" /> Instagram Kullanıcı Adı
-                  </label>
-                  <input
-                    type="text"
-                    value={instagram}
-                    onChange={(e) => setInstagram(e.target.value)}
-                    placeholder="@kullaniciadi"
-                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat / Etkinlik Adresi</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat Adresi</label>
                   <textarea
                     rows={2}
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Sokak, bina no, daire, ilçe/şehir..."
-                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fatura Adresi / Kurumsal Bilgiler (Opsiyonel)</label>
-                  <textarea
-                    rows={2}
-                    value={billingAddress}
-                    onChange={(e) => setBillingAddress(e.target.value)}
-                    placeholder="Fatura unvanı, vergi no veya adres..."
                     className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
                   />
                 </div>
@@ -327,22 +379,34 @@ export function SiteHeader() {
                   myEvents.map((item) => {
                     const evt = item.events
                     if (!evt) return null
+                    const isApproved = item.status === 'approved'
+                    const isRejected = item.status === 'rejected'
+
                     return (
                       <div key={item.id} className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-mono uppercase text-primary tracking-widest bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
                             {evt.branch || 'KULÜP'}
                           </span>
-                          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase">
-                            Kayıt Onaylandı
+                          <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border uppercase ${
+                            isApproved ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                            isRejected ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                            'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          }`}>
+                            {isApproved ? 'Onaylandı' : isRejected ? 'Reddedildi' : 'Onay Bekliyor (Talep)'}
                           </span>
                         </div>
                         <h4 className="font-sans font-bold text-sm text-white">{evt.title}</h4>
-                        <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 pt-1">
+                        <div className="flex items-center justify-between text-xs font-mono text-zinc-400 pt-1">
                           <div className="flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5 text-primary" />
                             <span>{new Date(evt.date).toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })}</span>
                           </div>
+                          {isApproved && (
+                            <a href="https://chat.whatsapp.com/G0tIj76Ky7BCsVUaa1laFg" target="_blank" rel="noopener noreferrer" className="text-emerald-400 underline hover:text-white text-[11px]">
+                              WhatsApp Grubuna Katıl →
+                            </a>
+                          )}
                         </div>
                       </div>
                     )
