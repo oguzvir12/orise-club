@@ -50,7 +50,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       } else {
         // Kayıt Ol
         const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
-        if (signUpError) throw signUpError
+        
+        if (signUpError) {
+          if (signUpError.message.includes('already registered')) {
+            throw new Error('Bu e-posta zaten sistemde kayıtlı! Lütfen "Giriş Yap" seçeneğini kullanın.')
+          }
+          throw signUpError
+        }
 
         if (data.user) {
           // Profil tablosuna ek bilgilerini kaydedelim
