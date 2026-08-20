@@ -6,8 +6,6 @@ import Link from 'next/link'
 import {
   ArrowLeft,
   Calendar,
-  MapPin,
-  Users,
   Check,
   ShieldCheck,
   AlertCircle,
@@ -19,7 +17,7 @@ import {
   LogOut,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import AuthModal from '../../components/AuthModal'
+import AuthModal from '@/components/AuthModal'
 
 interface EventItem {
   id: string
@@ -68,7 +66,6 @@ export default function CommunityPage() {
     fetchRegistrations()
     checkUserSession()
 
-    // Oturum değişikliklerini dinle
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       setSession(currentSession)
       if (currentSession?.user?.email) {
@@ -160,7 +157,7 @@ export default function CommunityPage() {
     }
 
     if (myRegisteredEventIds.includes(evt.id)) {
-      alert('Bu etkinliğe zaten katıldın! Profilim sayfasından ödemeni ve detayları görebilirsin.')
+      alert('Bu etkinliğe zaten katıldın!')
       return
     }
 
@@ -235,8 +232,6 @@ export default function CommunityPage() {
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
-      
-      {/* ÜST HEADER / NAVİGASYON */}
       <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-6 sm:px-10 lg:px-14">
         <Link
           href="/"
@@ -246,7 +241,6 @@ export default function CommunityPage() {
           <span>Ana Sayfa</span>
         </Link>
 
-        {/* Sağ Üst: Giriş Durumuna Göre Değişen Butonlar */}
         <div className="flex items-center gap-3">
           {session ? (
             <div className="flex items-center gap-2">
@@ -308,7 +302,6 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* Branş Filtreleme */}
       <section className="border-b border-white/10 bg-zinc-950/80 sticky top-0 z-40 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -330,7 +323,6 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* Etkinlik Listesi */}
       <section className="border-b border-white/10 bg-zinc-950/40 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <div className="mb-10 flex items-center justify-between border-b border-white/10 pb-4">
@@ -342,8 +334,6 @@ export default function CommunityPage() {
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {filteredEvents.map((evt) => {
-              const capacity = evt.capacity || 30
-              const enrolled = registrationCounts[evt.id] || 0
               const isFree = Number(evt.price) === 0
               const alreadyJoined = myRegisteredEventIds.includes(evt.id)
 
@@ -410,7 +400,6 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* Kayıt Modali */}
       {isModalOpen && selectedEvent && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn"
@@ -498,7 +487,6 @@ export default function CommunityPage() {
         </div>
       )}
 
-      {/* Sağlık Beyanı Modali */}
       {isHealthModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl" onClick={() => setIsHealthModalOpen(false)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
@@ -514,7 +502,6 @@ export default function CommunityPage() {
         </div>
       )}
 
-      {/* Giriş / Kayıt Modali */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
