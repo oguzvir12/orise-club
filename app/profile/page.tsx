@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, CreditCard, CheckCircle2, Clock, MapPin, User, Mail, Phone } from 'lucide-react'
+import { ArrowLeft, Calendar, CreditCard, CheckCircle2, Clock, Mail, Phone } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function ProfilePage() {
@@ -27,17 +27,15 @@ export default function ProfilePage() {
         setUserData(profileInfo)
       } else {
         const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          email = session.user.email || ''
-          // Profil tablosundan bilgileri çekelim
-          const { data: prof } = await supabase.from('profiler').select('*').eq('email', email).single()
-          profileInfo = prof || { email, full_name: session.user.user_metadata?.full_name || 'Kullanıcı' }
+        if (session?.user?.email) {
+          email = session.user.email
+          const { data: prof } = await supabase.from('profiler').select('*').ilike('email', email).single()
+          profileInfo = prof || { email, full_name: session.user.user_metadata?.full_name || 'Kulüp Üyesi' }
           setUserData(profileInfo)
         }
       }
 
       if (email) {
-        // Bu kullanıcının event_registrations tablosundaki kayıtlarını ve etkinlik detaylarını çekelim
         const { data: regs, error } = await supabase
           .from('event_registrations')
           .select(`
@@ -55,7 +53,7 @@ export default function ProfilePage() {
               image_url
             )
           `)
-          .eq('email', email)
+          .ilike('email', email.trim())
           .order('created_at', { ascending: false })
 
         if (!error && regs) {
@@ -70,7 +68,6 @@ export default function ProfilePage() {
   }
 
   const handlePayTRRedirect = (eventTitle: string, price: number) => {
-    // PayTR veya ödeme geçidi entegrasyon bağlantısı buraya eklenecek
     alert(`"${eventTitle}" etkinliği için ₺${price} tutarındaki ödeme ekranına (PayTR) yönlendiriliyorsunuz.`)
   }
 
@@ -78,7 +75,6 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black p-6 sm:p-10">
       <div className="max-w-5xl mx-auto space-y-10">
         
-        {/* Üst Navigasyon */}
         <div className="flex items-center justify-between border-b border-white/10 pb-6">
           <Link href="/community" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:text-white transition-colors">
             <ArrowLeft className="h-4 w-4" />
@@ -87,10 +83,9 @@ export default function ProfilePage() {
           <span className="text-xs font-mono text-primary uppercase">ORISE KULLANICI PROFİLİ</span>
         </div>
 
-        {/* Kullanıcı Kartı */}
         <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center gap-6">
           <div className="h-20 w-20 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-2xl font-black">
-            {userData?.full_name?.[0] || 'O'}
+            {userData?.full_name?.[0] || userData?.name?.[0] || 'O'}
           </div>
           <div className="space-y-1 text-center md:text-left">
             <h1 className="text-2xl font-black text-white">{userData?.full_name || userData?.name || 'Kulüp Üyesi'}</h1>
@@ -101,7 +96,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Katıldığım Etkinlikler Bölümü */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold flex items-center gap-2">
@@ -151,7 +145,7 @@ export default function ProfilePage() {
 
                     <div className="w-full sm:w-auto flex items-center justify-end">
                       {Number(evt.price) === 0 ? (
-                        <span className="text-xs font-mono text-zinc-500">Ücretsiz Etkinlik</span>
+                        <span className="text-xs font-mono text-emerald-400 font-bold">Ücretsiz Etkinlik</span>
                       ) : isPaid ? (
                         <span className="text-xs font-mono text-emerald-400 font-bold">₺{evt.price} Ödendi</span>
                       ) : (
