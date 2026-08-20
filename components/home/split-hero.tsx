@@ -76,7 +76,6 @@ export function SplitHero() {
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-black text-white font-sans">
-      {/* HEADER */}
       <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-6 sm:px-10">
         <div className="flex items-center gap-2">
           <span className="font-black tracking-widest text-sm text-white">ORISE CLUB</span>
@@ -103,7 +102,7 @@ export function SplitHero() {
             </div>
           ) : (
             <Link
-              href="/auth"
+              href="/community"
               className="rounded-full border border-white/20 bg-black/60 px-5 py-2 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-md hover:border-primary hover:bg-primary hover:text-black transition-all"
             >
               Giriş Yap / Üye Ol
@@ -112,7 +111,6 @@ export function SplitHero() {
         </div>
       </header>
 
-      {/* SPLIT HERO SECTIONS */}
       <div className="grid h-full w-full grid-cols-1 md:grid-cols-2 pt-20 md:pt-0">
         <div className="relative flex flex-col items-center justify-center p-8 text-center bg-zinc-950/60 border-r border-white/10 group overflow-hidden">
           <div className="absolute inset-0 z-0 opacity-30 transition-transform duration-700 group-hover:scale-105">
@@ -171,7 +169,6 @@ export function SplitHero() {
         </div>
       </div>
 
-      {/* PROFİL GÜNCELLEME MODALİ */}
       {isProfileOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
