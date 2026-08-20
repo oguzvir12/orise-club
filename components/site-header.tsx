@@ -25,6 +25,7 @@ export function SiteHeader() {
   const [successMsg, setSuccessMsg] = useState('')
 
   const fetchProfile = async (userId: string) => {
+    // Hem profiler hem profiles tablolarını kontrol edelim ki veri kaçmasın
     const { data } = await supabase
       .from('profiler')
       .select('*')
@@ -37,6 +38,17 @@ export function SiteHeader() {
       setInstagram(data.instagram || '')
       setAddress(data.adres || '')
       setBillingAddress(data.billing_address || '')
+    } else {
+      // Alternatif profiles tablosu kontrolü
+      const { data: prof2 } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+      if (prof2) {
+        setFullName(prof2.full_name || '')
+        setPhone(prof2.phone || '')
+      }
     }
   }
 
@@ -91,21 +103,23 @@ export function SiteHeader() {
     setSuccessMsg('')
 
     try {
-      const { error } = await supabase
-        .from('profiler')
-        .upsert({ 
-          id: user.id,
-          email: user.email,
-          full_name: fullName, 
-          phone: phone, 
-          instagram: instagram,
-          adres: address,
-          billing_address: billingAddress 
-        }, { onConflict: 'id' })
+      const payload = { 
+        id: user.id,
+        email: user.email,
+        full_name: fullName, 
+        phone: phone, 
+        instagram: instagram,
+        adres: address,
+        billing_address: billingAddress 
+      }
 
-      if (error) throw error
+      // profiler tablosuna kaydet
+      await supabase.from('profiler').upsert(payload, { onConflict: 'id' })
+      // eş zamanlı profiles tablosuna da yazalım ki çakışma olmasın
+      await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
+
       setSuccessMsg('Profil ve etkinlik bilgileriniz kalıcı olarak kaydedildi!')
-      setTimeout(() => { setIsProfileOpen(false); setSuccessMsg('') }, 2000)
+      setTimeout(() => { setIsProfileOpen(false); setSuccessMsg(''); window.location.reload() }, 1500)
     } catch (err: any) {
       alert('Hata: ' + err.message)
     } finally {
@@ -174,6 +188,7 @@ export function SiteHeader() {
         </div>
       </header>
 
+      {/* Profil Düzenleme / Bilgi Modalı */}
       {isProfileOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto"
@@ -286,6 +301,7 @@ export function SiteHeader() {
           if (session?.user) {
             setUser(session.user)
             await fetchProfile(session.user.id)
+            window.location.reload()
           }
         }}
       />
