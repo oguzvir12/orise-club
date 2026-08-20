@@ -36,7 +36,6 @@ export function SiteHeader() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setUser(session.user)
-        // DÜZELTME: E-posta yerine güvenli olan user.id ile sorguluyoruz
         const { data } = await supabase
           .from('profiler')
           .select('*')
@@ -74,20 +73,21 @@ export function SiteHeader() {
     setSuccessMsg('')
 
     try {
-      // DÜZELTME: Güncelleme işlemini user.id üzerinden yapıyoruz
+      // UPSERT mantığı: Kayıt varsa günceller, yoksa id ile yeni satır oluşturur
       const { error } = await supabase
         .from('profiler')
-        .update({ 
+        .upsert({ 
+          id: user.id,
+          email: user.email,
           full_name: fullName, 
           phone: phone, 
           instagram: instagram,
           adres: address,
           billing_address: billingAddress 
-        })
-        .eq('id', user.id)
+        }, { onConflict: 'id' })
 
       if (error) throw error
-      setSuccessMsg('Profil ve etkinlik bilgileriniz güncellendi!')
+      setSuccessMsg('Profil ve etkinlik bilgileriniz kalıcı olarak kaydedildi!')
       setTimeout(() => { setIsProfileOpen(false); setSuccessMsg('') }, 2000)
     } catch (err: any) {
       alert('Hata: ' + err.message)
