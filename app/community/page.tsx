@@ -16,6 +16,7 @@ import {
   Ticket,
   ChevronRight,
   Filter,
+  Lock,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -47,6 +48,10 @@ export default function CommunityPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
 
+  // Oturum ve Kullanıcı Bilgileri
+  const [userSession, setUserSession] = useState<any>(null)
+  const [userProfile, setUserProfile] = useState<any>(null)
+
   // Kayıt Formu State'leri
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -62,7 +67,50 @@ export default function CommunityPage() {
   useEffect(() => {
     fetchEvents()
     fetchRegistrations()
+    checkUserSession()
   }, [])
+
+  const checkUserSession = async () => {
+    // Supabase auth veya yerel oturum kontrolü
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        setUserSession(session.user)
+        fetchUserProfile(session.user.email)
+      } else {
+        // Alternatif olarak localStorage veya başka bir oturum yönetimi kontrol edilebilir
+        const localUser = localStorage.getItem('orise_logged_user')
+        if (localUser) {
+          const parsed = JSON.parse(localUser)
+          setUserSession(parsed)
+          setFullName(parsed.full_name || '')
+          setPhone(parsed.phone || '')
+          setEmail(parsed.email || '')
+        }
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const fetchUserProfile = async (userEmail: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiler')
+        .select('*')
+        .eq('email', userEmail)
+        .single()
+
+      if (!error && data) {
+        setUserProfile(data)
+        setFullName(data.full_name || data.name || '')
+        setPhone(data.phone || '')
+        setEmail(data.email || userEmail)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   const fetchEvents = async () => {
     try {
@@ -94,6 +142,14 @@ export default function CommunityPage() {
   }
 
   const openRegisterModal = (evt: EventItem) => {
+    // Üye girişi kontrolü
+    if (!userSession && !email && !localStorage.getItem('orise_logged_user')) {
+      alert('Etkinliklere katılabilmek için öncelikle üye girişi yapmalısınız!')
+      // Dilerseniz burada login sayfasına yönlendirme yapabilirsiniz:
+      // window.location.href = '/login'
+      return
+    }
+
     setSelectedEvent(evt)
     setIsModalOpen(true)
     setSuccess(false)
@@ -116,7 +172,7 @@ export default function CommunityPage() {
       const currentCount = registrationCounts[selectedEvent.id] || 0
       const isWaitlist = currentCount >= (selectedEvent.capacity || 30)
 
-      const { error } = await supabase.from('event_registrations').insert([
+      const { error } = await supabase.from('event_registrations'].insert([
         {
           event_id: selectedEvent.id,
           full_name: fullName.trim(),
@@ -130,9 +186,6 @@ export default function CommunityPage() {
       if (error) throw error
 
       setSuccess(true)
-      setFullName('')
-      setPhone('')
-      setEmail('')
       setHealthAccepted(false)
       fetchRegistrations()
 
@@ -356,11 +409,12 @@ export default function CommunityPage() {
             ) : (
               <form onSubmit={handleRegisterSubmit} className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad (Hesap Bilginiz)</label>
                   <input
                     type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)}
                     placeholder="Örn: Oğuzhan Beydoğan"
-                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                    readOnly={!!fullName}
+                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none read-only:opacity-75 read-only:cursor-not-allowed"
                   />
                 </div>
 
@@ -369,7 +423,8 @@ export default function CommunityPage() {
                   <input
                     type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)}
                     placeholder="05XX XXX XX XX"
-                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                    readOnly={!!phone}
+                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none read-only:opacity-75 read-only:cursor-not-allowed"
                   />
                 </div>
 
@@ -378,7 +433,8 @@ export default function CommunityPage() {
                   <input
                     type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
                     placeholder="ornek@gmail.com"
-                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                    readOnly={!!email}
+                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none read-only:opacity-75 read-only:cursor-not-allowed"
                   />
                 </div>
 
@@ -409,7 +465,7 @@ export default function CommunityPage() {
                   type="submit" disabled={loading}
                   className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform disabled:opacity-50 cursor-pointer"
                 >
-                  {loading ? 'İşleniyor...' : Number(selectedEvent.price) === 0 ? 'Katılımımı Onayla' : `₺${selectedEvent.price} — Ödemeyi Tamamla ve Katıl`}
+                  {loading ? 'İşleniyor...' : Number(selectedEvent.price) === 0 ? 'Katılımı Onayla (Katıl)' : `₺${selectedEvent.price} — Ödemeyi Tamamla ve Katıl`}
                 </button>
               </form>
             )}
