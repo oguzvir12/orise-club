@@ -1,341 +1,494 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import Image from 'next/image'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSearchParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import {
   ArrowLeft,
-  ArrowUpRight,
+  Users,
+  Trash2,
+  Phone,
+  Mail,
   ShieldCheck,
-  Sparkles,
-  Truck,
+  RefreshCw,
+  Lock,
+  LogOut,
   ShoppingBag,
-  Check,
-  Star,
-  X,
-  Maximize2,
-  Activity,
-  Heart,
-  MessageSquare,
-  UserCheck,
-  Flame,
-  AlertCircle,
-  Share2,
+  Package,
+  Truck,
+  PlusCircle,
+  Layers,
 } from 'lucide-react'
-import { InstagramIcon } from '@/components/icons/instagram-icon'
-import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
 
-const STORE_INSTAGRAM = 'https://www.instagram.com/orisestore/'
-
-const CATEGORIES = [
-  { id: 'all', label: 'TÜMÜ' },
-  { id: 'tank', label: 'KOŞU ATLETİ' },
-  { id: 'sweatshirt', label: 'SWEATSHIRT' },
-  { id: 'socks', label: 'PERFORMANS ÇORAP' },
-  { id: 'hat', label: 'ŞAPKA' },
-  { id: 'bag', label: 'ÇANTA' },
-  { id: 'equipment', label: 'TERMOS & MATARA' },
-]
-
-const FEATURES = [
-  {
-    icon: Sparkles,
-    title: 'Sınırlı Üretim & Drop',
-    desc: 'Her parça kulüp üyelerine özel sınırlı adetlerde, tekrarı olmayan koleksiyonlar halinde üretilir.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Teknik Kumaş Standartı',
-    desc: 'Yüksek gramajlı organik pamuk, nem transferli mikro fileler ve dayanıklı dikiş mimarisi.',
-  },
-  {
-    icon: Truck,
-    title: 'Hızlı & Güvenli Teslimat',
-    desc: 'Tüm siparişler özel korumalı kulüp ambalajında 1-3 iş günü içerisinde kargoya teslim edilir.',
-  },
-]
-
-function StoreContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const productParam = searchParams.get('product')
-
-  const { addItem } = useCart()
-
-  const [products, setProducts] = useState<any[]>([])
-  const [activeCategory, setActiveCategory] = useState<string>('all')
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
-
-  const [selectedColorIdx, setSelectedColorIdx] = useState<number>(0)
-  const [selectedSize, setSelectedSize] = useState<string>('M')
-  const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
-  const [isAdded, setIsAdded] = useState<boolean>(false)
-  const [isLiked, setIsLiked] = useState<boolean>(false)
-  const [copiedLink, setCopiedLink] = useState<boolean>(false)
-
-  // Veritabanından Ürünleri Çek
-  useEffect(() => {
-    fetchProducts()
-  }, [])
-
-  const fetchProducts = async () => {
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false })
-    if (data && data.length > 0) {
-      setProducts(data)
-    }
-  }
-
-  useEffect(() => {
-    if (productParam && products.length > 0) {
-      const match = products.find((p) => p.id === productParam)
-      if (match) {
-        setSelectedProduct(match)
-        setSelectedColorIdx(0)
-        setSelectedSize('M')
-        setActiveImageIdx(0)
-      }
-    } else {
-      setSelectedProduct(null)
-    }
-  }, [productParam, products])
-
-  const openProductDetail = (product: any) => {
-    setSelectedProduct(product)
-    setSelectedColorIdx(0)
-    setSelectedSize('M')
-    setActiveImageIdx(0)
-    setIsAdded(false)
-    router.push(`/store?product=${product.id}`, { scroll: false })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  const closeProductDetail = () => {
-    setSelectedProduct(null)
-    router.push('/store', { scroll: false })
-  }
-
-  const handleAddToCart = () => {
-    if (!selectedProduct) return
-    const image = selectedProduct.image_urls?.[0] || '/placeholder.svg'
-
-    addItem({
-      id: `${selectedProduct.id}-${selectedSize}`,
-      name: `${selectedProduct.title} (${selectedSize})`,
-      price: selectedProduct.price,
-      image: image,
-      type: 'product',
-    })
-
-    setIsAdded(true)
-    setTimeout(() => setIsAdded(false), 2000)
-  }
-
-  const handleShareLink = () => {
-    if (typeof window !== 'undefined') {
-      navigator.clipboard.writeText(window.location.href)
-      setCopiedLink(true)
-      setTimeout(() => setCopiedLink(false), 2500)
-    }
-  }
-
-  const filteredProducts =
-    activeCategory === 'all'
-      ? products
-      : products.filter((p) => p.category === activeCategory)
-
-  const currentProduct = selectedProduct
-  const currentImages = currentProduct?.image_urls || ['/placeholder.svg']
-
-  return (
-    <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
-      <div className="fixed top-4 left-6 z-[60] sm:left-8">
-        {selectedProduct ? (
-          <button
-            type="button"
-            onClick={closeProductDetail}
-            className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-black hover:text-white"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 text-primary transition-transform duration-300 group-hover:-translate-x-1" />
-            <span>Tüm Koleksiyon</span>
-          </button>
-        ) : (
-          <Link
-            href="/"
-            className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-black hover:text-white"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 text-primary transition-transform duration-300 group-hover:-translate-x-1" />
-            <span>Ana Sayfa</span>
-          </Link>
-        )}
-      </div>
-
-      {selectedProduct ? (
-        <div>
-          <section className="pt-28 pb-20 sm:pt-36 sm:pb-24 border-b border-white/10">
-            <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-              <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
-                
-                {/* SOL: GALERİ */}
-                <div className="lg:col-span-7 space-y-4">
-                  <div
-                    onClick={() => setIsModalOpen(true)}
-                    className="group relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-zinc-900 cursor-zoom-in"
-                  >
-                    <Image
-                      src={currentImages[activeImageIdx] || currentImages[0]}
-                      alt={selectedProduct.title}
-                      fill
-                      priority
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    />
-                  </div>
-                </div>
-
-                {/* SAĞ: DETAYLAR */}
-                <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
-                  <div>
-                    <span className="text-xs font-mono tracking-widest text-primary uppercase">
-                      {selectedProduct.category_label || 'ÖZEL DROP'}
-                    </span>
-
-                    <h1 className="mt-2 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl">
-                      {selectedProduct.title}
-                    </h1>
-                    <p className="text-sm font-mono text-zinc-400 mt-1">{selectedProduct.subtitle}</p>
-
-                    <div className="mt-6 flex items-end justify-between">
-                      <div>
-                        <span className="text-xs font-mono text-zinc-500 uppercase">Kulüp Satış Fiyatı</span>
-                        <div className="text-3xl font-black text-white">₺{Number(selectedProduct.price).toLocaleString('tr-TR')}</div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] font-mono text-zinc-500 uppercase block">Stok Durumu</span>
-                        <span className="text-xs font-mono font-bold text-primary">
-                          {selectedProduct.stock} Adet Kaldı
-                        </span>
-                      </div>
-                    </div>
-
-                    <p className="mt-4 text-sm leading-relaxed text-zinc-300">{selectedProduct.description}</p>
-
-                    {/* Bedenler */}
-                    <div className="mt-6 space-y-2">
-                      <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi</div>
-                      <div className="grid grid-cols-4 gap-2">
-                        {['S', 'M', 'L', 'XL'].map((s) => (
-                          <button
-                            key={s}
-                            type="button"
-                            onClick={() => setSelectedSize(s)}
-                            className={`rounded-xl py-3 text-xs font-bold transition-all ${
-                              selectedSize === s
-                                ? 'border border-primary bg-primary text-black'
-                                : 'border border-white/10 bg-zinc-900 text-zinc-300'
-                            }`}
-                          >
-                            {s}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-4">
-                    <button
-                      type="button"
-                      onClick={handleAddToCart}
-                      className={`flex w-full items-center justify-center gap-3 rounded-full py-4 text-xs font-bold uppercase tracking-widest transition-all ${
-                        isAdded ? 'bg-emerald-500 text-black' : 'bg-primary text-black hover:scale-[1.02]'
-                      }`}
-                    >
-                      {isAdded ? (
-                        <>
-                          <Check className="h-4 w-4" />
-                          <span>Sepete Eklendi</span>
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingBag className="h-4 w-4" />
-                          <span>Siparişe Ekle — ₺{selectedProduct.price}</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-      ) : (
-        <>
-          <section className="relative overflow-hidden border-b border-white/10 pt-32 pb-16 lg:pt-40 lg:pb-20">
-            <div className="absolute inset-0 z-0 overflow-hidden">
-              <Image src="/store-hero.jpeg" alt="ORISE Store Drop" fill priority className="object-cover opacity-20 grayscale" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-transparent" />
-            </div>
-
-            <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-                  <span>HAREKET KULÜBÜ & ATÖLYE</span>
-                </div>
-                <h1 className="font-sans text-4xl font-black tracking-tighter text-white sm:text-6xl lg:text-7xl">
-                  Kulübe Özel <span className="text-primary">Drop</span> Koleksiyonu.
-                </h1>
-              </div>
-            </div>
-          </section>
-
-          <section className="border-b border-white/10 bg-zinc-950/40 py-16 sm:py-20">
-            <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredProducts.map((product) => {
-                  const image = product.image_urls?.[0] || '/placeholder.svg'
-
-                  return (
-                    <div
-                      key={product.id}
-                      onClick={() => openProductDetail(product)}
-                      className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all hover:border-primary/60 cursor-pointer"
-                    >
-                      <div>
-                        <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950">
-                          <Image src={image} alt={product.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-
-                        <div className="mt-5 space-y-1.5">
-                          <div className="text-[10px] font-mono text-primary uppercase">{product.category_label || 'ÖZEL DROP'}</div>
-                          <h3 className="font-sans text-lg font-bold text-white group-hover:text-primary">{product.title}</h3>
-                          <p className="text-xs text-zinc-400 line-clamp-1">{product.subtitle}</p>
-                        </div>
-                      </div>
-
-                      <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
-                        <div className="text-lg font-black text-white">₺{Number(product.price).toLocaleString('tr-TR')}</div>
-                        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-zinc-800/80 px-4 py-2 text-xs font-bold uppercase text-zinc-200 group-hover:bg-primary group-hover:text-black">
-                          <span>İncele</span>
-                          <ArrowUpRight className="h-3.5 w-3.5" />
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </section>
-        </>
-      )}
-    </div>
-  )
+const ADMIN_USERS: Record<string, { pass: string; branch: string; title: string; type: 'community' | 'store' | 'super' | 'community_director' }> = {
+  orise_master_admin: { pass: 'Orise#2026_SecureKey!99', branch: 'ALL', title: 'Süper Admin (Tüm Yetkiler)', type: 'super' },
+  community_director: { pass: 'Director#Community_2026!', branch: 'ALL', title: 'Genel Topluluk Yöneticisi', type: 'community_director' },
+  store_manager_tr: { pass: 'Store#Shipping_7721*', branch: 'STORE', title: 'Mağaza & Kargo Yöneticisi', type: 'store' },
+  captain_run: { pass: 'Runners#2026_Tr*', branch: 'KOŞU', title: 'Koşu Kaptanı', type: 'community' },
+  leader_yoga: { pass: 'Mobility#Yoga_2026!', branch: 'YOGA & MOBILITY', title: 'Yoga & Mobility Lideri', type: 'community' },
+  lead_tennis: { pass: 'Court#Tennis_8842$', branch: 'TENİS', title: 'Tenis Sorumlusu', type: 'community' },
+  skipper_sail: { pass: 'Marine#Sail_5510&', branch: 'YELKEN', title: 'Yelken Kaptanı', type: 'community' },
+  captain_volley: { pass: 'Volley#Spike_2026#', branch: 'VOLEYBOL', title: 'Voleybol Kaptanı', type: 'community' },
 }
 
-export default function StorePage() {
+const EVENT_BRANCH_MAP: Record<string, string> = {
+  'evt-cadde-run-01': 'KOŞU',
+  'evt-moda-yoga-01': 'YOGA & MOBILITY',
+  'evt-kalamis-tennis-01': 'TENİS',
+  'evt-voleybol-01': 'VOLEYBOL',
+}
+
+export default function AdminPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [loginError, setLoginError] = useState('')
+  
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [registrations, setRegistrations] = useState<any[]>([])
+  const [orders, setOrders] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+
+  // Yeni Ürün Form State'leri
+  const [title, setTitle] = useState('')
+  const [subtitle, setSubtitle] = useState('')
+  const [price, setPrice] = useState('')
+  const [stock, setStock] = useState('')
+  const [description, setDescription] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('orise_admin_user')
+    if (savedAuth && ADMIN_USERS[savedAuth]) {
+      const user = ADMIN_USERS[savedAuth]
+      setIsLoggedIn(true)
+      setCurrentUser(user)
+      fetchData()
+    }
+  }, [])
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    const user = ADMIN_USERS[username.trim()]
+    if (user && user.pass === password) {
+      setIsLoggedIn(true)
+      setCurrentUser(user)
+      localStorage.setItem('orise_admin_user', username.trim())
+      setLoginError('')
+      fetchData()
+    } else {
+      setLoginError('Hatalı kullanıcı adı veya şifre!')
+    }
+  }
+
+  const handleLogout = () => {
+    setIsLoggedIn(false)
+    setCurrentUser(null)
+    localStorage.removeItem('orise_admin_user')
+  }
+
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const { data: regData } = await supabase.from('event_registrations').select('*').order('created_at', { ascending: false })
+      if (regData) setRegistrations(regData)
+
+      const { data: ordData } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
+      if (ordData) setOrders(ordData)
+
+      const { data: prodData } = await supabase.from('products').select('*').order('created_at', { ascending: false })
+      if (prodData) setProducts(prodData)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteRegistration = async (id: string) => {
+    if (!confirm('Bu katılımcı kaydını silmek istediğinize emin misiniz?')) return
+    await supabase.from('event_registrations').delete().eq('id', id)
+    setRegistrations((prev) => prev.filter((r) => r.id !== id))
+  }
+
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
+    await supabase.from('orders').update({ status: newStatus }).eq('id', orderId)
+    setOrders((prev) => prev.map((ord) => (ord.id === orderId ? { ...ord, status: newStatus } : ord)))
+  }
+
+  // ÜRÜN EKLEME
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title || !price) return
+
+    const { error } = await supabase.from('products').insert([{
+      title,
+      subtitle: subtitle || 'Kulüp Özel Parçası',
+      price: Number(price),
+      stock: Number(stock) || 50,
+      description: description || 'Yüksek kaliteli kulüp teknik tekstil ürünü.',
+      category: 'tank',
+      category_label: 'ÖZEL DROP',
+      image_urls: imageUrl ? [imageUrl] : ['https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop']
+    }])
+
+    if (!error) {
+      alert('Ürün başarıyla mağazaya eklendi!')
+      setTitle('')
+      setSubtitle('')
+      setPrice('')
+      setStock('')
+      setDescription('')
+      setImageUrl('')
+      fetchData()
+    } else {
+      alert('Ürün eklenirken veritabanı hatası oluştu.')
+    }
+  }
+
+  // ÜRÜN KALICI SİLME VE LİSTEYİ GÜNCELLEME
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm('Bu ürünü mağazadan kalıcı olarak silmek istiyor musunuz?')) return
+    
+    const { error } = await supabase.from('products').delete().eq('id', id)
+    
+    if (!error) {
+      setProducts((prev) => prev.filter((p) => p.id !== id))
+      await fetchData()
+    } else {
+      alert('Silme sırasında hata oluştu.')
+    }
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 font-sans">
+        <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-8 shadow-2xl space-y-6">
+          <div className="text-center space-y-2">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40">
+              <Lock className="h-5 w-5" />
+            </div>
+            <h1 className="text-xl font-black text-white">ORISE Yönetim Girişi</h1>
+            <p className="text-xs text-zinc-400">Yetkili kullanıcı adı ve şifrenizle giriş yapın.</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Kullanıcı Adı</label>
+              <input
+                type="text"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="orise_master_admin..."
+                className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Şifre</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+              />
+            </div>
+
+            {loginError && (
+              <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-3 text-xs text-red-400 text-center">
+                {loginError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform"
+            >
+              Giriş Yap
+            </button>
+          </form>
+
+          <div className="text-center pt-2">
+            <Link href="/" className="text-xs text-zinc-500 hover:text-zinc-300 underline">
+              ← Ana Sayfaya Dön
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const filteredRegistrations = registrations.filter((reg) => {
+    if (currentUser?.type === 'super' || currentUser?.type === 'community_director' || currentUser?.branch === 'ALL') return true
+    const eventBranch = EVENT_BRANCH_MAP[reg.event_id] || ''
+    return eventBranch === currentUser?.branch
+  })
+
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black" />}>
-      <StoreContent />
-    </Suspense>
+    <div className="min-h-screen bg-black text-white p-6 sm:p-10 font-sans">
+      <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-300 hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-black text-white">ORISE Kontrol Paneli</h1>
+            <p className="text-xs font-mono text-primary uppercase">
+              {currentUser?.title}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={fetchData}
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:border-primary hover:text-white"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Yenile</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span>Çıkış</span>
+          </button>
+        </div>
+      </div>
+
+      {/* SÜPER ADMIN / MAĞAZA YÖNETİCİSİ: ÜRÜN EKLEME & YÖNETİMİ */}
+      {(currentUser?.type === 'store' || currentUser?.type === 'super') && (
+        <div className="mx-auto max-w-7xl space-y-8 mb-16">
+          {currentUser?.type === 'super' && (
+            <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
+              <h2 className="text-base font-bold flex items-center gap-2 text-primary">
+                <PlusCircle className="h-5 w-5" />
+                <span>Mağazaya Yeni Ürün / Drop Ekle</span>
+              </h2>
+              <form onSubmit={handleAddProduct} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <input
+                  type="text"
+                  placeholder="Ürün Başlığı"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Alt Başlık (Örn: Heavyweight Cotton)"
+                  value={subtitle}
+                  onChange={(e) => setSubtitle(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <input
+                  type="number"
+                  placeholder="Fiyat (₺)"
+                  required
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <input
+                  type="number"
+                  placeholder="Stok Adedi"
+                  required
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Fotoğraf URL (Görsel Bağlantısı)"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <textarea
+                  rows={1}
+                  placeholder="Ürün Açıklaması"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg hover:scale-[1.01] transition-transform"
+                >
+                  Ürünü Mağazada Yayınla
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* YÜKLÜ ÜRÜNLER LİSTESİ VE SİLME */}
+          <div className="space-y-4">
+            <h2 className="text-base font-bold flex items-center gap-2">
+              <Layers className="h-4 w-4 text-primary" />
+              <span>Mağazada Yüklü Ürünler ({products.length})</span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {products.map((prod) => (
+                <div key={prod.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none">
+                      <Image src={prod.image_urls?.[0] || '/placeholder.svg'} alt={prod.title} fill className="object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-white line-clamp-1">{prod.title}</h4>
+                      <span className="text-[11px] font-mono text-primary font-bold">₺{prod.price}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteProduct(prod.id)}
+                    className="p-2 text-zinc-500 hover:text-red-400 transition-colors"
+                    title="Ürünü Sil"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Siparişler Yönetimi */}
+          <div className="flex items-center justify-between pt-4">
+            <h2 className="text-base font-bold flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4 text-primary" />
+              <span>Mağaza Siparişleri & Kargo Yönetimi ({orders.length})</span>
+            </h2>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
+                  <tr>
+                    <th className="p-4">Sipariş Kod</th>
+                    <th className="p-4">Müşteri</th>
+                    <th className="p-4">Adres</th>
+                    <th className="p-4">Tutar</th>
+                    <th className="p-4">Durum</th>
+                    <th className="p-4 text-right">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-zinc-300">
+                  {orders.length > 0 ? (
+                    orders.map((ord) => (
+                      <tr key={ord.id} className="hover:bg-zinc-900/40 transition-colors">
+                        <td className="p-4 font-bold text-primary">{ord.order_code}</td>
+                        <td className="p-4">
+                          <div className="font-bold text-white">{ord.customer_name}</div>
+                          <div className="text-[11px] text-zinc-400">{ord.customer_phone}</div>
+                        </td>
+                        <td className="p-4 text-zinc-400 max-w-xs truncate">{ord.shipping_address}</td>
+                        <td className="p-4 font-bold text-white">{ord.total_amount} ₺</td>
+                        <td className="p-4">
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] uppercase font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                            <Truck className="h-3 w-3" />
+                            {ord.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateOrderStatus(ord.id, 'Kargolandı')}
+                            className="rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 text-[10px] font-bold uppercase"
+                          >
+                            Kargola
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateOrderStatus(ord.id, 'Teslim Edildi')}
+                            className="rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 text-[10px] font-bold uppercase"
+                          >
+                            Teslim
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="p-6 text-center text-zinc-500">Henüz sipariş yok.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOPLULUK YÖNETİCİSİ VEYA BRANŞ KAPTANLARI ETKİNLİKLERİ GÖRÜR */}
+      {(currentUser?.type === 'community' || currentUser?.type === 'community_director' || currentUser?.type === 'super') && (
+        <div className="mx-auto max-w-7xl space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              <span>Etkinlik Katılımcıları ({filteredRegistrations.length})</span>
+            </h2>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
+                  <tr>
+                    <th className="p-4">Katılımcı</th>
+                    <th className="p-4">İletişim</th>
+                    <th className="p-4">Branş</th>
+                    <th className="p-4 text-right">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-zinc-300">
+                  {filteredRegistrations.length > 0 ? (
+                    filteredRegistrations.logreg ? null : filteredRegistrations.map((reg) => (
+                      <tr key={reg.id} className="hover:bg-zinc-900/40 transition-colors">
+                        <td className="p-4 font-bold text-white flex items-center gap-2">
+                          <span>{reg.full_name}</span>
+                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                        </td>
+                        <td className="p-4 space-y-0.5">
+                          <div>{reg.phone}</div>
+                          <div className="text-zinc-500">{reg.email}</div>
+                        </td>
+                        <td className="p-4 text-primary font-bold">
+                          {EVENT_BRANCH_MAP[reg.event_id] || reg.event_id}
+                        </td>
+                        <td className="p-4 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRegistration(reg.id)}
+                            className="p-2 text-zinc-500 hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="p-6 text-center text-zinc-500">Bu branşta kayıt bulunmuyor.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
