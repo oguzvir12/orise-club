@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
-import AuthModal from '@/components/AuthModal'
+import AuthModal from './AuthModal'
 
 export function SiteHeader() {
   const { count, openCart } = useCart()
@@ -24,7 +24,6 @@ export function SiteHeader() {
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
 
-  // Profil verilerini çekmek için ortak fonksiyon
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from('profiler')
@@ -175,7 +174,6 @@ export function SiteHeader() {
         </div>
       </header>
 
-      {/* PROFİL GÜNCELLEME MODALİ */}
       {isProfileOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto"
