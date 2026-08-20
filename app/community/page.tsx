@@ -66,7 +66,7 @@ export default function CommunityPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       if (currentSession?.user?.email) {
         setUserEmail(currentSession.user.email)
-        fetchUserData(currentSession.user.email)
+        fetchUserData(currentSession.user.id, currentSession.user.email)
         fetchMyRegistrations(currentSession.user.email)
       } else {
         setUserEmail('')
@@ -85,7 +85,7 @@ export default function CommunityPage() {
       if (currentSession?.user?.email) {
         const emailVal = currentSession.user.email
         setUserEmail(emailVal)
-        await fetchUserData(emailVal)
+        await fetchUserData(currentSession.user.id, emailVal)
         await fetchMyRegistrations(emailVal)
       }
     } catch (e) {
@@ -93,12 +93,19 @@ export default function CommunityPage() {
     }
   }
 
-  const fetchUserData = async (email: string) => {
+  const fetchUserData = async (userId: string, email: string) => {
     try {
-      const { data: prof } = await supabase.from('profiles').select('*').ilike('email', email).single()
+      // profiler veya profiles tablosundan kullanıcı bilgilerini çekelim
+      const { data: prof } = await supabase.from('profiler').select('*').eq('id', userId).single()
       if (prof) {
         setFullName(prof.full_name || '')
         setPhone(prof.phone || '')
+      } else {
+        const { data: prof2 } = await supabase.from('profiles').select('*').ilike('email', email).maybeSingle()
+        if (prof2) {
+          setFullName(prof2.full_name || '')
+          setPhone(prof2.phone || '')
+        }
       }
     } catch (e) {
       console.error(e)
@@ -193,6 +200,7 @@ export default function CommunityPage() {
       const { error } = await supabase.from('event_registrations').insert([
         {
           event_id: selectedEvent.id,
+          title: selectedEvent.title,
           full_name: fullName.trim() || 'Kulüp Üyesi',
           phone: phone.trim() || 'Belirtilmemiş',
           email: userEmail.trim(),
@@ -400,11 +408,11 @@ export default function CommunityPage() {
             ) : (
               <form onSubmit={handleRegisterSubmit} className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad (Profilinizden Alındı)</label>
                   <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ad Soyad" className="w-full rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white focus:border-primary focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon (Profilinizden Alındı)</label>
                   <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XX XXX XX XX" className="w-full rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white focus:border-primary focus:outline-none" />
                 </div>
                 <div>
