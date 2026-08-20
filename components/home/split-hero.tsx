@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-import { ArrowUpRight, Users, ShoppingBag, Sparkles, Mail, X, ShieldCheck } from 'lucide-react'
+import { ArrowUpRight, Users, ShoppingBag, Sparkles, ShieldCheck, X } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
 
@@ -34,22 +34,39 @@ const PANELS = [
   },
 ]
 
-const LEGAL_DOCS: Record<string, { title: string; content: string }> = {
+const LEGAL_DOCS: Record<string, { title: string; content: string[] }> = {
   kvkk: {
     title: 'KVKK Aydınlatma & Açık Rıza Metni',
-    content: '6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca verileriniz güvenle saklanmaktadır.',
+    content: [
+      '1. Veri Sorumlusunun Kimliği: 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, Orise Club olarak kişisel verileriniz, veri sorumlusu sıfatıyla aşağıda açıklanan kapsamda işlenmektedir.',
+      '2. İşlenen Kişisel Verileriniz: Ad-soyad, e-posta adresi, telefon numarası, teslimat/fatura adresleri, Instagram kullanıcı adı ve etkinlik katılım/sağlık beyanı bilgileriniz.',
+      '3. Kişisel Verilerin İşlenme Amaçları: Topluluk etkinliklerine katılımın sağlanması, mağaza alışverişlerinizin faturalandırma ve teslimat süreçlerinin yürütülmesi, üyelik işlemlerinin gerçekleştirilmesi ve iletişim faaliyetlerinin yürütülmesi.',
+      '4. Haklarınız: KVKK’nın 11. maddesi gereğince verilerinizin silinmesini, güncellenmesini veya işlenme amacını öğrenme haklarına sahipsiniz.'
+    ],
   },
   privacy: {
     title: 'Gizlilik ve Çerez Politikası',
-    content: 'Kullanıcı gizliliğine önem verilir, teknik çerezler kullanılır.',
+    content: [
+      '1. Gizlilik İlkemiz: Orise Club, üyelerinin ve kullanıcılarının gizliliğine son derece önem verir. Toplanan tüm kişisel veriler şifrelenmiş güvenli veritabanlarında saklanır.',
+      '2. Çerez (Cookie) Kullanımı: Sitemizdeki kullanıcı deneyimini iyileştirmek, oturum açık tutma ve sepet işlevlerini yerine getirmek amacıyla zorunlu ve analitik çerezler kullanılmaktadır.',
+      '3. Üçüncü Taraflarla Paylaşım: Verileriniz yasal zorunluluklar haricinde hiçbir üçüncü şahıs veya kurumla ticari amaçla paylaşılmaz. Ödeme ve altyapı süreçlerinde global güvenlik standartları uygulanır.'
+    ],
   },
   terms: {
     title: 'Mesafeli Satış ve Hizmet Sözleşmesi',
-    content: 'Ürün siparişleri ve etkinlik katılımlarının şartlarını düzenler.',
+    content: [
+      '1. Taraflar: İş bu sözleşme, Orise Club ("Satıcı/Hizmet Sağlayıcı") ile internet sitesi üzerinden alışveriş yapan veya etkinliklere kayıt olan Üye ("Alıcı") arasında elektronik ortamda akdedilmiştir.',
+      '2. Konu: İş bu sözleşme, Alıcı’nın internet sitesi üzerinden siparişini verdiği ürünlerin satışı-teslimi ile kulüp etkinliklerine katılım koşullarını kapsar.',
+      '3. Etkinlik Katılım Şartları: Ücretsiz veya biletli kulüp buluşmalarına katılan üyeler, fiziksel yeterliliklerini beyan etmiş sayılırlar. Yönetim, etkinlik yer ve saatinde hava muhalefeti nedeniyle değişiklik yapma hakkını saklı tutar.'
+    ],
   },
   refund: {
     title: 'İptal ve İade Koşulları',
-    content: '14 gün içinde iade imkanı sunulur.',
+    content: [
+      '1. E-Ticaret Ürün İadeleri: Mağazadan satın alınan kullanılmamış ve orijinal ambalajındaki ürünler, teslim tarihinden itibaren 14 (on dört) gün içinde kargo bedeli alıcıya ait olmak üzere iade edilebilir.',
+      '2. Etkinlik Biletleri: Ücretli etkinlik biletlerinde, etkinlik tarihinden 48 saat öncesine kadar kesintisiz iptal ve iade hakkı tanınır. Bu süreden sonra yapılan taleplerde iade yapılmaz.',
+      '3. İade Süreci: İade onaylanan tutarlar, ödemenin yapıldığı banka aracılığıyla 3 ila 10 iş günü içerisinde hesabınıza yansıtılır.'
+    ],
   },
 }
 
@@ -173,16 +190,22 @@ export function SplitHero() {
         </div>
       </footer>
 
-      {/* HUKUKİ METİN MODALİ */}
+      {/* YASAL METİN MODALİ */}
       {activeLegalModal && LEGAL_DOCS[activeLegalModal] && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setActiveLegalModal(null)}>
-          <div className="relative w-full max-w-xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 space-y-4 text-white" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 space-y-4 text-white max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <span className="text-primary font-bold text-sm uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Yasal Bilgilendirme</span>
               <button onClick={() => setActiveLegalModal(null)} className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
             <h3 className="text-xl font-black">{LEGAL_DOCS[activeLegalModal].title}</h3>
-            <p className="text-xs text-zinc-300">{LEGAL_DOCS[activeLegalModal].content}</p>
+            <div className="space-y-3 pt-2">
+              {LEGAL_DOCS[activeLegalModal].content.map((paragraph, index) => (
+                <p key={index} className="text-xs text-zinc-300 leading-relaxed">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
       )}
