@@ -3,14 +3,13 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { User, LogOut, Settings, X, Check, MapPin, Phone, Shield } from 'lucide-react'
+import { User, LogOut, Settings, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export function SplitHero() {
   const [user, setUser] = useState<any>(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   
-  // Profil Güncelleme State'leri
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
@@ -18,12 +17,10 @@ export function SplitHero() {
   const [successMsg, setSuccessMsg] = useState('')
 
   useEffect(() => {
-    // Oturum açan kullanıcıyı kontrol et
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setUser(session.user)
-        // Profil tablosundan ek bilgileri çek
         const { data } = await supabase
           .from('profiler')
           .select('*')
@@ -65,24 +62,24 @@ export function SplitHero() {
 
       if (error) throw error
 
-      setSuccessMsg('Profil bilgileriniz başarıyla güncellendi!')
+      setSuccessMsg('Profil bilgileriniz güncellendi!')
       setTimeout(() => {
         setIsProfileOpen(false)
         setSuccessMsg('')
       }, 2000)
     } catch (err: any) {
-      alert('Güncelleme hatası: ' + err.message)
+      alert('Hata: ' + err.message)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <main className="relative h-screen w-full overflow-hidden bg-black text-white font-sans">
-      {/* HEADER - SOL ÜST SEPET KALDIRILDI, SAĞ ÜST KULLANICI & PROFİL */}
+    <div className="relative h-screen w-full overflow-hidden bg-black text-white font-sans">
+      {/* HEADER */}
       <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-6 sm:px-10">
         <div className="flex items-center gap-2">
-          {/* Sol üst tamamen temizlendi */}
+          <span className="font-black tracking-widest text-sm text-white">ORISE CLUB</span>
         </div>
 
         <div className="flex items-center gap-4">
@@ -99,7 +96,6 @@ export function SplitHero() {
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-mono text-red-400 hover:bg-red-500/20 transition-all cursor-pointer"
-                title="Çıkış Yap"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">ÇIKIŞ</span>
@@ -116,9 +112,8 @@ export function SplitHero() {
         </div>
       </header>
 
-      {/* ANA SPLIT HERO İÇERİĞİ */}
-      <div className="grid h-full w-full grid-cols-1 md:grid-cols-2">
-        {/* Sol Taraf: Topluluk */}
+      {/* SPLIT HERO SECTIONS */}
+      <div className="grid h-full w-full grid-cols-1 md:grid-cols-2 pt-20 md:pt-0">
         <div className="relative flex flex-col items-center justify-center p-8 text-center bg-zinc-950/60 border-r border-white/10 group overflow-hidden">
           <div className="absolute inset-0 z-0 opacity-30 transition-transform duration-700 group-hover:scale-105">
             <Image
@@ -134,7 +129,7 @@ export function SplitHero() {
             <span className="text-[10px] font-mono text-primary uppercase tracking-[0.3em]">KULÜBE KATIL · RİTMİNİ BUL</span>
             <h1 className="text-4xl sm:text-6xl font-black tracking-tighter">TOPLULUK</h1>
             <p className="text-xs sm:text-sm text-zinc-300">
-              Tek başınanlıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.
+              Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.
             </p>
             <div className="pt-4">
               <Link
@@ -147,7 +142,6 @@ export function SplitHero() {
           </div>
         </div>
 
-        {/* Sağ Taraf: Mağaza */}
         <div className="relative flex flex-col items-center justify-center p-8 text-center bg-zinc-950/60 group overflow-hidden">
           <div className="absolute inset-0 z-0 opacity-30 transition-transform duration-700 group-hover:scale-105">
             <Image
@@ -177,10 +171,10 @@ export function SplitHero() {
         </div>
       </div>
 
-      {/* PROFİL BİLGİ GÜNCELLEME MODALİ */}
+      {/* PROFİL GÜNCELLEME MODALİ */}
       {isProfileOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fadeIn"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
           onClick={() => setIsProfileOpen(false)}
         >
           <div
@@ -190,7 +184,7 @@ export function SplitHero() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-primary" />
-                <h3 className="font-bold text-sm text-white uppercase tracking-wider">Profil Bilgilerini Düzenle</h3>
+                <h3 className="font-bold text-sm text-white uppercase tracking-wider">Profili Düzenle</h3>
               </div>
               <button
                 type="button"
@@ -208,7 +202,7 @@ export function SplitHero() {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Adınız Soyadınız"
+                  placeholder="Ad Soyad"
                   className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
                 />
               </div>
@@ -225,12 +219,12 @@ export function SplitHero() {
               </div>
 
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat / İkamet Adresi</label>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">İkamet / Teslimat Adresi</label>
                 <textarea
                   rows={2}
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Mahalle, sokak, no, ilçe/il..."
+                  placeholder="Adres detayları..."
                   className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
                 />
               </div>
@@ -246,12 +240,12 @@ export function SplitHero() {
                 disabled={loading}
                 className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50"
               >
-                {loading ? 'Güncelleniyor...' : 'Değişiklikleri Kaydet'}
+                {loading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
               </button>
             </form>
           </div>
         </div>
       )}
-    </main>
+    </div>
   )
 }
