@@ -95,16 +95,28 @@ export default function CommunityPage() {
 
   const fetchUserData = async (userId: string, email: string) => {
     try {
-      // profiler veya profiles tablosundan kullanıcı bilgilerini çekelim
-      const { data: prof } = await supabase.from('profiler').select('*').eq('id', userId).single()
-      if (prof) {
-        setFullName(prof.full_name || '')
-        setPhone(prof.phone || '')
-      } else {
-        const { data: prof2 } = await supabase.from('profiles').select('*').ilike('email', email).maybeSingle()
-        if (prof2) {
-          setFullName(prof2.full_name || '')
-          setPhone(prof2.phone || '')
+      let found = false
+      const { data: p1 } = await supabase.from('profiler').select('*').eq('id', userId).maybeSingle()
+      if (p1 && p1.full_name) {
+        setFullName(p1.full_name)
+        setPhone(p1.phone || '')
+        found = true
+      }
+
+      if (!found) {
+        const { data: p2 } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+        if (p2 && p2.full_name) {
+          setFullName(p2.full_name)
+          setPhone(p2.phone || '')
+          found = true
+        }
+      }
+
+      if (!found && email) {
+        const { data: p3 } = await supabase.from('profiles').select('*').ilike('email', email).maybeSingle()
+        if (p3) {
+          setFullName(p3.full_name || '')
+          setPhone(p3.phone || '')
         }
       }
     } catch (e) {
@@ -151,7 +163,7 @@ export default function CommunityPage() {
     }
   }
 
-  const openRegisterModal = (evt: EventItem) => {
+  const openRegisterModal = async (evt: EventItem) => {
     if (!userEmail) {
       setIsAuthModalOpen(true)
       return
@@ -160,6 +172,11 @@ export default function CommunityPage() {
     if (myRegisteredEventIds.includes(evt.id)) {
       alert('Bu etkinliğe zaten katıldın!')
       return
+    }
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user) {
+      await fetchUserData(session.user.id, session.user.email!)
     }
 
     setSelectedEvent(evt)
@@ -319,7 +336,7 @@ export default function CommunityPage() {
                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       <div className="absolute top-3 left-3 rounded-full border border-primary/40 bg-black/80 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-                        {evt.branch || 'KULÜP'}
+                        {evt.branch || 'KULÜB'}
                       </div>
                     </div>
 
@@ -408,11 +425,11 @@ export default function CommunityPage() {
             ) : (
               <form onSubmit={handleRegisterSubmit} className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad (Profilinizden Alındı)</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad (Profilinizden Otomatik Alındı)</label>
                   <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ad Soyad" className="w-full rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white focus:border-primary focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon (Profilinizden Alındı)</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon (Profilinizden Otomatik Alındı)</label>
                   <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XX XXX XX XX" className="w-full rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white focus:border-primary focus:outline-none" />
                 </div>
                 <div>
