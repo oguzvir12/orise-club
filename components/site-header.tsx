@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Settings, X, AtSign } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Settings, X, AtSign, Calendar, Ticket } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -23,9 +23,13 @@ export function SiteHeader() {
   const [billingAddress, setBillingAddress] = useState('')
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
+  
+  // Kullanıcının katıldığı etkinlikler için state
+  const [myEvents, setMyEvents] = useState<any[]>([])
+  const [activeTab, setActiveTab] = useState<'profile' | 'events'>('profile')
 
-  const fetchProfile = async (userId: string) => {
-    // Hem profiler hem profiles tablolarını kontrol edelim ki veri kaçmasın
+  const fetchProfile = async (userId: string, userEmail?: string) => {
+    // 1. Profil bilgilerini çek
     const { data } = await supabase
       .from('profiler')
       .select('*')
@@ -39,7 +43,6 @@ export function SiteHeader() {
       setAddress(data.adres || '')
       setBillingAddress(data.billing_address || '')
     } else {
-      // Alternatif profiles tablosu kontrolü
       const { data: prof2 } = await supabase
         .from('profiles')
         .select('*')
@@ -48,6 +51,18 @@ export function SiteHeader() {
       if (prof2) {
         setFullName(prof2.full_name || '')
         setPhone(prof2.phone || '')
+      }
+    }
+
+    // 2. Kullanıcının katıldığı etkinlikleri çek
+    if (userEmail) {
+      const { data: regData } = await supabase
+        .from('event_registrations')
+        .select('*, events(*)')
+        .ilike('email', userEmail.trim())
+      
+      if (regData) {
+        setMyEvents(regData)
       }
     }
   }
@@ -64,7 +79,7 @@ export function SiteHeader() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setUser(session.user)
-        await fetchProfile(session.user.id)
+        await fetchProfile(session.user.id, session.user.email)
       }
     }
     checkUser()
@@ -72,13 +87,14 @@ export function SiteHeader() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        await fetchProfile(session.user.id)
+        await fetchProfile(session.user.id, session.user.email)
       } else {
         setFullName('')
         setPhone('')
         setInstagram('')
         setAddress('')
         setBillingAddress('')
+        setMyEvents([])
       }
     })
     return () => subscription.unsubscribe()
@@ -92,6 +108,7 @@ export function SiteHeader() {
     setInstagram('')
     setAddress('')
     setBillingAddress('')
+    setMyEvents([])
     window.location.reload()
   }
 
@@ -113,13 +130,11 @@ export function SiteHeader() {
         billing_address: billingAddress 
       }
 
-      // profiler tablosuna kaydet
       await supabase.from('profiler').upsert(payload, { onConflict: 'id' })
-      // eş zamanlı profiles tablosuna da yazalım ki çakışma olmasın
       await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
 
       setSuccessMsg('Profil ve etkinlik bilgileriniz kalıcı olarak kaydedildi!')
-      setTimeout(() => { setIsProfileOpen(false); setSuccessMsg(''); window.location.reload() }, 1500)
+      setTimeout(() => { setSuccessMsg('') }, 2000)
     } catch (err: any) {
       alert('Hata: ' + err.message)
     } finally {
@@ -188,20 +203,20 @@ export function SiteHeader() {
         </div>
       </header>
 
-      {/* Profil Düzenleme / Bilgi Modalı */}
+      {/* Profil ve Katıldığım Etkinlikler Modalı */}
       {isProfileOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto"
           onClick={() => setIsProfileOpen(false)}
         >
           <div
-            className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-5 text-white my-8 max-h-[90vh] overflow-y-auto"
+            className="relative w-full max-w-xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 text-white my-8 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-primary" />
-                <h3 className="font-bold text-sm uppercase tracking-wider">Kulüp Profili & Etkinlik Bilgileri</h3>
+                <h3 className="font-bold text-sm uppercase tracking-wider">Kulüp Profili & Etkinliklerim</h3>
               </div>
               <button
                 type="button"
@@ -212,83 +227,136 @@ export function SiteHeader() {
               </button>
             </div>
 
-            <p className="text-[11px] text-zinc-400">
-              Buraya girdiğiniz bilgiler; etkinliklere katılırken ve mağazadan alışveriş yaparken otomatik olarak kullanılacaktır.
-            </p>
+            {/* Sekmeler (Profil Bilgileri / Katıldığım Etkinlikler) */}
+            <div className="flex gap-2 border-b border-white/10 pb-3">
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  activeTab === 'profile' ? 'bg-primary text-black' : 'bg-white/5 text-zinc-400 hover:text-white'
+                }`}
+              >
+                Profil Bilgileri
+              </button>
+              <button
+                onClick={() => setActiveTab('events')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  activeTab === 'events' ? 'bg-primary text-black' : 'bg-white/5 text-zinc-400 hover:text-white'
+                }`}
+              >
+                Katıldığım Etkinlikler ({myEvents.length})
+              </button>
+            </div>
 
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {activeTab === 'profile' ? (
+              <form onSubmit={handleUpdateProfile} className="space-y-4">
+                <p className="text-[11px] text-zinc-400">
+                  Buraya girdiğiniz bilgiler; etkinliklere katılırken ve mağazadan alışveriş yaparken otomatik olarak kullanılacaktır.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Ad Soyad"
+                      className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası</label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="05XX XXX XX XX"
+                      className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1 flex items-center gap-1.5">
+                    <AtSign className="h-3.5 w-3.5 text-primary" /> Instagram Kullanıcı Adı
+                  </label>
                   <input
                     type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Ad Soyad"
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                    placeholder="@kullaniciadi"
                     className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
                   />
                 </div>
+
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası</label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="05XX XXX XX XX"
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat / Etkinlik Adresi</label>
+                  <textarea
+                    rows={2}
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Sokak, bina no, daire, ilçe/şehir..."
                     className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1 flex items-center gap-1.5">
-                  <AtSign className="h-3.5 w-3.5 text-primary" /> Instagram Kullanıcı Adı
-                </label>
-                <input
-                  type="text"
-                  value={instagram}
-                  onChange={(e) => setInstagram(e.target.value)}
-                  placeholder="@kullaniciadi"
-                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat / Etkinlik Adresi</label>
-                <textarea
-                  rows={2}
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Sokak, bina no, daire, ilçe/şehir..."
-                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fatura Adresi / Kurumsal Bilgiler (Opsiyonel)</label>
-                <textarea
-                  rows={2}
-                  value={billingAddress}
-                  onChange={(e) => setBillingAddress(e.target.value)}
-                  placeholder="Fatura unvanı, vergi no veya adres..."
-                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-                />
-              </div>
-
-              {successMsg && (
-                <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-xs text-emerald-400 text-center font-mono">
-                  {successMsg}
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fatura Adresi / Kurumsal Bilgiler (Opsiyonel)</label>
+                  <textarea
+                    rows={2}
+                    value={billingAddress}
+                    onChange={(e) => setBillingAddress(e.target.value)}
+                    placeholder="Fatura unvanı, vergi no veya adres..."
+                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                  />
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer disabled:opacity-50"
-              >
-                {loading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-              </button>
-            </form>
+                {successMsg && (
+                  <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-xs text-emerald-400 text-center font-mono">
+                    {successMsg}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer disabled:opacity-50"
+                >
+                  {loading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+                </button>
+              </form>
+            ) : (
+              <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
+                {myEvents.length === 0 ? (
+                  <div className="py-12 text-center text-zinc-500 text-xs font-mono">
+                    Henüz katıldığınız bir etkinlik bulunmuyor.
+                  </div>
+                ) : (
+                  myEvents.map((item) => {
+                    const evt = item.events
+                    if (!evt) return null
+                    return (
+                      <div key={item.id} className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono uppercase text-primary tracking-widest bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+                            {evt.branch || 'KULÜP'}
+                          </span>
+                          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase">
+                            Kayıt Onaylandı
+                          </span>
+                        </div>
+                        <h4 className="font-sans font-bold text-sm text-white">{evt.title}</h4>
+                        <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 pt-1">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5 text-primary" />
+                            <span>{new Date(evt.date).toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -300,7 +368,7 @@ export function SiteHeader() {
           const { data: { session } } = await supabase.auth.getSession()
           if (session?.user) {
             setUser(session.user)
-            await fetchProfile(session.user.id)
+            await fetchProfile(session.user.id, session.user.email)
             window.location.reload()
           }
         }}
