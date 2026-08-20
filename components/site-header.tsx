@@ -7,12 +7,14 @@ import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
+import AuthModal from '@/components/AuthModal'
 
 export function SiteHeader() {
   const { count, openCart } = useCart()
   const [scrolled, setScrolled] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isAuthOpen, setIsAuthOpen] = useState(false)
   
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -46,6 +48,11 @@ export function SiteHeader() {
       }
     }
     checkUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
   }, [])
 
   const handleLogout = async () => {
@@ -110,7 +117,7 @@ export function SiteHeader() {
               )}
             </button>
 
-            {/* Kullanıcı Giriş Durumu / Giriş Yap Butonu */}
+            {/* Kullanıcı Giriş Durumu / Giriş Yap Modali Açma Butonu */}
             {user ? (
               <div className="flex items-center gap-2">
                 <button
@@ -129,13 +136,14 @@ export function SiteHeader() {
                 </button>
               </div>
             ) : (
-              <Link
-                href="/auth"
+              <button
+                type="button"
+                onClick={() => setIsAuthOpen(true)}
                 className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-wider text-primary backdrop-blur-md hover:bg-primary/20 hover:border-primary transition-all duration-300 cursor-pointer"
               >
                 <User className="h-3.5 w-3.5" />
                 <span>Giriş Yap / Kayıt Ol</span>
-              </Link>
+              </button>
             )}
           </div>
         </div>
@@ -214,6 +222,15 @@ export function SiteHeader() {
           </div>
         </div>
       )}
+
+      {/* GİRİŞ / KAYIT MODALİ */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onSuccess={() => {
+          supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
+        }}
+      />
     </>
   )
 }
