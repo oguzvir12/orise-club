@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
-import AuthModal from '@/components/AuthModal'
+import AuthModal from './AuthModal'
 
 export function SiteHeader() {
   const { count, openCart } = useCart()
