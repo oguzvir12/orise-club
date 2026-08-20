@@ -30,11 +30,11 @@ export function SiteHeader() {
   const fetchProfile = async (userId: string, userEmail?: string) => {
     try {
       let foundData = null
-      const { data: p1 } = await supabase.from('profiler').select('*').eq('id', userId).maybeSingle()
+      const { data: p1, error: err1 } = await supabase.from('profiler').select('*').eq('id', userId).maybeSingle()
       if (p1) {
         foundData = p1
       } else {
-        const { data: p2 } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+        const { data: p2, error: err2 } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
         if (p2) foundData = p2
       }
 
@@ -62,7 +62,7 @@ export function SiteHeader() {
         }
       }
     } catch (err) {
-      console.error(err)
+      console.error('Profil yükleme hatası:', err)
     }
   }
 
@@ -130,8 +130,11 @@ export function SiteHeader() {
         billing_address: billingAddress 
       }
 
-      await supabase.from('profiler').upsert(payload, { onConflict: 'id' })
-      await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
+      const { error: err1 } = await supabase.from('profiler').upsert(payload, { onConflict: 'id' })
+      const { error: err2 } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
+
+      if (err1) console.error('Profiler tablo kayıt hatası:', err1.message)
+      if (err2) console.error('Profiles tablo kayıt hatası:', err2.message)
 
       setSuccessMsg('Profil ve etkinlik bilgileriniz kalıcı olarak kaydedildi!')
       setTimeout(() => { 
