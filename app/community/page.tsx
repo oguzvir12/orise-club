@@ -19,7 +19,7 @@ import {
   LogOut,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import AuthModal from '@/components/auth-modal' // Eğer yol farklıysa kendi projenize göre ayarlayabilirsiniz
+import AuthModal from '../../components/AuthModal'
 
 interface EventItem {
   id: string
