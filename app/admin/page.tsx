@@ -41,6 +41,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [events, setEvents] = useState<any[]>([])
+  const [profiles, setProfiles] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
 
@@ -114,6 +115,9 @@ export default function AdminPage() {
 
       const { data: evtData } = await supabase.from('events').select('*').order('date', { ascending: true })
       if (evtData) setEvents(evtData)
+
+      const { data: profData } = await supabase.from('profiles').select('*')
+      if (profData) setProfiles(profData)
     } catch (e) {
       console.error(e)
     } finally {
@@ -196,6 +200,12 @@ export default function AdminPage() {
     if (!confirm('Bu kaydı silmek istiyor musunuz?')) return
     await supabase.from('event_registrations').delete().eq('id', id)
     setRegistrations((prev) => prev.filter((r) => r.id !== id))
+  }
+
+  const handleDeleteProfile = async (id: string) => {
+    if (!confirm('Bu kayıtlı üyeyi silmek istiyor musunuz?')) return
+    await supabase.from('profiles').delete().eq('id', id)
+    setProfiles((prev) => prev.filter((p) => p.id !== id))
   }
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -423,8 +433,51 @@ export default function AdminPage() {
           </div>
         </div>
 
+        {/* KAYITLI SİSTEM ÜYELERİ LİSTESİ */}
         <div className="space-y-6">
-          <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Etkinlik Katılımcıları & Siparişler ({registrations.length + orders.length})</span></h2>
+          <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Kayıtlı Sistem Üyeleri ({profiles.length})</span></h2>
+          <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
+                  <tr>
+                    <th className="p-4">Ad Soyad</th>
+                    <th className="p-4">İletişim & Adres</th>
+                    <th className="p-4">Kayıt Türü</th>
+                    <th className="p-4 text-right">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-zinc-300">
+                  {profiles.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="p-6 text-center text-zinc-500">Henüz kayıtlı sistem üyesi bulunmuyor.</td>
+                    </tr>
+                  ) : (
+                    profiles.map((prof) => (
+                      <tr key={prof.id} className="hover:bg-zinc-900/40">
+                        <td className="p-4 font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</td>
+                        <td className="p-4">
+                          <div>{prof.phone || 'Telefon yok'}</div>
+                          <div className="text-[10px] text-zinc-500 truncate max-w-xs">{prof.address || 'Adres belirtilmemiş'}</div>
+                        </td>
+                        <td className="p-4 text-primary font-bold">Kulüp Üyesi</td>
+                        <td className="p-4 text-right">
+                          <button onClick={() => handleDeleteProfile(prof.id)} className="p-2 text-zinc-500 hover:text-red-400 rounded-xl hover:bg-red-500/10 cursor-pointer">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* ETKİNLİK KATILIMCILARI */}
+        <div className="space-y-6">
+          <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Etkinlik Katılımcıları & Ön Kayıtlar ({registrations.length})</span></h2>
           <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
