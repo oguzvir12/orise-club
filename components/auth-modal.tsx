@@ -12,6 +12,7 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true)
+  const [isForgot, setIsForgot] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -28,6 +29,26 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     e.preventDefault()
     setError('')
 
+    if (isForgot) {
+      setLoading(true)
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/`,
+        })
+        if (error) throw error
+        setSuccessMsg(true)
+        setTimeout(() => {
+          setSuccessMsg(false)
+          setIsForgot(false)
+        }, 3000)
+      } catch (err: any) {
+        setError(err.message || 'Bir hata oluştu.')
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
     if (!isLogin && !termsAccepted) {
       setError('Lütfen KVKK ve mesafeli satış şartlarını onaylayınız.')
       return
@@ -37,7 +58,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
     try {
       if (isLogin) {
-        // Giriş Yap
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
 
@@ -48,7 +68,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           onClose()
         }, 1500)
       } else {
-        // Kayıt Ol
         const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
         
         if (signUpError) {
@@ -59,7 +78,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         }
 
         if (data.user) {
-          // Profil tablosuna ek bilgilerini kaydedelim
           const { error: profileError } = await supabase.from('profiles').upsert({
             id: data.user.id,
             full_name: fullName,
@@ -84,8 +102,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="relative w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl text-white" onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
           onClick={onClose}
@@ -95,9 +113,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         </button>
 
         <div className="text-center mb-6">
-          <h2 className="text-xl font-black">{isLogin ? 'Kulüp Hesabına Giriş Yap' : 'Rise Community Üyesi Ol'}</h2>
+          <h2 className="text-xl font-black">
+            {isForgot ? 'Şifreni Sıfırla' : isLogin ? 'Kulüp Hesabına Giriş Yap' : 'Rise Community Üyesi Ol'}
+          </h2>
           <p className="text-xs text-zinc-400 mt-1">
-            {isLogin ? 'Etkinliklere hızlıca kaydol ve bilgilerini yönet.' : 'Aramıza katıl, etkinliklerde zaman kazan.'}
+            {isForgot ? 'E-posta adresine şifre sıfırlama bağlantısı gönderelim.' : isLogin ? 'Etkinliklere hızlıca kaydol ve bilgilerini yönet.' : 'Aramıza katıl, etkinliklerde zaman kazan.'}
           </p>
         </div>
 
@@ -106,12 +126,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
               <Check className="h-7 w-7" />
             </div>
-            <h3 className="text-lg font-bold text-white">{isLogin ? 'Giriş Başarılı!' : 'Aramıza Hoş Geldin!'}</h3>
-            <p className="text-xs text-zinc-400">İşlemin başarıyla tamamlandı, yönlendiriliyorsun...</p>
+            <h3 className="text-lg font-bold text-white">
+              {isForgot ? 'Bağlantı Gönderildi!' : isLogin ? 'Giriş Başarılı!' : 'Aramıza Hoş Geldin!'}
+            </h3>
+            <p className="text-xs text-zinc-400">
+              {isForgot ? 'E-posta kutunu kontrol et.' : 'İşlemin başarıyla tamamlandı, yönlendiriliyorsun...'}
+            </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+            {!isLogin && !isForgot && (
               <>
                 <div>
                   <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
@@ -174,22 +198,35 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               </div>
             </div>
 
-            <div>
-              <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Şifre</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-white/10 bg-black/60 pl-10 pr-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
-                />
+            {!isForgot && (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] font-mono uppercase text-zinc-400">Şifre</label>
+                  {isLogin && (
+                    <button
+                      type="button"
+                      onClick={() => setIsForgot(true)}
+                      className="text-[10px] font-mono text-primary hover:underline cursor-pointer"
+                    >
+                      Şifremi Unuttum?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl border border-white/10 bg-black/60 pl-10 pr-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
-            {!isLogin && (
+            {!isLogin && !isForgot && (
               <div className="flex items-start gap-2 pt-1">
                 <input
                   type="checkbox"
@@ -216,20 +253,30 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               disabled={loading}
               className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50"
             >
-              {loading ? 'İşleniyor...' : isLogin ? 'Giriş Yap' : 'Kayıt Ol ve Tamamla'}
+              {loading ? 'İşleniyor...' : isForgot ? 'Sıfırlama Bağlantısı Gönder' : isLogin ? 'Giriş Yap' : 'Kayıt Ol ve Tamamla'}
             </button>
           </form>
         )}
 
         {!successMsg && (
-          <div className="text-center mt-4">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-xs text-zinc-400 hover:text-white underline font-mono cursor-pointer"
-            >
-              {isLogin ? 'Hesabın yok mu? Hemen kayıt ol →' : 'Zaten hesabın var mı? Giriş yap →'}
-            </button>
+          <div className="text-center mt-4 space-y-2">
+            {isForgot ? (
+              <button
+                type="button"
+                onClick={() => setIsForgot(false)}
+                className="text-xs text-zinc-400 hover:text-white underline font-mono cursor-pointer"
+              >
+                ← Giriş ekranına dön
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-xs text-zinc-400 hover:text-white underline font-mono cursor-pointer"
+              >
+                {isLogin ? 'Hesabın yok mu? Hemen kayıt ol →' : 'Zaten hesabın var mı? Giriş yap →'}
+              </button>
+            )}
           </div>
         )}
       </div>
