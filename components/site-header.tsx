@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Settings, X, Instagram } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Settings, X, AtSign } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -155,7 +155,7 @@ export function SiteHeader() {
         </div>
       </header>
 
-      {/* GELİŞTİRİLMİŞ PROFİL GÜNCELLEME MODALİ */}
+      {/* PROFİL GÜNCELLEME MODALİ */}
       {isProfileOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto"
@@ -209,7 +209,7 @@ export function SiteHeader() {
 
               <div>
                 <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1 flex items-center gap-1.5">
-                  <Instagram className="h-3.5 w-3.5 text-primary" /> Instagram Kullanıcı Adı
+                  <AtSign className="h-3.5 w-3.5 text-primary" /> Instagram Kullanıcı Adı
                 </label>
                 <input
                   type="text"
