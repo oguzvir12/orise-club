@@ -8,7 +8,7 @@ export type CartItem = {
   price: number
   image: string
   quantity: number
-  type: 'product' | 'ticket' // Ürün mü bilet mi ayrımı
+  type: 'product' | 'ticket'
 }
 
 type CartContextValue = {
@@ -21,6 +21,7 @@ type CartContextValue = {
   addItem: (item: Omit<CartItem, 'quantity'>) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
+  clearCart: () => void
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -30,14 +31,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Sayfa yüklendiğinde sepete localStorage'dan çek
   useEffect(() => {
     const saved = localStorage.getItem('orise_cart')
     if (saved) setItems(JSON.parse(saved))
     setIsLoaded(true)
   }, [])
 
-  // Her değişiklikte localStorage'ı güncelle
   useEffect(() => {
     if (isLoaded) localStorage.setItem('orise_cart', JSON.stringify(items))
   }, [items, isLoaded])
@@ -63,6 +62,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       },
       removeItem: (id) => setItems((prev) => prev.filter((i) => i.id !== id)),
       updateQuantity: (id, quantity) => setItems((prev) => quantity <= 0 ? prev.filter((i) => i.id !== id) : prev.map((i) => (i.id === id ? { ...i, quantity } : i))),
+      clearCart: () => setItems([]),
     }
   }, [items, isOpen])
 
