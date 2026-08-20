@@ -95,6 +95,7 @@ export default function AdminPage() {
     setIsLoggedIn(false)
     setCurrentUser(null)
     localStorage.removeItem('orise_admin_user')
+    window.location.href = '/admin'
   }
 
   const fetchData = async () => {
@@ -241,7 +242,7 @@ export default function AdminPage() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 font-sans">
+      <div className="fixed inset-0 z-50 bg-black text-white flex items-center justify-center p-6 font-sans">
         <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-8 shadow-2xl space-y-6">
           <div className="text-center space-y-2">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40">
@@ -284,7 +285,7 @@ export default function AdminPage() {
 
             <button
               type="submit"
-              className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform"
+              className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
             >
               Giriş Yap
             </button>
@@ -307,7 +308,7 @@ export default function AdminPage() {
   })
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 sm:p-10 font-sans relative">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black text-white p-6 sm:p-10 font-sans">
       <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
         <div className="flex items-center gap-4">
           <Link
@@ -324,7 +325,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-50">
           <button
             type="button"
             onClick={fetchData}
@@ -387,18 +388,18 @@ export default function AdminPage() {
                   className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
                 />
                 
-                {/* DOSYA YÜKLEME ALANI */}
-                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black px-4 py-2.5">
-                  <label className="flex-1 cursor-pointer text-xs text-zinc-400 truncate">
+                {/* DOSYA YÜKLEME ALANI (KESİN TIKLANABİLİR) */}
+                <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary transition-colors">
+                  <span className="text-xs text-zinc-400 truncate pointer-events-none">
                     {uploading ? 'Yükleniyor...' : imageUrl ? '✓ Fotoğraf Yüklendi' : 'Bilgisayardan Fotoğraf Seç'}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, false)}
-                      className="hidden"
-                    />
-                  </label>
-                  <Upload className="h-4 w-4 text-primary flex-none" />
+                  </span>
+                  <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, false)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
                 </div>
 
                 <textarea
@@ -636,17 +637,17 @@ export default function AdminPage() {
 
               <div>
                 <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Yeni Fotoğraf Yükle (İsteğe Bağlı)</label>
-                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black px-4 py-2.5">
-                  <label className="flex-1 cursor-pointer text-xs text-zinc-400 truncate">
+                <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary transition-colors">
+                  <span className="text-xs text-zinc-400 truncate pointer-events-none">
                     {uploading ? 'Yükleniyor...' : 'Yeni Dosya Seç'}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, true)}
-                      className="hidden"
-                    />
-                  </label>
-                  <Upload className="h-4 w-4 text-primary flex-none" />
+                  </span>
+                  <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, true)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
                 </div>
               </div>
 
