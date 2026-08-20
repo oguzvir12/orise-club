@@ -16,35 +16,25 @@ import {
   X,
   Upload,
   Calendar,
+  Download,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-const ADMIN_USERS: Record<string, { pass: string; branch: string; title: string; type: 'community' | 'store' | 'super' | 'community_director' }> = {
-  orise_master_admin: { pass: 'Orise#2026_SecureKey!99', branch: 'ALL', title: 'Süper Admin (Tüm Yetkiler)', type: 'super' },
-  community_director: { pass: 'Director#Community_2026!', branch: 'ALL', title: 'Genel Topluluk Yöneticisi', type: 'community_director' },
-  store_manager_tr: { pass: 'Store#Shipping_7721*', branch: 'STORE', title: 'Mağaza & Kargo Yöneticisi', type: 'store' },
-  captain_run: { pass: 'Runners#2026_Tr*', branch: 'KOŞU', title: 'Koşu Kaptanı', type: 'community' },
-  leader_yoga: { pass: 'Mobility#Yoga_2026!', branch: 'YOGA & MOBILITY', title: 'Yoga & Mobility Lideri', type: 'community' },
-  lead_tennis: { pass: 'Court#Tennis_8842$', branch: 'TENİS', title: 'Tenis Sorumlusu', type: 'community' },
-  skipper_sail: { pass: 'Marine#Sail_5510&', branch: 'YELKEN', title: 'Yelken Kaptanı', type: 'community' },
-  captain_volley: { pass: 'Volley#Spike_2026#', branch: 'VOLEYBOL', title: 'Voleybol Kaptanı', type: 'community' },
-}
-
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [loginError, setLoginError] = useState('')
-  
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  const [registrations, setRegistrations] = useState<any[]>([])
-  const [orders, setOrders] = useState<any[]>([])
-  const [products, setProducts] = useState<any[]>([])
-  const [events, setEvents] = useState<any[]>([])
-  const [profiles, setProfiles] = useState<any[]>([])
+  const [sessionUser, setSessionUser] = useState<any>(null)
+  const [adminProfile, setAdminProfile] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
 
+  const [registrations, setRegistrations] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [events, setEvents] = useState<any[]>([])
+  const [profiles, setProfiles] = useState<any[]>([])
+
+  // Yeni Ürün State'leri
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
@@ -52,6 +42,7 @@ export default function AdminPage() {
   const [description, setDescription] = useState('')
   const [imageUrl, setImageUrl] = useState('')
 
+  // Yeni Etkinlik State'leri
   const [evtTitle, setEvtTitle] = useState('')
   const [evtDesc, setEvtDesc] = useState('')
   const [evtDate, setEvtDate] = useState('')
@@ -61,6 +52,7 @@ export default function AdminPage() {
   const [instructorName, setInstructorName] = useState('')
   const [evtImage, setEvtImage] = useState('')
 
+  // Düzenleme Modal State'leri
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editPrice, setEditPrice] = useState('')
@@ -77,44 +69,27 @@ export default function AdminPage() {
   const [editEvtImage, setEditEvtImage] = useState('')
 
   useEffect(() => {
-    const savedAuth = localStorage.getItem('orise_admin_user')
-    if (savedAuth && ADMIN_USERS[savedAuth]) {
-      const user = ADMIN_USERS[savedAuth]
-      setIsLoggedIn(true)
-      setCurrentUser(user)
-      fetchData()
-    }
+    checkAdminSession()
   }, [])
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    const user = ADMIN_USERS[username.trim()]
-    if (user && user.pass === password) {
-      setIsLoggedIn(true)
-      setCurrentUser(user)
-      localStorage.setItem('orise_admin_user', username.trim())
-      setLoginError('')
-      fetchData()
-    } else {
-      setLoginError('Hatalı kullanıcı adı veya şifre!')
+  const checkAdminSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user) {
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
+      if (profile && (profile.role === 'admin' || profile.role === 'captain')) {
+        setIsLoggedIn(true)
+        setSessionUser(session.user)
+        setAdminProfile(profile)
+        fetchData(profile)
+      }
     }
   }
 
-  const handleLogout = () => {
-    setIsLoggedIn(false)
-    setCurrentUser(null)
-    localStorage.removeItem('orise_admin_user')
-    window.location.href = '/admin'
-  }
-
-  const fetchData = async () => {
+  const fetchData = async (profileData = adminProfile) => {
     setLoading(true)
     try {
-      const { data: regData } = await supabase.from('event_registrations').select('*, events(title)').order('created_at', { ascending: false })
+      const { data: regData } = await supabase.from('event_registrations').select('*, events(title, branch)').order('created_at', { ascending: false })
       if (regData) setRegistrations(regData)
-
-      const { data: ordData } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
-      if (ordData) setOrders(ordData)
 
       const { data: prodData } = await supabase.from('products').select('*').order('created_at', { ascending: false })
       if (prodData) setProducts(prodData)
@@ -131,6 +106,12 @@ export default function AdminPage() {
     }
   }
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setIsLoggedIn(false)
+    window.location.href = '/'
+  }
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'event' | 'edit' | 'editev') => {
     try {
       const file = e.target.files?.[0]
@@ -140,10 +121,7 @@ export default function AdminPage() {
       const fileExt = file.name.split('.').pop()
       const fileName = `${Date.now()}.${fileExt}`
 
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, file)
-
+      const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
       if (uploadError) {
         alert('Yükleme hatası: ' + uploadError.message)
         setUploading(false)
@@ -151,7 +129,6 @@ export default function AdminPage() {
       }
 
       const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
-      
       if (data?.publicUrl) {
         if (type === 'product') setImageUrl(data.publicUrl)
         else if (type === 'event') setEvtImage(data.publicUrl)
@@ -183,17 +160,10 @@ export default function AdminPage() {
 
     if (!error) {
       alert('Etkinlik başarıyla oluşturuldu!')
-      setEvtTitle('')
-      setEvtDesc('')
-      setEvtDate('')
-      setEvtLocation('')
-      setEvtPrice('0')
-      setEvtBranch('KOŞU')
-      setInstructorName('')
-      setEvtImage('')
+      setEvtTitle(''); setEvtDesc(''); setEvtDate(''); setEvtLocation(''); setEvtPrice('0'); setInstructorName(''); setEvtImage('')
       fetchData()
     } else {
-      alert('Etkinlik eklenirken hata oluştu: ' + error.message)
+      alert('Hata: ' + error.message)
     }
   }
 
@@ -231,6 +201,21 @@ export default function AdminPage() {
     if (!error) {
       alert('Etkinlik güncellendi!')
       setEditingEvent(null)
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
+
+  // Başvuru Onayla / Reddet
+  const handleUpdateRegistrationStatus = async (regId: string, newStatus: 'approved' | 'rejected') => {
+    const { error } = await supabase
+      .from('event_registrations')
+      .update({ status: newStatus })
+      .eq('id', regId)
+
+    if (!error) {
+      alert(newStatus === 'approved' ? 'Katılım onaylandı!' : 'Talep reddedildi.')
       fetchData()
     } else {
       alert('Hata: ' + error.message)
@@ -289,53 +274,52 @@ export default function AdminPage() {
     fetchData()
   }
 
+  // Excel (CSV) İndirme Fonksiyonu
+  const exportToCSV = () => {
+    const headers = ['Katılımcı Adı', 'Telefon', 'E-posta', 'Etkinlik', 'Durum']
+    const rows = filteredRegistrations.map(r => [
+      `"${r.full_name || ''}"`,
+      `"${r.phone || ''}"`,
+      `"${r.email || ''}"`,
+      `"${r.events?.title || r.title || ''}"`,
+      `"${r.status || ''}"`
+    ])
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', 'orise_etkinlik_katilimcilari.csv')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  // Yetki Filtrelemesi: Eğer 'admin' ise tümünü görür, 'captain' ise sadece kendi branşını görür.
+  const isSuperAdmin = adminProfile?.role === 'admin'
+  const adminBranch = adminProfile?.branch?.toUpperCase()
+
+  const filteredEvents = isSuperAdmin 
+    ? events 
+    : events.filter(e => e.branch?.toUpperCase() === adminBranch)
+
+  const allowedEventIds = filteredEvents.map(e => e.id)
+  const filteredRegistrations = isSuperAdmin
+    ? registrations
+    : registrations.filter(r => allowedEventIds.includes(r.event_id))
+
   if (!isLoggedIn) {
     return (
       <div className="fixed inset-0 z-50 bg-black text-white flex items-center justify-center p-6 font-sans">
-        <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-8 shadow-2xl space-y-6">
-          <div className="text-center space-y-2">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40">
-              <Lock className="h-5 w-5" />
-            </div>
-            <h1 className="text-xl font-black text-white">ORISE Yönetim Girişi</h1>
-            <p className="text-xs text-zinc-400">Yetkili kullanıcı adı ve şifrenizle giriş yapın.</p>
+        <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-8 shadow-2xl space-y-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40">
+            <Lock className="h-5 w-5" />
           </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Kullanıcı Adı</label>
-              <input
-                type="text" required value={username} onChange={(e) => setUsername(e.target.value)}
-                placeholder="orise_master_admin..."
-                className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Şifre</label>
-              <input
-                type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              />
-            </div>
-            {loginError && (
-              <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-3 text-xs text-red-400 text-center">
-                {loginError}
-              </div>
-            )}
-            <button
-              type="submit"
-              className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
-            >
-              Giriş Yap
-            </button>
-          </form>
-
-          <div className="text-center pt-2">
-            <Link href="/" className="text-xs text-zinc-500 hover:text-zinc-300 underline">
-              ← Ana Sayfaya Dön
-            </Link>
-          </div>
+          <h1 className="text-xl font-black text-white">Yönetici Girişi Gerekli</h1>
+          <p className="text-xs text-zinc-400">Yönetim paneline erişmek için ana sayfadan yetkili hesabınızla giriş yapmalısınız.</p>
+          <Link href="/" className="inline-block w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">
+            Ana Sayfaya Dön
+          </Link>
         </div>
       </div>
     )
@@ -350,12 +334,12 @@ export default function AdminPage() {
           </Link>
           <div>
             <h1 className="text-xl font-black text-white">ORISE Kontrol Paneli</h1>
-            <p className="text-xs font-mono text-primary uppercase">{currentUser?.title}</p>
+            <p className="text-xs font-mono text-primary uppercase">{adminProfile?.title || adminProfile?.role} {adminBranch ? `(${adminBranch})` : ''}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 relative z-50">
-          <button type="button" onClick={fetchData} className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:border-primary cursor-pointer">
+          <button type="button" onClick={() => fetchData()} className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:border-primary cursor-pointer">
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Yenile</span>
           </button>
@@ -368,7 +352,8 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {currentUser?.type === 'super' && (
+        {/* YENİ ETKİNLİK OLUŞTURMA (Sadece Süper Admin) */}
+        {isSuperAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary">
               <Calendar className="h-5 w-5" />
@@ -403,7 +388,8 @@ export default function AdminPage() {
           </div>
         )}
 
-        {(currentUser?.type === 'store' || currentUser?.type === 'super') && (
+        {/* ÜRÜN EKLEME (Sadece Süper Admin) */}
+        {isSuperAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary">
               <PlusCircle className="h-5 w-5" />
@@ -430,33 +416,35 @@ export default function AdminPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <h2 className="text-base font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /><span>Yüklü Ürünler ({products.length})</span></h2>
-            <div className="space-y-3">
-              {products.map((prod) => (
-                <div key={prod.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none">
-                      <Image src={prod.image_urls?.[0] || '/placeholder.svg'} alt={prod.title} fill className="object-cover" />
+          {isSuperAdmin && (
+            <div className="space-y-4">
+              <h2 className="text-base font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /><span>Yüklü Ürünler ({products.length})</span></h2>
+              <div className="space-y-3">
+                {products.map((prod) => (
+                  <div key={prod.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none">
+                        <Image src={prod.image_urls?.[0] || '/placeholder.svg'} alt={prod.title} fill className="object-cover" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs text-white">{prod.title}</h4>
+                        <div className="text-[10px] text-zinc-400">₺{prod.price} · Stok: {prod.stock}</div>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-white">{prod.title}</h4>
-                      <div className="text-[10px] text-zinc-400">₺{prod.price} · Stok: {prod.stock}</div>
+                    <div className="flex gap-2">
+                      <button onClick={() => openEditModal(prod)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
+                      <button onClick={() => handleDeleteProduct(prod.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => openEditModal(prod)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
-                    <button onClick={() => handleDeleteProduct(prod.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="space-y-4">
-            <h2 className="text-base font-bold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ({events.length})</span></h2>
-            <div className="space-y-3">
-              {events.map((evt) => (
+          <div className="space-y-4 lg:col-span-2">
+            <h2 className="text-base font-bold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ({filteredEvents.length})</span></h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {filteredEvents.map((evt) => (
                 <div key={evt.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
                   <div className="flex items-center gap-3">
                     <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none">
@@ -469,7 +457,7 @@ export default function AdminPage() {
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => openEditEventModal(evt)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
-                    <button onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
+                    {isSuperAdmin && <button onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>}
                   </div>
                 </div>
               ))}
@@ -477,51 +465,60 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* KAYITLI SİSTEM ÜYELERİ LİSTESİ */}
-        <div className="space-y-6">
-          <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Kayıtlı Sistem Üyeleri ({profiles.length})</span></h2>
-          <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
-                  <tr>
-                    <th className="p-4">Ad Soyad</th>
-                    <th className="p-4">İletişim & E-posta</th>
-                    <th className="p-4">Adres</th>
-                    <th className="p-4 text-right">İşlem</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-zinc-300">
-                  {profiles.length === 0 ? (
+        {/* KAYITLI SİSTEM ÜYELERİ LİSTESİ (Sadece Super Admin) */}
+        {isSuperAdmin && (
+          <div className="space-y-6">
+            <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Kayıtlı Sistem Üyeleri ({profiles.length})</span></h2>
+            <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
                     <tr>
-                      <td colSpan={4} className="p-6 text-center text-zinc-500">Henüz kayıtlı sistem üyesi bulunmuyor.</td>
+                      <th className="p-4">Ad Soyad</th>
+                      <th className="p-4">İletişim & E-posta</th>
+                      <th className="p-4">Adres</th>
+                      <th className="p-4 text-right">İşlem</th>
                     </tr>
-                  ) : (
-                    profiles.map((prof) => (
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-zinc-300">
+                    {profiles.map((prof) => (
                       <tr key={prof.id} className="hover:bg-zinc-900/40">
                         <td className="p-4 font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</td>
                         <td className="p-4">
                           <div>{prof.phone || 'Telefon yok'}</div>
                           <div className="text-[10px] text-zinc-500">{prof.email || 'E-posta yok'}</div>
                         </td>
-                        <td className="p-4 text-zinc-400">{prof.adres || prof.address || 'Adres belirtilmemiş'}</td>
+                        <td className="p-4 text-zinc-400">{prof.address || prof.adres || 'Adres belirtilmemiş'}</td>
                         <td className="p-4 text-right">
                           <button onClick={() => handleDeleteProfile(prof.id)} className="p-2 text-zinc-500 hover:text-red-400 rounded-xl hover:bg-red-500/10 cursor-pointer">
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* ETKİNLİK KATILIMCILARI */}
+        {/* ETKİNLİK KATILIMCILARI & ONAY MEKANİZMASI & EXCEL EXPORT */}
         <div className="space-y-6">
-          <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Etkinlik Katılımcıları & Ön Kayıtlar ({registrations.length})</span></h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              <span>Etkinlik Katılımcıları & Başvurular ({filteredRegistrations.length})</span>
+            </h2>
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary/20 cursor-pointer"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Excel'e Aktar (CSV)</span>
+            </button>
+          </div>
+
           <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
@@ -529,33 +526,56 @@ export default function AdminPage() {
                   <tr>
                     <th className="p-4">Katılımcı Adı</th>
                     <th className="p-4">İletişim & E-posta</th>
-                    <th className="p-4">Katıldığı Etkinlik</th>
+                    <th className="p-4">Etkinlik</th>
                     <th className="p-4">Durum</th>
-                    <th className="p-4 text-right">İşlem</th>
+                    <th className="p-4 text-right">İşlemler</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
-                  {registrations.length === 0 ? (
+                  {filteredRegistrations.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-6 text-center text-zinc-500">Henüz etkinlik katılımcısı bulunmuyor.</td>
+                      <td colSpan={5} className="p-6 text-center text-zinc-500">Henüz başvuru bulunmuyor.</td>
                     </tr>
                   ) : (
-                    registrations.map((reg) => (
-                      <tr key={reg.id} className="hover:bg-zinc-900/40">
-                        <td className="p-4 font-bold text-white">{reg.full_name}</td>
-                        <td className="p-4">
-                          <div>{reg.phone}</div>
-                          <div className="text-[10px] text-zinc-500">{reg.email}</div>
-                        </td>
-                        <td className="p-4 text-primary font-bold">{reg.events?.title || reg.title || 'Bilinmeyen Etkinlik'}</td>
-                        <td className="p-4">
-                          <span className="bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full text-[10px] uppercase">
-                            {reg.status || 'Onaylı'}
-                          </span>
-                        </td>
-                        <td className="p-4 text-right"><button onClick={() => handleDeleteRegistration(reg.id)} className="p-2 text-zinc-500 hover:text-red-400 cursor-pointer"><Trash2 className="h-4 w-4" /></button></td>
-                      </tr>
-                    ))
+                    filteredRegistrations.map((reg) => {
+                      const isApproved = reg.status === 'approved'
+                      const isRejected = reg.status === 'rejected'
+
+                      return (
+                        <tr key={reg.id} className="hover:bg-zinc-900/40">
+                          <td className="p-4 font-bold text-white">{reg.full_name}</td>
+                          <td className="p-4">
+                            <div>{reg.phone}</div>
+                            <div className="text-[10px] text-zinc-500">{reg.email}</div>
+                          </td>
+                          <td className="p-4 text-primary font-bold">{reg.events?.title || reg.title || 'Etkinlik'}</td>
+                          <td className="p-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase border ${
+                              isApproved ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
+                              isRejected ? 'bg-red-500/10 text-red-400 border-red-500/30' :
+                              'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            }`}>
+                              {isApproved ? 'Onaylandı' : isRejected ? 'Reddedildi' : 'Onay Bekliyor'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right space-x-2">
+                            {!isApproved && (
+                              <button onClick={() => handleUpdateRegistrationStatus(reg.id, 'approved')} className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 text-[10px] font-bold cursor-pointer inline-flex items-center gap-1">
+                                <CheckCircle2 size={12} /> Onayla
+                              </button>
+                            )}
+                            {!isRejected && (
+                              <button onClick={() => handleUpdateRegistrationStatus(reg.id, 'rejected')} className="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 text-[10px] font-bold cursor-pointer inline-flex items-center gap-1">
+                                <XCircle size={12} /> Reddet
+                              </button>
+                            )}
+                            <button onClick={() => handleDeleteRegistration(reg.id)} className="p-2 text-zinc-500 hover:text-red-400 cursor-pointer inline-block">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })
                   )}
                 </tbody>
               </table>
@@ -565,49 +585,13 @@ export default function AdminPage() {
 
       </div>
 
-      {/* ÜRÜN DÜZENLEME MODALI */}
-      {editingProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Ürünü Düzenle</h3>
-              <button onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white cursor-pointer">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <form onSubmit={handleUpdateProduct} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ürün Başlığı</label>
-                <input type="text" required value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fiyat (₺)</label>
-                  <input type="number" required value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Stok</label>
-                  <input type="number" required value={editStock} onChange={(e) => setEditStock(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-              </div>
-              <div className="pt-2 flex gap-3">
-                <button type="button" onClick={() => setEditingProduct(null)} className="flex-1 rounded-full border border-white/10 bg-zinc-900 py-3 text-xs font-bold uppercase text-zinc-300 cursor-pointer">İptal</button>
-                <button type="submit" className="flex-1 rounded-full bg-primary py-3 text-xs font-bold uppercase text-black cursor-pointer">Kaydet</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ETKİNLİK DÜZENLEME MODALI */}
+      {/* DÜZENLEME MODALLARI */}
       {editingEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <h3 className="font-bold text-base text-white">Etkinliği Düzenle</h3>
-              <button onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white cursor-pointer">
-                <X className="h-4 w-4" />
-              </button>
+              <button onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleUpdateEvent} className="space-y-4">
               <div>
@@ -640,7 +624,7 @@ export default function AdminPage() {
               </div>
               <div className="pt-2 flex gap-3">
                 <button type="button" onClick={() => setEditingEvent(null)} className="flex-1 rounded-full border border-white/10 bg-zinc-900 py-3 text-xs font-bold uppercase text-zinc-300 cursor-pointer">İptal</button>
-                <button type="submit" className="flex-1 rounded-full bg-primary py-3 text-xs font-bold uppercase text-black cursor-pointer">Güncellemeyi Kaydet</button>
+                <button type="submit" className="flex-1 rounded-full bg-primary py-3 text-xs font-bold uppercase text-black cursor-pointer">Kaydet</button>
               </div>
             </form>
           </div>
