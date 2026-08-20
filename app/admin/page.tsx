@@ -15,13 +15,15 @@ import {
   ShoppingBag,
   Package,
   Truck,
+  PlusCircle,
+  Plus,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-// Güncellenmiş Güçlü Yetkili Hesapları ve Rol Dağılımı
+// Güçlendirilmiş Yönetici Hesapları
 const ADMIN_USERS: Record<string, { pass: string; branch: string; title: string; type: 'community' | 'store' | 'super' | 'community_director' }> = {
   orise_master_admin: { pass: 'Orise#2026_SecureKey!99', branch: 'ALL', title: 'Süper Admin (Tüm Yetkiler)', type: 'super' },
-  community_director: { pass: 'Director#Community_2026!', branch: 'ALL', title: 'Genel Topluluk Yöneticisi (Tüm Branşlar)', type: 'community_director' },
+  community_director: { pass: 'Director#Community_2026!', branch: 'ALL', title: 'Genel Topluluk Yöneticisi', type: 'community_director' },
   store_manager_tr: { pass: 'Store#Shipping_7721*', branch: 'STORE', title: 'Mağaza & Kargo Yöneticisi', type: 'store' },
   captain_run: { pass: 'Runners#2026_Tr*', branch: 'KOŞU', title: 'Koşu Kaptanı', type: 'community' },
   leader_yoga: { pass: 'Mobility#Yoga_2026!', branch: 'YOGA & MOBILITY', title: 'Yoga & Mobility Lideri', type: 'community' },
@@ -43,10 +45,17 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   
-  const [currentUser, setCurrentUser] = useState<{ branch: string; title: string; type: 'community' | 'store' | 'super' | 'community_director' } | null>(null)
+  const [currentUser, setCurrentUser] = useState<any>(null)
   const [registrations, setRegistrations] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+
+  // Yeni Ürün Ekleme State'leri
+  const [newTitle, setNewTitle] = useState('')
+  const [newPrice, setNewPrice] = useState('')
+  const [newStock, setNewStock] = useState('')
+  const [newImage, setNewImage] = useState('')
 
   useEffect(() => {
     const savedAuth = localStorage.getItem('orise_admin_user')
@@ -81,19 +90,14 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const { data: regData } = await supabase
-        .from('event_registrations')
-        .select('*')
-        .order('created_at', { ascending: false })
-
+      const { data: regData } = await supabase.from('event_registrations').select('*').order('created_at', { ascending: false })
       if (regData) setRegistrations(regData)
 
-      const { data: ordData } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false })
-
+      const { data: ordData } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
       if (ordData) setOrders(ordData)
+
+      const { data: prodData } = await supabase.from('products').select('*').order('created_at', { ascending: false })
+      if (prodData) setProducts(prodData)
     } catch (e) {
       console.error(e)
     } finally {
@@ -103,24 +107,47 @@ export default function AdminPage() {
 
   const handleDeleteRegistration = async (id: string) => {
     if (!confirm('Bu katılımcı kaydını silmek istediğinize emin misiniz?')) return
-    const { error } = await supabase.from('event_registrations').delete().eq('id', id)
-    if (!error) setRegistrations((prev) => prev.filter((r) => r.id !== id))
+    await supabase.from('event_registrations').delete().eq('id', id)
+    setRegistrations((prev) => prev.filter((r) => r.id !== id))
   }
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
-    const { error } = await supabase
-      .from('orders')
-      .update({ status: newStatus })
-      .eq('id', orderId)
+    await supabase.from('orders').update({ status: newStatus }).eq('id', orderId)
+    setOrders((prev) => prev.map((ord) => (ord.id === orderId ? { ...ord, status: newStatus } : ord)))
+  }
+
+  // SÜPER ADMIN ÜRÜN EKLEME
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTitle || !newPrice) return
+
+    const { error } = await supabase.from('products').insert([{
+      title: newTitle,
+      price: Number(newPrice),
+      stock: Number(newStock) || 50,
+      image_urls: newImage ? [newImage] : ['https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop'],
+      category: 'tank',
+      category_label: 'ÖZEL DROP'
+    }])
 
     if (!error) {
-      setOrders((prev) =>
-        prev.map((ord) => (ord.id === orderId ? { ...ord, status: newStatus } : ord))
-      )
+      alert('Ürün başarıyla mağazaya eklendi!')
+      setNewTitle('')
+      setNewPrice('')
+      setNewStock('')
+      setNewImage('')
+      fetchData()
+    } else {
+      alert('Ürün eklenirken hata oluştu.')
     }
   }
 
-  // Giriş Ekranı
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm('Bu ürünü mağazadan silmek istediğinize emin misiniz?')) return
+    await supabase.from('products').delete().eq('id', id)
+    setProducts((prev) => prev.filter((p) => p.id !== id))
+  }
+
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 font-sans">
@@ -141,7 +168,7 @@ export default function AdminPage() {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="orise_master_admin, community_director..."
+                placeholder="orise_master_admin..."
                 className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
               />
             </div>
@@ -182,7 +209,6 @@ export default function AdminPage() {
     )
   }
 
-  // Filtreleme mantığı (Spesifik branş veya tam yetkili topluluk/süper yöneticiler)
   const filteredRegistrations = registrations.filter((reg) => {
     if (currentUser?.type === 'super' || currentUser?.type === 'community_director' || currentUser?.branch === 'ALL') return true
     const eventBranch = EVENT_BRANCH_MAP[reg.event_id] || ''
@@ -191,7 +217,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black text-white p-6 sm:p-10 font-sans">
-      {/* Üst Bar */}
       <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
         <div className="flex items-center gap-4">
           <Link
@@ -229,9 +254,59 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* MAĞAZA YÖNETİCİSİ VEYA SÜPER ADMIN SİPARİŞLERİ GÖRÜR */}
+      {/* SÜPER ADMIN VEYA MAĞAZA YÖNETİCİSİ İÇİN ÜRÜN EKLEME & SİPARİŞ YÖNETİMİ */}
       {(currentUser?.type === 'store' || currentUser?.type === 'super') && (
-        <div className="mx-auto max-w-7xl space-y-6 mb-12">
+        <div className="mx-auto max-w-7xl space-y-8 mb-16">
+          {/* Yeni Ürün Ekleme Formu (Sadece Süper Admin) */}
+          {currentUser?.type === 'super' && (
+            <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-4">
+              <h2 className="text-base font-bold flex items-center gap-2 text-primary">
+                <PlusCircle className="h-5 w-5" />
+                <span>Mağazaya Yeni Drop Ürünü Ekle</span>
+              </h2>
+              <form onSubmit={handleAddProduct} className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <input
+                  type="text"
+                  placeholder="Ürün Adı (Örn: Pro Hoodie)"
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <input
+                  type="number"
+                  placeholder="Fiyat (₺)"
+                  required
+                  value={newPrice}
+                  onChange={(e) => setNewPrice(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <input
+                  type="number"
+                  placeholder="Stok Adedi"
+                  required
+                  value={newStock}
+                  onChange={(e) => setNewStock(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Fotoğraf URL (Opsiyonel)"
+                  value={newImage}
+                  onChange={(e) => setNewImage(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="sm:col-span-4 rounded-full bg-primary py-3 text-xs font-bold uppercase tracking-wider text-black shadow-lg hover:scale-[1.01] transition-transform"
+                >
+                  Ürünü Mağazada Yayınla
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* Siparişler Listesi */}
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold flex items-center gap-2">
               <ShoppingBag className="h-4 w-4 text-primary" />
@@ -299,7 +374,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* TOPLULUK YÖNETİCİSİ, BRANŞ KAPTANLARI VEYA SÜPER ADMIN ETKİNLİKLERİ GÖRÜR */}
+      {/* TOPLULUK YÖNETİCİSİ VEYA BRANŞ KAPTANLARI ETKİNLİKLERİ GÖRÜR */}
       {(currentUser?.type === 'community' || currentUser?.type === 'community_director' || currentUser?.type === 'super') && (
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="flex items-center justify-between">
