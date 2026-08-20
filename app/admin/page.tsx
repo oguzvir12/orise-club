@@ -80,12 +80,12 @@ export default function AdminPage() {
         setIsLoggedIn(true)
         setSessionUser(session.user)
         setAdminProfile(profile)
-        fetchData(profile)
+        fetchData()
       }
     }
   }
 
-  const fetchData = async (profileData = adminProfile) => {
+  const fetchData = async () => {
     setLoading(true)
     try {
       const { data: regData } = await supabase.from('event_registrations').select('*, events(title, branch)').order('created_at', { ascending: false })
@@ -97,7 +97,7 @@ export default function AdminPage() {
       const { data: evtData } = await supabase.from('events').select('*').order('date', { ascending: true })
       if (evtData) setEvents(evtData)
 
-      const { data: profData } = await supabase.from('profiles').select('*')
+      const { data: profData } = await supabase.from('profiles').select('*').order('full_name', { ascending: true })
       if (profData) setProfiles(profData)
     } catch (e) {
       console.error(e)
@@ -207,7 +207,6 @@ export default function AdminPage() {
     }
   }
 
-  // Başvuru Onayla / Reddet
   const handleUpdateRegistrationStatus = async (regId: string, newStatus: 'approved' | 'rejected') => {
     const { error } = await supabase
       .from('event_registrations')
@@ -274,7 +273,6 @@ export default function AdminPage() {
     fetchData()
   }
 
-  // Excel (CSV) İndirme Fonksiyonu
   const exportToCSV = () => {
     const headers = ['Katılımcı Adı', 'Telefon', 'E-posta', 'Etkinlik', 'Durum']
     const rows = filteredRegistrations.map(r => [
@@ -295,7 +293,6 @@ export default function AdminPage() {
     document.body.removeChild(link)
   }
 
-  // Yetki Filtrelemesi: Eğer 'admin' ise tümünü görür, 'captain' ise sadece kendi branşını görür.
   const isSuperAdmin = adminProfile?.role === 'admin'
   const adminBranch = adminProfile?.branch?.toUpperCase()
 
@@ -352,7 +349,7 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* YENİ ETKİNLİK OLUŞTURMA (Sadece Süper Admin) */}
+        {/* YENİ ETKİNLİK OLUŞTURMA */}
         {isSuperAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary">
@@ -388,7 +385,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ÜRÜN EKLEME (Sadece Süper Admin) */}
+        {/* ÜRÜN EKLEME */}
         {isSuperAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary">
@@ -465,30 +462,72 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* KAYITLI SİSTEM ÜYELERİ LİSTESİ (Sadece Super Admin) */}
+        {/* KAYITLI SİSTEM ÜYELERİ & YETKİ YÖNETİMİ (Sadece Süper Admin) */}
         {isSuperAdmin && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Kayıtlı Sistem Üyeleri ({profiles.length})</span></h2>
+            <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Kayıtlı Sistem Üyeleri & Yetki Yönetimi ({profiles.length})</span></h2>
             <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-mono">
                   <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
                     <tr>
-                      <th className="p-4">Ad Soyad</th>
-                      <th className="p-4">İletişim & E-posta</th>
-                      <th className="p-4">Adres</th>
+                      <th className="p-4">Ad Soyad / E-posta</th>
+                      <th className="p-4">Rolü</th>
+                      <th className="p-4">Branşı</th>
+                      <th className="p-4">Yetkiyi Güncelle</th>
                       <th className="p-4 text-right">İşlem</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5 text-zinc-300">
                     {profiles.map((prof) => (
                       <tr key={prof.id} className="hover:bg-zinc-900/40">
-                        <td className="p-4 font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</td>
                         <td className="p-4">
-                          <div>{prof.phone || 'Telefon yok'}</div>
-                          <div className="text-[10px] text-zinc-500">{prof.email || 'E-posta yok'}</div>
+                          <div className="font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</div>
+                          <div className="text-[10px] text-zinc-500">{prof.email}</div>
                         </td>
-                        <td className="p-4 text-zinc-400">{prof.address || prof.adres || 'Adres belirtilmemiş'}</td>
+                        <td className="p-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${prof.role === 'admin' ? 'bg-primary/20 text-primary' : prof.role === 'captain' ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-800 text-zinc-400'}`}>
+                            {prof.role || 'member'}
+                          </span>
+                        </td>
+                        <td className="p-4 text-primary font-bold">{prof.branch || 'ALL'}</td>
+                        <td className="p-4">
+                          <div className="flex gap-2 items-center">
+                            <select 
+                              defaultValue={prof.role || 'member'} 
+                              id={`role-${prof.id}`}
+                              className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white focus:border-primary"
+                            >
+                              <option value="member">Üye</option>
+                              <option value="captain">Kaptan</option>
+                              <option value="admin">Admin</option>
+                            </select>
+                            <select 
+                              defaultValue={prof.branch || 'ALL'} 
+                              id={`branch-${prof.id}`}
+                              className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white focus:border-primary"
+                            >
+                              <option value="ALL">ALL (Tümü)</option>
+                              <option value="KOŞU">KOŞU</option>
+                              <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
+                              <option value="TENİS">TENİS</option>
+                              <option value="VOLEYBOL">VOLEYBOL</option>
+                              <option value="YELKEN">YELKEN</option>
+                            </select>
+                            <button 
+                              onClick={async () => {
+                                const newRole = (document.getElementById(`role-${prof.id}`) as HTMLSelectElement).value
+                                const newBranch = (document.getElementById(`branch-${prof.id}`) as HTMLSelectElement).value
+                                const { error } = await supabase.from('profiles').update({ role: newRole, branch: newBranch }).eq('id', prof.id)
+                                if (!error) { alert('Üye yetkileri güncellendi!'); fetchData() }
+                                else { alert('Hata: ' + error.message) }
+                              }}
+                              className="px-3 py-1.5 bg-primary text-black rounded-lg text-[11px] font-bold cursor-pointer hover:opacity-90"
+                            >
+                              Kaydet
+                            </button>
+                          </div>
+                        </td>
                         <td className="p-4 text-right">
                           <button onClick={() => handleDeleteProfile(prof.id)} className="p-2 text-zinc-500 hover:text-red-400 rounded-xl hover:bg-red-500/10 cursor-pointer">
                             <Trash2 className="h-4 w-4" />
@@ -503,7 +542,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ETKİNLİK KATILIMCILARI & ONAY MEKANİZMASI & EXCEL EXPORT */}
+        {/* ETKİNLİK KATILIMCILARI & ONAY MEKANİZMASI */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold flex items-center gap-2">
