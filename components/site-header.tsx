@@ -2,10 +2,13 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { ShoppingBag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
+import { useCart } from '@/components/cart/cart-provider'
 
 export function SiteHeader() {
+  const { count, openCart } = useCart()
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -37,8 +40,21 @@ export function SiteHeader() {
           </Link>
         </div>
 
-        {/* Sağ üstteki sepet butonu kaldırıldı, temiz alan bırakıldı */}
-        <div className="flex items-center" />
+        <div className="flex items-center">
+          <button
+            type="button"
+            onClick={openCart}
+            aria-label="Sepeti aç"
+            className="group relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-secondary/60 text-foreground backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-primary hover:shadow-[0_0_20px_rgba(249,115,22,0.25)] cursor-pointer"
+          >
+            <ShoppingBag className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
+            {count > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground shadow-[0_0_10px_rgba(249,115,22,0.6)]">
+                {count}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
     </header>
   )
