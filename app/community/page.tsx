@@ -71,14 +71,12 @@ export default function CommunityPage() {
   }, [])
 
   const checkUserSession = async () => {
-    // Supabase auth veya yerel oturum kontrolü
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setUserSession(session.user)
         fetchUserProfile(session.user.email)
       } else {
-        // Alternatif olarak localStorage veya başka bir oturum yönetimi kontrol edilebilir
         const localUser = localStorage.getItem('orise_logged_user')
         if (localUser) {
           const parsed = JSON.parse(localUser)
@@ -142,11 +140,8 @@ export default function CommunityPage() {
   }
 
   const openRegisterModal = (evt: EventItem) => {
-    // Üye girişi kontrolü
     if (!userSession && !email && !localStorage.getItem('orise_logged_user')) {
       alert('Etkinliklere katılabilmek için öncelikle üye girişi yapmalısınız!')
-      // Dilerseniz burada login sayfasına yönlendirme yapabilirsiniz:
-      // window.location.href = '/login'
       return
     }
 
@@ -172,7 +167,7 @@ export default function CommunityPage() {
       const currentCount = registrationCounts[selectedEvent.id] || 0
       const isWaitlist = currentCount >= (selectedEvent.capacity || 30)
 
-      const { error } = await supabase.from('event_registrations'].insert([
+      const { error } = await supabase.from('event_registrations').insert([
         {
           event_id: selectedEvent.id,
           full_name: fullName.trim(),
