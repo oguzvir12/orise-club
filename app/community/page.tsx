@@ -13,10 +13,9 @@ import {
   Ticket,
   ChevronRight,
   Filter,
-  User,
-  LogOut,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { SiteHeader } from '../../components/site-header'
 import AuthModal from '../../components/auth-modal'
 
 interface EventItem {
@@ -48,7 +47,6 @@ export default function CommunityPage() {
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
-  const [session, setSession] = useState<any>(null)
   const [userEmail, setUserEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -66,7 +64,6 @@ export default function CommunityPage() {
     checkUserSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
-      setSession(currentSession)
       if (currentSession?.user?.email) {
         setUserEmail(currentSession.user.email)
         fetchUserData(currentSession.user.email)
@@ -85,8 +82,6 @@ export default function CommunityPage() {
   const checkUserSession = async () => {
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession()
-      setSession(currentSession)
-
       if (currentSession?.user?.email) {
         const emailVal = currentSession.user.email
         setUserEmail(emailVal)
@@ -231,48 +226,7 @@ export default function CommunityPage() {
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
-      <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-6 sm:px-10 lg:px-14">
-        <Link
-          href="/"
-          className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-black hover:text-white"
-        >
-          <ArrowLeft className="h-3.5 w-3.5 text-primary transition-transform duration-300 group-hover:-translate-x-1" />
-          <span>Ana Sayfa</span>
-        </Link>
-
-        <div className="flex items-center gap-3">
-          {session ? (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/profile"
-                className="group inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur-xl transition-all duration-300 hover:bg-primary hover:text-black"
-              >
-                <User className="h-3.5 w-3.5" />
-                <span>Profilim & Etkinliklerim</span>
-              </Link>
-              <button
-                type="button"
-                onClick={async () => {
-                  await supabase.auth.signOut()
-                  window.location.reload()
-                }}
-                className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/20 cursor-pointer"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Çıkış</span>
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setIsAuthModalOpen(true)}
-              className="rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-105 transition-transform cursor-pointer"
-            >
-              Giriş Yap / Kayıt Ol
-            </button>
-          )}
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="relative overflow-hidden border-b border-white/10 pt-32 pb-16 lg:pt-40 lg:pb-20">
         <div className="absolute inset-0 z-0 overflow-hidden">
@@ -288,6 +242,13 @@ export default function CommunityPage() {
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <div className="max-w-3xl space-y-4">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-black hover:text-white mb-4"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 text-primary" />
+              <span>Ana Sayfaya Dön</span>
+            </Link>
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
               <span>HAFTALIK ANTRENMAN TAKVİMİ</span>
             </div>
@@ -301,7 +262,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <section className="border-b border-white/10 bg-zinc-950/80 sticky top-0 z-40 backdrop-blur-xl">
+      <section className="border-b border-white/10 bg-zinc-950/80 sticky top-16 z-40 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
             <Filter className="h-4 w-4 text-primary shrink-0 mr-2" />
@@ -440,11 +401,11 @@ export default function CommunityPage() {
               <form onSubmit={handleRegisterSubmit} className="space-y-4">
                 <div>
                   <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
-                  <input type="text" value={fullName} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed" />
+                  <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ad Soyad" className="w-full rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white focus:border-primary focus:outline-none" />
                 </div>
                 <div>
                   <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon</label>
-                  <input type="tel" value={phone} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed" />
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XX XXX XX XX" className="w-full rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white focus:border-primary focus:outline-none" />
                 </div>
                 <div>
                   <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">E-Posta</label>
