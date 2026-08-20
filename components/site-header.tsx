@@ -29,26 +29,18 @@ export function SiteHeader() {
 
   const fetchProfile = async (userId: string, userEmail?: string) => {
     try {
-      let foundData = null
-      const { data: p1, error: err1 } = await supabase.from('profiler').select('*').eq('id', userId).maybeSingle()
-      if (p1) {
-        foundData = p1
-      } else {
-        const { data: p2, error: err2 } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
-        if (p2) foundData = p2
-      }
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle()
 
-      if (!foundData && userEmail) {
-        const { data: p3 } = await supabase.from('profiles').select('*').ilike('email', userEmail.trim()).maybeSingle()
-        if (p3) foundData = p3
-      }
-
-      if (foundData) {
-        setFullName(foundData.full_name || '')
-        setPhone(foundData.phone || '')
-        setInstagram(foundData.instagram || '')
-        setAddress(foundData.adres || foundData.address || '')
-        setBillingAddress(foundData.billing_address || '')
+      if (data) {
+        setFullName(data.full_name || '')
+        setPhone(data.phone || '')
+        setInstagram(data.instagram || '')
+        setAddress(data.address || data.adres || '')
+        setBillingAddress(data.billing_address || '')
       }
 
       if (userEmail) {
@@ -62,7 +54,7 @@ export function SiteHeader() {
         }
       }
     } catch (err) {
-      console.error('Profil yükleme hatası:', err)
+      console.error('Profil çekme hatası:', err)
     }
   }
 
@@ -125,24 +117,21 @@ export function SiteHeader() {
         full_name: fullName, 
         phone: phone, 
         instagram: instagram,
-        adres: address,
         address: address,
         billing_address: billingAddress 
       }
 
-      const { error: err1 } = await supabase.from('profiler').upsert(payload, { onConflict: 'id' })
-      const { error: err2 } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
+      const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
 
-      if (err1) console.error('Profiler tablo kayıt hatası:', err1.message)
-      if (err2) console.error('Profiles tablo kayıt hatası:', err2.message)
+      if (error) throw error
 
-      setSuccessMsg('Profil ve etkinlik bilgileriniz kalıcı olarak kaydedildi!')
+      setSuccessMsg('Profil bilgileriniz kalıcı olarak kaydedildi!')
       setTimeout(() => { 
         setSuccessMsg('')
         window.location.reload()
       }, 1000)
     } catch (err: any) {
-      alert('Hata: ' + err.message)
+      alert('Kayıt Hatası: ' + err.message)
     } finally {
       setLoading(false)
     }
