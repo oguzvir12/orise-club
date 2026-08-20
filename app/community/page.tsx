@@ -17,7 +17,7 @@ import {
   LogOut,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import AuthModal from '../../../components/auth-modal'
+import AuthModal from '../../components/auth-modal'
 
 interface EventItem {
   id: string
@@ -86,6 +86,7 @@ export default function CommunityPage() {
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession()
       setSession(currentSession)
+
       if (currentSession?.user?.email) {
         const emailVal = currentSession.user.email
         setUserEmail(emailVal)
@@ -153,10 +154,12 @@ export default function CommunityPage() {
       setIsAuthModalOpen(true)
       return
     }
+
     if (myRegisteredEventIds.includes(evt.id)) {
       alert('Bu etkinliğe zaten katıldın!')
       return
     }
+
     setSelectedEvent(evt)
     setIsModalOpen(true)
     setSuccess(false)
@@ -166,12 +169,15 @@ export default function CommunityPage() {
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedEvent) return
+
     if (!healthAccepted) {
       setErrorMsg('Lütfen sağlık ve sorumluluk beyanını onaylayınız.')
       return
     }
+
     setLoading(true)
     setErrorMsg('')
+
     try {
       const { data: existing } = await supabase
         .from('event_registrations')
@@ -179,13 +185,16 @@ export default function CommunityPage() {
         .eq('event_id', selectedEvent.id)
         .ilike('email', userEmail.trim())
         .maybeSingle()
+
       if (existing) {
         setErrorMsg('Bu etkinliğe zaten kayıt oluşturdun!')
         setLoading(false)
         return
       }
+
       const currentCount = registrationCounts[selectedEvent.id] || 0
       const isWaitlist = currentCount >= (selectedEvent.capacity || 30)
+
       const { error } = await supabase.from('event_registrations').insert([
         {
           event_id: selectedEvent.id,
@@ -196,11 +205,14 @@ export default function CommunityPage() {
           is_paid: Number(selectedEvent.price) === 0,
         },
       ])
+
       if (error) throw error
+
       setSuccess(true)
       setHealthAccepted(false)
       fetchRegistrations()
       fetchMyRegistrations(userEmail)
+
       setTimeout(() => {
         setIsModalOpen(false)
         setSuccess(false)
@@ -220,24 +232,42 @@ export default function CommunityPage() {
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
       <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-6 sm:px-10 lg:px-14">
-        <Link href="/" className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-black hover:text-white">
+        <Link
+          href="/"
+          className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-black hover:text-white"
+        >
           <ArrowLeft className="h-3.5 w-3.5 text-primary transition-transform duration-300 group-hover:-translate-x-1" />
           <span>Ana Sayfa</span>
         </Link>
+
         <div className="flex items-center gap-3">
           {session ? (
             <div className="flex items-center gap-2">
-              <Link href="/profile" className="group inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur-xl transition-all duration-300 hover:bg-primary hover:text-black">
+              <Link
+                href="/profile"
+                className="group inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur-xl transition-all duration-300 hover:bg-primary hover:text-black"
+              >
                 <User className="h-3.5 w-3.5" />
                 <span>Profilim & Etkinliklerim</span>
               </Link>
-              <button type="button" onClick={async () => { await supabase.auth.signOut(); window.location.reload() }} className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/20 cursor-pointer">
+              <button
+                type="button"
+                onClick={async () => {
+                  await supabase.auth.signOut()
+                  window.location.reload()
+                }}
+                className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/20 cursor-pointer"
+              >
                 <LogOut className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Çıkış</span>
               </button>
             </div>
           ) : (
-            <button type="button" onClick={() => setIsAuthModalOpen(true)} className="rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-105 transition-transform cursor-pointer">
+            <button
+              type="button"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-105 transition-transform cursor-pointer"
+            >
               Giriş Yap / Kayıt Ol
             </button>
           )}
