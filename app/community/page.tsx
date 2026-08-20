@@ -12,11 +12,10 @@ import {
   ShieldCheck,
   AlertCircle,
   X,
-  Sparkles,
   Ticket,
   ChevronRight,
   Filter,
-  CreditCard,
+  User,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -50,9 +49,6 @@ export default function CommunityPage() {
 
   // Oturum ve Kullanıcı Bilgileri
   const [userSession, setUserSession] = useState<any>(null)
-  const [userProfile, setUserProfile] = useState<any>(null)
-
-  // Kayıt Formu State'leri
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -61,7 +57,6 @@ export default function CommunityPage() {
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  // Katılımcı Sayıları
   const [registrationCounts, setRegistrationCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
@@ -72,18 +67,19 @@ export default function CommunityPage() {
 
   const checkUserSession = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        setUserSession(session.user)
-        fetchUserProfile(session.user.email)
+      const localUser = localStorage.getItem('orise_logged_user')
+      if (localUser) {
+        const parsed = JSON.parse(localUser)
+        setUserSession(parsed)
+        setFullName(parsed.full_name || parsed.name || '')
+        setPhone(parsed.phone || '')
+        setEmail(parsed.email || '')
       } else {
-        const localUser = localStorage.getItem('orise_logged_user')
-        if (localUser) {
-          const parsed = JSON.parse(localUser)
-          setUserSession(parsed)
-          setFullName(parsed.full_name || '')
-          setPhone(parsed.phone || '')
-          setEmail(parsed.email || '')
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          setUserSession(session.user)
+          setEmail(session.user.email || '')
+          fetchUserProfile(session.user.email)
         }
       }
     } catch (e) {
@@ -93,17 +89,15 @@ export default function CommunityPage() {
 
   const fetchUserProfile = async (userEmail: string) => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('profiler')
         .select('*')
         .eq('email', userEmail)
         .single()
 
-      if (!error && data) {
-        setUserProfile(data)
+      if (data) {
         setFullName(data.full_name || data.name || '')
         setPhone(data.phone || '')
-        setEmail(data.email || userEmail)
       }
     } catch (e) {
       console.error(e)
@@ -112,10 +106,8 @@ export default function CommunityPage() {
 
   const fetchEvents = async () => {
     try {
-      const { data, error } = await supabase.from('events').select('*').order('date', { ascending: true })
-      if (!error && data) {
-        setEvents(data)
-      }
+      const { data } = await supabase.from('events').select('*').order('date', { ascending: true })
+      if (data) setEvents(data)
     } catch (e) {
       console.error(e)
     }
@@ -123,11 +115,8 @@ export default function CommunityPage() {
 
   const fetchRegistrations = async () => {
     try {
-      const { data, error } = await supabase
-        .from('event_registrations')
-        .select('event_id')
-
-      if (!error && data) {
+      const { data } = await supabase.from('event_registrations').select('event_id')
+      if (data) {
         const counts: Record<string, number> = {}
         data.forEach((r: any) => {
           counts[r.event_id] = (counts[r.event_id] || 0) + 1
@@ -140,7 +129,7 @@ export default function CommunityPage() {
   }
 
   const openRegisterModal = (evt: EventItem) => {
-    if (!userSession && !email && !localStorage.getItem('orise_logged_user')) {
+    if (!email && !userSession) {
       alert('Etkinliklere katılabilmek için öncelikle üye girişi yapmalısınız!')
       return
     }
@@ -151,7 +140,7 @@ export default function CommunityPage() {
     setErrorMsg('')
   }
 
-  const handleRegisterSubmit = async (e: React.FormEvent, isPaidAction: boolean = false) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedEvent) return
 
@@ -164,6 +153,20 @@ export default function CommunityPage() {
     setErrorMsg('')
 
     try {
+      // Aynı kullanıcı bu etkinliğe daha önce kayıt olmuş mu kontrol edelim (Çift kayıt spamini önler)
+      const { data: existing } = await supabase
+        .from('event_registrations')
+        .select('id')
+        .eq('event_id', selectedEvent.id)
+        .eq('email', email.trim())
+        .maybeSingle()
+
+      if (existing) {
+        setErrorMsg('Bu etkinliğe zaten kayıt oluşturdun! Profilim sayfasından durumunu görebilirsin.')
+        setLoading(false)
+        return
+      }
+
       const currentCount = registrationCounts[selectedEvent.id] || 0
       const isWaitlist = currentCount >= (selectedEvent.capacity || 30)
 
@@ -173,17 +176,12 @@ export default function CommunityPage() {
           full_name: fullName.trim(),
           phone: phone.trim(),
           email: email.trim(),
-          status: isWaitlist ? 'waitlist' : 'confirmed',
-          is_paid: isPaidAction,
+          status: isWaitlist ? 'waitlist' : 'pending', // Ödeme veya onay bekliyor
+          is_paid: Number(selectedEvent.price) === 0, // Ücretsizse otomatik ödenmiş sayılır
         },
       ])
 
       if (error) throw error
-
-      if (isPaidAction) {
-        // Buraya PayTR veya ödeme entegrasyonu yönlendirmesi eklenebilir
-        alert('Ödeme sayfasına yönlendiriliyorsunuz (PayTR entegrasyon alanı).')
-      }
 
       setSuccess(true)
       setHealthAccepted(false)
@@ -207,13 +205,21 @@ export default function CommunityPage() {
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
-      <div className="fixed top-4 left-6 z-[60] sm:left-8">
+      {/* Üst Bar: Ana Sayfa ve Profilim */}
+      <div className="fixed top-4 left-6 z-[60] flex items-center gap-3 sm:left-8">
         <Link
           href="/"
           className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-black hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5 text-primary transition-transform duration-300 group-hover:-translate-x-1" />
           <span>Ana Sayfa</span>
+        </Link>
+        <Link
+          href="/profile"
+          className="group inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur-xl transition-all duration-300 hover:bg-primary hover:text-black"
+        >
+          <User className="h-3.5 w-3.5" />
+          <span>Profilim & Etkinliklerim</span>
         </Link>
       </div>
 
@@ -244,6 +250,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
+      {/* Branş Filtreleme */}
       <section className="border-b border-white/10 bg-zinc-950/80 sticky top-0 z-40 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -265,6 +272,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
+      {/* Etkinlik Listesi */}
       <section className="border-b border-white/10 bg-zinc-950/40 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <div className="mb-10 flex items-center justify-between border-b border-white/10 pb-4">
@@ -327,7 +335,7 @@ export default function CommunityPage() {
                       onClick={() => openRegisterModal(evt)}
                       className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-transform hover:scale-[1.02] cursor-pointer"
                     >
-                      <span>{isFree ? 'Hemen Katıl' : 'Katıl & Ödeme Yap'}</span>
+                      <span>{isFree ? 'Hemen Katıl' : 'Kayıt Ol & Ödemeyi Profile At'}</span>
                       <ChevronRight className="h-4 w-4" />
                     </button>
                   </div>
@@ -338,6 +346,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
+      {/* Kayıt Modali */}
       {isModalOpen && selectedEvent && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn"
@@ -350,7 +359,7 @@ export default function CommunityPage() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <span className="text-[10px] font-mono uppercase text-primary tracking-widest block">
-                  {selectedEvent.branch} · {Number(selectedEvent.price) === 0 ? 'ÜCRETSİZ ETKİNLİK' : `₺${selectedEvent.price} ÜCRETLİ ETKİNLİK`}
+                  {selectedEvent.branch} · {Number(selectedEvent.price) === 0 ? 'ÜCRETSİZ' : `₺${selectedEvent.price}`}
                 </span>
                 <h3 className="font-sans text-lg font-black text-white mt-0.5">
                   {selectedEvent.title}
@@ -370,33 +379,24 @@ export default function CommunityPage() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   <Check className="h-7 w-7" />
                 </div>
-                <h4 className="font-sans text-xl font-bold text-white">İşleminiz Başarıyla Alındı!</h4>
+                <h4 className="font-sans text-xl font-bold text-white">Ön Kayıt Başarıyla Alındı!</h4>
                 <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                  Etkinlik kaydınız sisteme işlenmiştir.
+                  Etkinlik profilindeki "Katıldığım Etkinlikler" sekmesine eklendi. Ödemeyi oradan tamamlayabilirsin.
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <form onSubmit={handleRegisterSubmit} className="space-y-4">
                 <div>
                   <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
-                  <input
-                    type="text" value={fullName} readOnly
-                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed"
-                  />
+                  <input type="text" value={fullName} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed" />
                 </div>
                 <div>
                   <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon</label>
-                  <input
-                    type="tel" value={phone} readOnly
-                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed"
-                  />
+                  <input type="tel" value={phone} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed" />
                 </div>
                 <div>
                   <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">E-Posta</label>
-                  <input
-                    type="email" value={email} readOnly
-                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed"
-                  />
+                  <input type="email" value={email} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed" />
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 space-y-2">
@@ -422,76 +422,29 @@ export default function CommunityPage() {
                   </div>
                 )}
 
-                {/* ÜCRETSİZ VEYA ÜCRETLİ DURUMUNA GÖRE BUTONLAR */}
-                {Number(selectedEvent.price) === 0 ? (
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={(e) => handleRegisterSubmit(e, false)}
-                    className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
-                  >
-                    {loading ? 'İşleniyor...' : 'Ücretsiz Katılımı Onayla'}
-                  </button>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      disabled={loading}
-                      onClick={(e) => handleRegisterSubmit(e, false)}
-                      className="rounded-full border border-white/20 bg-zinc-900 py-3.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-                    >
-                      Sadece Kayıt Ol
-                    </button>
-                    <button
-                      type="button"
-                      disabled={loading}
-                      onClick={(e) => handleRegisterSubmit(e, true)}
-                      className="flex items-center justify-center gap-1.5 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-wider text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
-                    >
-                      <CreditCard className="h-4 w-4" />
-                      <span>₺{selectedEvent.price} Öde</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+                <button
+                  type="submit" disabled={loading}
+                  className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
+                >
+                  {loading ? 'İşleniyor...' : 'Katılımı Oluştur & Profile Gönder'}
+                </button>
+              </form>
             )}
           </div>
         </div>
       )}
 
-      {/* SAĞLIK BEYANI MODALİ */}
+      {/* Sağlık Beyanı Modali */}
       {isHealthModalOpen && (
-        <div
-          className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn"
-          onClick={() => setIsHealthModalOpen(false)}
-        >
-          <div
-            className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl" onClick={() => setIsHealthModalOpen(false)}>
+          <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
-                <ShieldCheck className="h-4 w-4" />
-                <span>Sağlık Beyanı & Sorumluluk Muvafakatnamesi</span>
-              </div>
-              <button
-                type="button" onClick={() => setIsHealthModalOpen(false)}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <span className="text-primary font-bold text-xs uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Sağlık Beyanı</span>
+              <button onClick={() => setIsHealthModalOpen(false)} className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-white cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
-            <div className="text-xs leading-relaxed text-zinc-300 space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-              <p><strong>1. Sağlık Durumu:</strong> Kulüp etkinliklerine katılmama engel olacak bilinen bir rahatsızlığım bulunmamaktadır.</p>
-              <p><strong>2. Şahsi Sorumluluk:</strong> Etkinlik sırasındaki tüm fiziksel sorumluluk tarafıma aittir.</p>
-            </div>
-            <div className="pt-2 text-right">
-              <button
-                type="button" onClick={() => { setHealthAccepted(true); setIsHealthModalOpen(false) }}
-                className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black hover:scale-105 transition-transform cursor-pointer"
-              >
-                Okudum, Onaylıyorum
-              </button>
+            <p className="text-xs text-zinc-300 leading-relaxed">Kulüp etkinliklerine katılmama engel olacak bilinen bir rahatsızlığım bulunmamaktadır. Sorumluluk tarafıma aittir.</p>
+            <div className="text-right">
+              <button type="button" onClick={() => { setHealthAccepted(true); setIsHealthModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer">Onayla</button>
             </div>
           </div>
         </div>
