@@ -7,20 +7,15 @@ import {
   ArrowLeft,
   Users,
   Trash2,
-  ShieldCheck,
   RefreshCw,
   Lock,
   LogOut,
-  ShoppingBag,
-  Truck,
   PlusCircle,
   Layers,
   Edit3,
   X,
   Upload,
   Calendar,
-  MapPin,
-  User,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -322,18 +317,15 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* ================= 1. YENİ ETKİNLİK OLUŞTURMA (HOCA & KONUM İLE) ================= */}
         {currentUser?.type === 'super' && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary">
               <Calendar className="h-5 w-5" />
-              <span>Yeni Topluluk Etkinliği Oluştur (Hoca & Konum Seçimi)</span>
+              <span>Yeni Topluluk Etkinliği Oluştur</span>
             </h2>
             <form onSubmit={handleAddEvent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <input type="text" placeholder="Etkinlik Adı (Örn: Sunset Run)" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              
-              <input type="text" placeholder="Eğitmen / Hoca İsmi" value={instructorName} onChange={(e) => setInstructorName(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-
+              <input type="text" placeholder="Etkinlik Adı" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <input type="text" placeholder="Eğitmen İsmi" value={instructorName} onChange={(e) => setInstructorName(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <select value={evtBranch} onChange={(e) => setEvtBranch(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary">
                 <option value="KOŞU">KOŞU</option>
                 <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
@@ -341,11 +333,8 @@ export default function AdminPage() {
                 <option value="VOLEYBOL">VOLEYBOL</option>
                 <option value="YELKEN">YELKEN</option>
               </select>
-
-              <input type="text" placeholder="Harita Konum Linki (Google Maps URL)" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-
+              <input type="text" placeholder="Konum / Google Maps Linki" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="datetime-local" required value={evtDate} onChange={(e) => setEvtDate(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              
               <input type="number" placeholder="Bilet Fiyatı (0 = Ücretsiz)" required value={evtPrice} onChange={(e) => setEvtPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               
               <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
@@ -354,7 +343,7 @@ export default function AdminPage() {
                 <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'event')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
               </div>
 
-              <textarea rows={1} placeholder="Etkinlik Açıklaması" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-2 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <textarea rows={1} placeholder="Açıklama" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-2 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
 
               <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">
                 Etkinliği Yayınla
@@ -363,7 +352,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ================= 2. MAĞAZAYA YENİ ÜRÜN EKLEME ================= */}
         {(currentUser?.type === 'store' || currentUser?.type === 'super') && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary">
@@ -390,9 +378,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ================= 3. LİSTELER (ÜRÜNLER VE ETKİNLİKLER) ================= */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Ürünler */}
           <div className="space-y-4">
             <h2 className="text-base font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /><span>Yüklü Ürünler ({products.length})</span></h2>
             <div className="space-y-3">
@@ -416,7 +402,6 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Etkinlikler */}
           <div className="space-y-4">
             <h2 className="text-base font-bold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ({events.length})</span></h2>
             <div className="space-y-3">
@@ -427,7 +412,7 @@ export default function AdminPage() {
                       <Image src={evt.image_url || '/placeholder.svg'} alt={evt.title} fill className="object-cover" />
                     </div>
                     <div>
-                      <span className="text-[10px] font-mono text-primary uppercase">{evt.branch} {evt.instructor_name ? `• Eğitmen: ${evt.instructor_name}` : ''}</span>
+                      <span className="text-[10px] font-mono text-primary uppercase">{evt.branch} {evt.instructor_name ? `• ${evt.instructor_name}` : ''}</span>
                       <h4 className="font-bold text-xs text-white">{evt.title}</h4>
                     </div>
                   </div>
@@ -438,7 +423,6 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* ================= 4. SİPARİŞLER VE KATILIMCILAR ================= */}
         <div className="space-y-6">
           <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Etkinlik Katılımcıları & Siparişler ({registrations.length + orders.length})</span></h2>
           <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
@@ -469,7 +453,6 @@ export default function AdminPage() {
 
       </div>
 
-      {/* DÜZENLEME MODALİ */}
       {editingProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
