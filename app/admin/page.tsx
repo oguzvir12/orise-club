@@ -19,6 +19,8 @@ import {
   X,
   Upload,
   Calendar,
+  MapPin,
+  User,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -62,6 +64,7 @@ export default function AdminPage() {
   const [evtLocation, setEvtLocation] = useState('')
   const [evtPrice, setEvtPrice] = useState('0')
   const [evtBranch, setEvtBranch] = useState('KOŞU')
+  const [instructorName, setInstructorName] = useState('')
   const [evtImage, setEvtImage] = useState('')
 
   // Düzenleme Modal State'leri
@@ -168,15 +171,23 @@ export default function AdminPage() {
       location: evtLocation || 'İstanbul',
       price: Number(evtPrice) || 0,
       branch: evtBranch,
+      instructor_name: instructorName || 'Kulüp Eğitmeni',
       image_url: evtImage || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop'
     }])
 
     if (!error) {
       alert('Etkinlik başarıyla oluşturuldu!')
-      setEvtTitle(''); setEvtDesc(''); setEvtDate(''); setEvtLocation(''); setEvtPrice('0'); setEvtImage('')
+      setEvtTitle('')
+      setEvtDesc('')
+      setEvtDate('')
+      setEvtLocation('')
+      setEvtPrice('0')
+      setEvtBranch('KOŞU')
+      setInstructorName('')
+      setEvtImage('')
       fetchData()
     } else {
-      alert('Etkinlik eklenirken hata oluştu.')
+      alert('Etkinlik eklenirken hata oluştu: ' + error.message)
     }
   }
 
@@ -190,11 +201,6 @@ export default function AdminPage() {
     if (!confirm('Bu kaydı silmek istiyor musunuz?')) return
     await supabase.from('event_registrations').delete().eq('id', id)
     setRegistrations((prev) => prev.filter((r) => r.id !== id))
-  }
-
-  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
-    await supabase.from('orders').update({ status: newStatus }).eq('id', orderId)
-    setOrders((prev) => prev.map((ord) => (ord.id === orderId ? { ...ord, status: newStatus } : ord)))
   }
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -316,16 +322,18 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* ================= 1. YENİ ETKİNLİK OLUŞTURMA ================= */}
+        {/* ================= 1. YENİ ETKİNLİK OLUŞTURMA (HOCA & KONUM İLE) ================= */}
         {currentUser?.type === 'super' && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary">
               <Calendar className="h-5 w-5" />
-              <span>Yeni Topluluk Etkinliği Oluştur</span>
+              <span>Yeni Topluluk Etkinliği Oluştur (Hoca & Konum Seçimi)</span>
             </h2>
             <form onSubmit={handleAddEvent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <input type="text" placeholder="Etkinlik Adı" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <input type="text" placeholder="Etkinlik Adı (Örn: Sunset Run)" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               
+              <input type="text" placeholder="Eğitmen / Hoca İsmi" value={instructorName} onChange={(e) => setInstructorName(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+
               <select value={evtBranch} onChange={(e) => setEvtBranch(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary">
                 <option value="KOŞU">KOŞU</option>
                 <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
@@ -334,8 +342,10 @@ export default function AdminPage() {
                 <option value="YELKEN">YELKEN</option>
               </select>
 
+              <input type="text" placeholder="Harita Konum Linki (Google Maps URL)" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+
               <input type="datetime-local" required value={evtDate} onChange={(e) => setEvtDate(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="text" placeholder="Lokasyon (Örn: Caddebostan)" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              
               <input type="number" placeholder="Bilet Fiyatı (0 = Ücretsiz)" required value={evtPrice} onChange={(e) => setEvtPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               
               <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
@@ -344,7 +354,7 @@ export default function AdminPage() {
                 <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'event')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
               </div>
 
-              <textarea rows={1} placeholder="Açıklama" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-3 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <textarea rows={1} placeholder="Etkinlik Açıklaması" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-2 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
 
               <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">
                 Etkinliği Yayınla
@@ -398,8 +408,8 @@ export default function AdminPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => openEditModal(prod)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700"><Edit3 size={14} /></button>
-                    <button onClick={() => handleDeleteProduct(prod.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20"><Trash2 size={14} /></button>
+                    <button onClick={() => openEditModal(prod)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
+                    <button onClick={() => handleDeleteProduct(prod.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
                   </div>
                 </div>
               ))}
@@ -417,11 +427,11 @@ export default function AdminPage() {
                       <Image src={evt.image_url || '/placeholder.svg'} alt={evt.title} fill className="object-cover" />
                     </div>
                     <div>
-                      <span className="text-[10px] font-mono text-primary uppercase">{evt.branch}</span>
+                      <span className="text-[10px] font-mono text-primary uppercase">{evt.branch} {evt.instructor_name ? `• Eğitmen: ${evt.instructor_name}` : ''}</span>
                       <h4 className="font-bold text-xs text-white">{evt.title}</h4>
                     </div>
                   </div>
-                  <button onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20"><Trash2 size={14} /></button>
+                  <button onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
                 </div>
               ))}
             </div>
