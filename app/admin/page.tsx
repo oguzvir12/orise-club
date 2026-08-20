@@ -63,12 +63,21 @@ export default function AdminPage() {
   const [instructorName, setInstructorName] = useState('')
   const [evtImage, setEvtImage] = useState('')
 
-  // Düzenleme Modal State'leri
+  // Düzenleme Modal State'leri (Ürün ve Etkinlik)
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editPrice, setEditPrice] = useState('')
   const [editStock, setEditStock] = useState('')
   const [editImage, setEditImage] = useState('')
+
+  const [editingEvent, setEditingEvent] = useState<any | null>(null)
+  const [editEvtTitle, setEditEvtTitle] = useState('')
+  const [editEvtPrice, setEditEvtPrice] = useState('')
+  const [editEvtBranch, setEditEvtBranch] = useState('KOŞU')
+  const [editEvtLocation, setEditEvtLocation] = useState('')
+  const [editEvtDate, setEditEvtDate] = useState('')
+  const [editEvtInstructor, setEditEvtInstructor] = useState('')
+  const [editEvtImage, setEditEvtImage] = useState('')
 
   useEffect(() => {
     const savedAuth = localStorage.getItem('orise_admin_user')
@@ -104,7 +113,7 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const { data: regData } = await supabase.from('event_registrations').select('*').order('created_at', { ascending: false })
+      const { data: regData } = await supabase.from('event_registrations').select('*, events(title)').order('created_at', { ascending: false })
       if (regData) setRegistrations(regData)
 
       const { data: ordData } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
@@ -125,7 +134,7 @@ export default function AdminPage() {
     }
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'event' | 'edit') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'event' | 'edit' | 'editev') => {
     try {
       const file = e.target.files?.[0]
       if (!file) return
@@ -150,6 +159,7 @@ export default function AdminPage() {
         if (type === 'product') setImageUrl(data.publicUrl)
         else if (type === 'event') setEvtImage(data.publicUrl)
         else if (type === 'edit') setEditImage(data.publicUrl)
+        else if (type === 'editev') setEditEvtImage(data.publicUrl)
         alert('Fotoğraf yüklendi!')
       }
     } catch (err) {
@@ -194,6 +204,40 @@ export default function AdminPage() {
     if (!confirm('Bu etkinliği silmek istiyor musunuz?')) return
     await supabase.from('events').delete().eq('id', id)
     setEvents((prev) => prev.filter((e) => e.id !== id))
+  }
+
+  const openEditEventModal = (evt: any) => {
+    setEditingEvent(evt)
+    setEditEvtTitle(evt.title || '')
+    setEditEvtPrice(evt.price || '0')
+    setEditEvtBranch(evt.branch || 'KOŞU')
+    setEditEvtLocation(evt.location || '')
+    setEditEvtDate(evt.date ? evt.date.slice(0, 16) : '')
+    setEditEvtInstructor(evt.instructor_name || '')
+    setEditEvtImage(evt.image_url || '')
+  }
+
+  const handleUpdateEvent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingEvent) return
+
+    const { error } = await supabase.from('events').update({
+      title: editEvtTitle,
+      price: Number(editEvtPrice) || 0,
+      branch: editEvtBranch,
+      location: editEvtLocation,
+      date: editEvtDate,
+      instructor_name: editEvtInstructor,
+      image_url: editEvtImage || editingEvent.image_url
+    }).eq('id', editingEvent.id)
+
+    if (!error) {
+      alert('Etkinlik güncellendi!')
+      setEditingEvent(null)
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
   }
 
   const handleDeleteRegistration = async (id: string) => {
@@ -426,7 +470,10 @@ export default function AdminPage() {
                       <h4 className="font-bold text-xs text-white">{evt.title}</h4>
                     </div>
                   </div>
-                  <button onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
+                  <div className="flex gap-2">
+                    <button onClick={() => openEditEventModal(evt)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
+                    <button onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -442,8 +489,8 @@ export default function AdminPage() {
                 <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
                   <tr>
                     <th className="p-4">Ad Soyad</th>
-                    <th className="p-4">İletişim & Adres</th>
-                    <th className="p-4">Kayıt Türü</th>
+                    <th className="p-4">İletişim & E-posta</th>
+                    <th className="p-4">Adres</th>
                     <th className="p-4 text-right">İşlem</th>
                   </tr>
                 </thead>
@@ -458,9 +505,9 @@ export default function AdminPage() {
                         <td className="p-4 font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</td>
                         <td className="p-4">
                           <div>{prof.phone || 'Telefon yok'}</div>
-                          <div className="text-[10px] text-zinc-500 truncate max-w-xs">{prof.address || 'Adres belirtilmemiş'}</div>
+                          <div className="text-[10px] text-zinc-500">{prof.email || 'E-posta yok'}</div>
                         </td>
-                        <td className="p-4 text-primary font-bold">Kulüp Üyesi</td>
+                        <td className="p-4 text-zinc-400">{prof.adres || prof.address || 'Adres belirtilmemiş'}</td>
                         <td className="p-4 text-right">
                           <button onClick={() => handleDeleteProfile(prof.id)} className="p-2 text-zinc-500 hover:text-red-400 rounded-xl hover:bg-red-500/10 cursor-pointer">
                             <Trash2 className="h-4 w-4" />
@@ -483,21 +530,36 @@ export default function AdminPage() {
               <table className="w-full text-left text-xs font-mono">
                 <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
                   <tr>
-                    <th className="p-4">Kişi / Müşteri</th>
-                    <th className="p-4">İletişim</th>
-                    <th className="p-4">Kayıt Türü</th>
+                    <th className="p-4">Katılımcı Adı</th>
+                    <th className="p-4">İletişim & E-posta</th>
+                    <th className="p-4">Katıldığı Etkinlik</th>
+                    <th className="p-4">Durum</th>
                     <th className="p-4 text-right">İşlem</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
-                  {registrations.map((reg) => (
-                    <tr key={reg.id} className="hover:bg-zinc-900/40">
-                      <td className="p-4 font-bold text-white">{reg.full_name}</td>
-                      <td className="p-4">{reg.phone}</td>
-                      <td className="p-4 text-primary font-bold">Etkinlik Katılımı</td>
-                      <td className="p-4 text-right"><button onClick={() => handleDeleteRegistration(reg.id)} className="p-2 text-zinc-500 hover:text-red-400 cursor-pointer"><Trash2 className="h-4 w-4" /></button></td>
+                  {registrations.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-6 text-center text-zinc-500">Henüz etkinlik katılımcısı bulunmuyor.</td>
                     </tr>
-                  ))}
+                  ) : (
+                    registrations.map((reg) => (
+                      <tr key={reg.id} className="hover:bg-zinc-900/40">
+                        <td className="p-4 font-bold text-white">{reg.full_name}</td>
+                        <td className="p-4">
+                          <div>{reg.phone}</div>
+                          <div className="text-[10px] text-zinc-500">{reg.email}</div>
+                        </td>
+                        <td className="p-4 text-primary font-bold">{reg.events?.title || reg.title || 'Bilinmeyen Etkinlik'}</td>
+                        <td className="p-4">
+                          <span className="bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full text-[10px] uppercase">
+                            {reg.status || 'Onaylı'}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right"><button onClick={() => handleDeleteRegistration(reg.id)} className="p-2 text-zinc-500 hover:text-red-400 cursor-pointer"><Trash2 className="h-4 w-4" /></button></td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -506,6 +568,7 @@ export default function AdminPage() {
 
       </div>
 
+      {/* ÜRÜN DÜZENLEME MODALI */}
       {editingProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
@@ -533,6 +596,54 @@ export default function AdminPage() {
               <div className="pt-2 flex gap-3">
                 <button type="button" onClick={() => setEditingProduct(null)} className="flex-1 rounded-full border border-white/10 bg-zinc-900 py-3 text-xs font-bold uppercase text-zinc-300 cursor-pointer">İptal</button>
                 <button type="submit" className="flex-1 rounded-full bg-primary py-3 text-xs font-bold uppercase text-black cursor-pointer">Kaydet</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ETKİNLİK DÜZENLEME MODALI */}
+      {editingEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <h3 className="font-bold text-base text-white">Etkinliği Düzenle</h3>
+              <button onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white cursor-pointer">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateEvent} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Etkinlik Adı</label>
+                <input type="text" required value={editEvtTitle} onChange={(e) => setEditEvtTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fiyat (₺)</label>
+                  <input type="number" required value={editEvtPrice} onChange={(e) => setEditEvtPrice(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Branş</label>
+                  <select value={editEvtBranch} onChange={(e) => setEditEvtBranch(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
+                    <option value="KOŞU">KOŞU</option>
+                    <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
+                    <option value="TENİS">TENİS</option>
+                    <option value="VOLEYBOL">VOLEYBOL</option>
+                    <option value="YELKEN">YELKEN</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Tarih & Saat</label>
+                <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              </div>
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Eğitmen İsmi</label>
+                <input type="text" value={editEvtInstructor} onChange={(e) => setEditEvtInstructor(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              </div>
+              <div className="pt-2 flex gap-3">
+                <button type="button" onClick={() => setEditingEvent(null)} className="flex-1 rounded-full border border-white/10 bg-zinc-900 py-3 text-xs font-bold uppercase text-zinc-300 cursor-pointer">İptal</button>
+                <button type="submit" className="flex-1 rounded-full bg-primary py-3 text-xs font-bold uppercase text-black cursor-pointer">Güncellemeyi Kaydet</button>
               </div>
             </form>
           </div>
