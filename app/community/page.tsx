@@ -45,12 +45,14 @@ export default function CommunityPage() {
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
+  const [isKvkkModalOpen, setIsKvkkModalOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
   const [userEmail, setUserEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [healthAccepted, setHealthAccepted] = useState(false)
+  const [kvkkAccepted, setKvkkAccepted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
@@ -151,7 +153,7 @@ export default function CommunityPage() {
     }
 
     if (myRegisteredEventIds.includes(evt.id)) {
-      alert('Bu etkinliğe zaten katıldın!')
+      alert('Bu etkinliğe zaten katılım talebinde bulundunuz!')
       return
     }
 
@@ -175,6 +177,11 @@ export default function CommunityPage() {
       return
     }
 
+    if (!kvkkAccepted) {
+      setErrorMsg('Lütfen KVKK aydınlatma metnini onaylayınız.')
+      return
+    }
+
     setLoading(true)
     setErrorMsg('')
 
@@ -187,13 +194,10 @@ export default function CommunityPage() {
         .maybeSingle()
 
       if (existing) {
-        setErrorMsg('Bu etkinliğe zaten kayıt oluşturdun!')
+        setErrorMsg('Bu etkinliğe zaten başvurdunuz!')
         setLoading(false)
         return
       }
-
-      const currentCount = registrationCounts[selectedEvent.id] || 0
-      const isWaitlist = currentCount >= (selectedEvent.capacity || 30)
 
       const { error } = await supabase.from('event_registrations').insert([
         {
@@ -202,7 +206,7 @@ export default function CommunityPage() {
           full_name: fullName.trim() || 'Kulüp Üyesi',
           phone: phone.trim() || 'Belirtilmemiş',
           email: userEmail.trim(),
-          status: isWaitlist ? 'waitlist' : 'pending',
+          status: 'requested', // Onay mekanizması için talep olarak düşer
           is_paid: Number(selectedEvent.price) === 0,
         },
       ])
@@ -211,13 +215,14 @@ export default function CommunityPage() {
 
       setSuccess(true)
       setHealthAccepted(false)
+      setKvkkAccepted(false)
       fetchRegistrations()
       fetchMyRegistrations(userEmail)
 
       setTimeout(() => {
         setIsModalOpen(false)
         setSuccess(false)
-      }, 3000)
+      }, 3500)
     } catch (err: any) {
       setErrorMsg(err.message || 'Kayıt sırasında bir hata oluştu.')
     } finally {
@@ -346,7 +351,7 @@ export default function CommunityPage() {
                     {alreadyJoined ? (
                       <div className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 py-3.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
                         <Check className="h-4 w-4" />
-                        <span>Zaten Katıldın</span>
+                        <span>Başvuru Yapıldı</span>
                       </div>
                     ) : (
                       <button
@@ -354,7 +359,7 @@ export default function CommunityPage() {
                         onClick={() => openRegisterModal(evt)}
                         className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-transform hover:scale-[1.02] cursor-pointer"
                       >
-                        <span>{isFree ? 'Hemen Katıl' : 'Kayıt Ol & Profile Gönder'}</span>
+                        <span>Katılım Talebi Gönder</span>
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     )}
@@ -398,19 +403,19 @@ export default function CommunityPage() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   <Check className="h-7 w-7" />
                 </div>
-                <h4 className="font-sans text-xl font-bold text-white">Ön Kayıt Başarıyla Alındı!</h4>
+                <h4 className="font-sans text-xl font-bold text-white">Katılım Talebiniz Alındı!</h4>
                 <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                  Etkinlik profilindeki "Katıldığım Etkinlikler" sekmesine eklendi.
+                  Lider onayından sonra durum profilinize yansıyacak ve WhatsApp grubu açılacaktır.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleRegisterSubmit} className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad (Profilinizden Otomatik Alındı)</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
                   <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ad Soyad" className="w-full rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white focus:border-primary focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon (Profilinizden Otomatik Alındı)</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon</label>
                   <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XX XXX XX XX" className="w-full rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white focus:border-primary focus:outline-none" />
                 </div>
                 <div>
@@ -418,8 +423,8 @@ export default function CommunityPage() {
                   <input type="email" value={userEmail} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed" />
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 space-y-2">
-                  <div className="flex items-start gap-3">
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 p-3.5">
                     <input
                       type="checkbox" id="healthCheck" required checked={healthAccepted}
                       onChange={(e) => setHealthAccepted(e.target.checked)}
@@ -428,8 +433,23 @@ export default function CommunityPage() {
                     <label htmlFor="healthCheck" className="text-[11px] leading-relaxed text-zinc-300">
                       Fiziksel antrenmana katılmaya engel bir sağlık problemim olmadığını beyan ederim.{' '}
                       <button type="button" onClick={() => setIsHealthModalOpen(true)} className="text-primary underline hover:text-white cursor-pointer">
-                        (Sağlık Beyanını Oku)
+                        (Oku)
                       </button>
+                    </label>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 p-3.5">
+                    <input
+                      type="checkbox" id="kvkkCheck" required checked={kvkkAccepted}
+                      onChange={(e) => setKvkkAccepted(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-black text-primary focus:ring-primary cursor-pointer"
+                    />
+                    <label htmlFor="kvkkCheck" className="text-[11px] leading-relaxed text-zinc-300">
+                      Kişisel verilerimin kulüp faaliyetleri kapsamında işlenmesine yönelik{' '}
+                      <button type="button" onClick={() => setIsKvkkModalOpen(true)} className="text-primary underline hover:text-white cursor-pointer">
+                        KVKK Aydınlatma Metnini
+                      </button>{' '}
+                      okudum ve kabul ediyorum.
                     </label>
                   </div>
                 </div>
@@ -445,7 +465,7 @@ export default function CommunityPage() {
                   type="submit" disabled={loading}
                   className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
                 >
-                  {loading ? 'İşleniyor...' : 'Katılımı Oluştur & Profile Gönder'}
+                  {loading ? 'İşleniyor...' : 'Katılım Talebini Gönder'}
                 </button>
               </form>
             )}
@@ -463,6 +483,23 @@ export default function CommunityPage() {
             <p className="text-xs text-zinc-300 leading-relaxed">Kulüp etkinliklerine katılmama engel olacak bilinen bir rahatsızlığım bulunmamaktadır. Sorumluluk tarafıma aittir.</p>
             <div className="text-right">
               <button type="button" onClick={() => { setHealthAccepted(true); setIsHealthModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer">Onayla</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isKvkkModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl" onClick={() => setIsKvkkModalOpen(false)}>
+          <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 space-y-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <span className="text-primary font-bold text-xs uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> KVKK Aydınlatma Metni</span>
+              <button onClick={() => setIsKvkkModalOpen(false)} className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-white cursor-pointer"><X className="h-4 w-4" /></button>
+            </div>
+            <p className="text-xs text-zinc-300 leading-relaxed">
+              6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, Orise Club topluluk faaliyetlerinin yürütülmesi, etkinlik organizasyonları ve iletişim faaliyetleri amacıyla ad soyad, telefon ve e-posta bilgileriniz işlenmektedir. Verileriniz üçüncü taraflarla paylaşılmaz.
+            </p>
+            <div className="text-right">
+              <button type="button" onClick={() => { setKvkkAccepted(true); setIsKvkkModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer">Anladım / Onayla</button>
             </div>
           </div>
         </div>
