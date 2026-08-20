@@ -24,46 +24,48 @@ export function SiteHeader() {
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   
-  // Kullanıcının katıldığı etkinlikler için state
   const [myEvents, setMyEvents] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<'profile' | 'events'>('profile')
 
   const fetchProfile = async (userId: string, userEmail?: string) => {
-    // 1. Profil bilgilerini çek
-    const { data } = await supabase
-      .from('profiler')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    
-    if (data) {
-      setFullName(data.full_name || '')
-      setPhone(data.phone || '')
-      setInstagram(data.instagram || '')
-      setAddress(data.adres || '')
-      setBillingAddress(data.billing_address || '')
-    } else {
-      const { data: prof2 } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-      if (prof2) {
-        setFullName(prof2.full_name || '')
-        setPhone(prof2.phone || '')
+    try {
+      // Önce id ile profiler/profiles tablosundan çekmeyi dene
+      let foundData = null
+      const { data: p1 } = await supabase.from('profiler').select('*').eq('id', userId).maybeSingle()
+      if (p1) {
+        foundData = p1
+      } else {
+        const { data: p2 } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+        if (p2) foundData = p2
       }
-    }
 
-    // 2. Kullanıcının katıldığı etkinlikleri çek
-    if (userEmail) {
-      const { data: regData } = await supabase
-        .from('event_registrations')
-        .select('*, events(*)')
-        .ilike('email', userEmail.trim())
-      
-      if (regData) {
-        setMyEvents(regData)
+      // Eğer id ile bulunamadıysa ve e-posta varsa e-posta ile ara
+      if (!foundData && userEmail) {
+        const { data: p3 } = await supabase.from('profiles').select('*').ilike('email', userEmail.trim()).maybeSingle()
+        if (p3) foundData = p3
       }
+
+      if (foundData) {
+        setFullName(foundData.full_name || '')
+        setPhone(foundData.phone || '')
+        setInstagram(foundData.instagram || '')
+        setAddress(foundData.adres || foundData.address || '')
+        setBillingAddress(foundData.billing_address || '')
+      }
+
+      // Katıldığı etkinlikleri e-posta ile çek
+      if (userEmail) {
+        const { data: regData } = await supabase
+          .from('event_registrations')
+          .select('*, events(*)')
+          .ilike('email', userEmail.trim())
+        
+        if (regData) {
+          setMyEvents(regData)
+        }
+      }
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -127,6 +129,7 @@ export function SiteHeader() {
         phone: phone, 
         instagram: instagram,
         adres: address,
+        address: address,
         billing_address: billingAddress 
       }
 
@@ -134,7 +137,10 @@ export function SiteHeader() {
       await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
 
       setSuccessMsg('Profil ve etkinlik bilgileriniz kalıcı olarak kaydedildi!')
-      setTimeout(() => { setSuccessMsg('') }, 2000)
+      setTimeout(() => { 
+        setSuccessMsg('')
+        window.location.reload()
+      }, 1000)
     } catch (err: any) {
       alert('Hata: ' + err.message)
     } finally {
@@ -227,7 +233,7 @@ export function SiteHeader() {
               </button>
             </div>
 
-            {/* Sekmeler (Profil Bilgileri / Katıldığım Etkinlikler) */}
+            {/* Sekmeler */}
             <div className="flex gap-2 border-b border-white/10 pb-3">
               <button
                 onClick={() => setActiveTab('profile')}
@@ -338,7 +344,7 @@ export function SiteHeader() {
                       <div key={item.id} className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-mono uppercase text-primary tracking-widest bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
-                            {evt.branch || 'KULÜP'}
+                            {evt.branch || 'KULÜB'}
                           </span>
                           <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase">
                             Kayıt Onaylandı
