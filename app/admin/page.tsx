@@ -18,20 +18,23 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-// Her kullanıcının kendi yetki alanı ve rolü net olarak tanımlı
-const ADMIN_USERS: Record<string, { pass: string; branch: string; title: string; type: 'community' | 'store' | 'super' }> = {
-  orise: { pass: 'orise2026', branch: 'ALL', title: 'Süper Admin (Tüm Yetkiler)', type: 'super' },
-  magaza: { pass: 'magaza2026', branch: 'STORE', title: 'Mağaza & Kargo Yöneticisi', type: 'store' },
-  kosu: { pass: 'kosu2026', branch: 'KOŞU', title: 'Koşu Kaptanı', type: 'community' },
-  yoga: { pass: 'yoga2026', branch: 'YOGA & MOBILITY', title: 'Yoga & Mobility Lideri', type: 'community' },
-  tenis: { pass: 'tenis2026', branch: 'TENİS', title: 'Tenis Sorumlusu', type: 'community' },
-  yelken: { pass: 'yelken2026', branch: 'YELKEN', title: 'Yelken Kaptanı', type: 'community' },
+// Güncellenmiş Güçlü Yetkili Hesapları ve Rol Dağılımı
+const ADMIN_USERS: Record<string, { pass: string; branch: string; title: string; type: 'community' | 'store' | 'super' | 'community_director' }> = {
+  orise_master_admin: { pass: 'Orise#2026_SecureKey!99', branch: 'ALL', title: 'Süper Admin (Tüm Yetkiler)', type: 'super' },
+  community_director: { pass: 'Director#Community_2026!', branch: 'ALL', title: 'Genel Topluluk Yöneticisi (Tüm Branşlar)', type: 'community_director' },
+  store_manager_tr: { pass: 'Store#Shipping_7721*', branch: 'STORE', title: 'Mağaza & Kargo Yöneticisi', type: 'store' },
+  captain_run: { pass: 'Runners#2026_Tr*', branch: 'KOŞU', title: 'Koşu Kaptanı', type: 'community' },
+  leader_yoga: { pass: 'Mobility#Yoga_2026!', branch: 'YOGA & MOBILITY', title: 'Yoga & Mobility Lideri', type: 'community' },
+  lead_tennis: { pass: 'Court#Tennis_8842$', branch: 'TENİS', title: 'Tenis Sorumlusu', type: 'community' },
+  skipper_sail: { pass: 'Marine#Sail_5510&', branch: 'YELKEN', title: 'Yelken Kaptanı', type: 'community' },
+  captain_volley: { pass: 'Volley#Spike_2026#', branch: 'VOLEYBOL', title: 'Voleybol Kaptanı', type: 'community' },
 }
 
 const EVENT_BRANCH_MAP: Record<string, string> = {
   'evt-cadde-run-01': 'KOŞU',
   'evt-moda-yoga-01': 'YOGA & MOBILITY',
   'evt-kalamis-tennis-01': 'TENİS',
+  'evt-voleybol-01': 'VOLEYBOL',
 }
 
 export default function AdminPage() {
@@ -40,7 +43,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   
-  const [currentUser, setCurrentUser] = useState<{ branch: string; title: string; type: 'community' | 'store' | 'super' } | null>(null)
+  const [currentUser, setCurrentUser] = useState<{ branch: string; title: string; type: 'community' | 'store' | 'super' | 'community_director' } | null>(null)
   const [registrations, setRegistrations] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -57,11 +60,11 @@ export default function AdminPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    const user = ADMIN_USERS[username.trim().toLowerCase()]
+    const user = ADMIN_USERS[username.trim()]
     if (user && user.pass === password) {
       setIsLoggedIn(true)
       setCurrentUser(user)
-      localStorage.setItem('orise_admin_user', username.trim().toLowerCase())
+      localStorage.setItem('orise_admin_user', username.trim())
       setLoginError('')
       fetchData()
     } else {
@@ -138,7 +141,7 @@ export default function AdminPage() {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="orise, magaza, yoga, kosu..."
+                placeholder="orise_master_admin, community_director..."
                 className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
               />
             </div>
@@ -179,9 +182,9 @@ export default function AdminPage() {
     )
   }
 
-  // Filtreleme: Yoga kullanıcısı sadece yoga, mağaza sadece mağaza, süper admin hepsini görür
+  // Filtreleme mantığı (Spesifik branş veya tam yetkili topluluk/süper yöneticiler)
   const filteredRegistrations = registrations.filter((reg) => {
-    if (currentUser?.type === 'super' || currentUser?.branch === 'ALL') return true
+    if (currentUser?.type === 'super' || currentUser?.type === 'community_director' || currentUser?.branch === 'ALL') return true
     const eventBranch = EVENT_BRANCH_MAP[reg.event_id] || ''
     return eventBranch === currentUser?.branch
   })
@@ -226,7 +229,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* EĞER KULLANICI MAĞAZA YÖNETİCİSİVEYA SÜPER ADMIN İSE SİPARİŞLERİ GÖSTER */}
+      {/* MAĞAZA YÖNETİCİSİ VEYA SÜPER ADMIN SİPARİŞLERİ GÖRÜR */}
       {(currentUser?.type === 'store' || currentUser?.type === 'super') && (
         <div className="mx-auto max-w-7xl space-y-6 mb-12">
           <div className="flex items-center justify-between">
@@ -296,8 +299,8 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* EĞER KULLANICI TOPLULUK KAPTANI VEYA SÜPER ADMIN İSE ETKİNLİKLERİ GÖSTER */}
-      {(currentUser?.type === 'community' || currentUser?.type === 'super') && (
+      {/* TOPLULUK YÖNETİCİSİ, BRANŞ KAPTANLARI VEYA SÜPER ADMIN ETKİNLİKLERİ GÖRÜR */}
+      {(currentUser?.type === 'community' || currentUser?.type === 'community_director' || currentUser?.type === 'super') && (
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold flex items-center gap-2">
