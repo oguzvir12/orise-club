@@ -83,8 +83,8 @@ export function SplitHero() {
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
       
-      {/* Sağ Üst Giriş / Kayıt Butonu Alanı (Sepet kaldırıldı, sadeleştirildi) */}
-      <div className="absolute top-6 right-6 z-40">
+      {/* Sağ Üst Tekil Giriş Alanı (Sepet tamamen kaldırıldı, çakışma önlendi) */}
+      <div className="absolute top-6 right-6 z-50">
         {user ? (
           <div className="flex items-center gap-3 rounded-full border border-white/15 bg-zinc-900/90 px-4 py-2 backdrop-blur-md shadow-lg">
             <span className="text-[11px] font-mono text-zinc-300 hidden sm:inline">
