@@ -2,10 +2,12 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
-import { ArrowUpRight, ShoppingBag, Users, Sparkles, Mail, X, ShieldCheck } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowUpRight, ShoppingBag, Users, Sparkles, Mail, X, ShieldCheck, User, LogOut } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
+import AuthModal from '@/components/AuthModal'
 
 const PANELS = [
   {
@@ -62,9 +64,53 @@ const LEGAL_DOCS: Record<string, { title: string; content: string }> = {
 export function SplitHero() {
   const [hovered, setHovered] = useState<'community' | 'store' | null>(null)
   const [activeLegalModal, setActiveLegalModal] = useState<string | null>(null)
+  const [isAuthOpen, setIsAuthOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+  }
 
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
+      
+      {/* Sağ Üst Giriş / Profil Butonu Alanı */}
+      <div className="absolute top-6 right-6 z-40">
+        {user ? (
+          <div className="flex items-center gap-3 rounded-full border border-white/15 bg-zinc-900/80 px-4 py-2 backdrop-blur-md">
+            <span className="text-[11px] font-mono text-zinc-300 hidden sm:inline">
+              {user.email}
+            </span>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Çıkış</span>
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsAuthOpen(true)}
+            className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-wider text-primary backdrop-blur-md hover:bg-primary/20 hover:border-primary transition-all duration-300 shadow-[0_0_20px_rgba(249,115,22,0.2)]"
+          >
+            <User className="h-3.5 w-3.5" />
+            <span>Giriş Yap / Kayıt Ol</span>
+          </button>
+        )}
+      </div>
+
       {/* Merkez Dikey Ayrım Çizgisi */}
       <div className="pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/10 to-transparent md:block" />
 
@@ -293,6 +339,15 @@ export function SplitHero() {
           </div>
         </div>
       )}
+
+      {/* GİRİŞ / KAYIT MODAL BİLEŞENİ */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onSuccess={() => {
+          supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
+        }}
+      />
     </section>
   )
 }
