@@ -1,373 +1,257 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
-import { ArrowUpRight, ShoppingBag, Users, Sparkles, Mail, X, ShieldCheck, User, LogOut } from 'lucide-react'
-import { OriseMark } from '@/components/logo'
-import { cn } from '@/lib/utils'
+import { User, LogOut, Settings, X, Check, MapPin, Phone, Shield } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import AuthModal from '@/components/AuthModal'
-import { useCart } from '@/components/cart/cart-provider'
-
-const PANELS = [
-  {
-    id: 'community',
-    href: '/community',
-    slogan: 'KULÜBE KATIL · RİTMİNİ BUL',
-    title: 'TOPLULUK',
-    subtitle:
-      'Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.',
-    cta: 'Buluşmaları Keşfet',
-    meta: 'KOŞU · VOLEYBOL · TENİS · PİLATES · YELKEN',
-    icon: Users,
-    bgImage: '/community-hero.jpeg',
-    align: 'left',
-  },
-  {
-    id: 'store',
-    href: '/store',
-    slogan: 'HAREKET KULÜBÜ & STÜDYO',
-    title: 'MAĞAZA',
-    subtitle:
-      'Kulüp kültüründen ilham alan özel tasarım teknik spor ve sokak parçaları.',
-    cta: 'Koleksiyonu İncele',
-    meta: 'TEKNİK GİYİM · ATLETİK STİL',
-    icon: ShoppingBag,
-    bgImage: '/store-hero.jpeg',
-    align: 'right',
-  },
-]
-
-const LEGAL_DOCS: Record<string, { title: string; content: string }> = {
-  kvkk: {
-    title: 'KVKK Aydınlatma & Açık Rıza Metni',
-    content:
-      '6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca, ORISE CLUB tarafından toplanan ad, soyad, e-posta, telefon numarası ve etkinlik katılım verileriniz; yalnızca kulüp organizasyonlarının yönetilmesi, katılım doğrulaması yapılması ve üyelik bilgilendirmelerinin iletilmesi amacıyla güvenli sunucularda şifreli olarak işlenmektedir. Verileriniz üçüncü şahıslarla pazarlama amacıyla paylaşılmaz.',
-  },
-  privacy: {
-    title: 'Gizlilik ve Çerez Politikası',
-    content:
-      'ORISE CLUB, kullanıcılarının gizliliğine ve kişisel haklarına saygı duyar. Web sitemizde kullanıcı deneyimini iyileştirmek, oturum durumunu korumak ve güvenliği sağlamak amacıyla zorunlu teknik çerezler kullanılmaktadır. Sitemizi kullanarak bu çerezlerin kullanımını kabul etmiş sayılırsınız.',
-  },
-  terms: {
-    title: 'Mesafeli Satış ve Hizmet Sözleşmesi',
-    content:
-      'İşbu sözleşme, ORISE CLUB üzerinden gerçekleştirilen ürün siparişleri ve etkinlik katılımlarının şartlarını düzenler. Tüketici, sipariş vermeden önce ürün niteliklerini, satış fiyatını ve teslimat koşullarını incelediğini teyit eder.',
-  },
-  refund: {
-    title: 'İptal ve İade Koşulları',
-    content:
-      'Mağazadan satın alınan ürünler, teslimat tarihinden itibaren 14 gün içerisinde orijinal ambalajı bozulmamış olarak iade edilebilir. Etkinlik katılımlarında ise etkinlik saatinden 24 saat öncesine kadar yapılan iptallerde üyelik hakları muhafaza edilir.',
-  },
-}
 
 export function SplitHero() {
-  const [hovered, setHovered] = useState<'community' | 'store' | null>(null)
-  const [activeLegalModal, setActiveLegalModal] = useState<string | null>(null)
-  const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
-
-  const { openCart, count } = useCart()
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  
+  // Profil Güncelleme State'leri
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null)
-    })
-    return () => subscription.unsubscribe()
+    // Oturum açan kullanıcıyı kontrol et
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        setUser(session.user)
+        // Profil tablosundan ek bilgileri çek
+        const { data } = await supabase
+          .from('profiler')
+          .select('*')
+          .eq('email', session.user.email)
+          .single()
+        
+        if (data) {
+          setFullName(data.full_name || '')
+          setPhone(data.phone || '')
+          setAddress(data.adres || '')
+        }
+      }
+    }
+    checkUser()
   }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setUser(null)
+    window.location.reload()
+  }
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!user) return
+
+    setLoading(true)
+    setSuccessMsg('')
+
+    try {
+      const { error } = await supabase
+        .from('profiler')
+        .update({
+          full_name: fullName,
+          phone: phone,
+          adres: address,
+        })
+        .eq('email', user.email)
+
+      if (error) throw error
+
+      setSuccessMsg('Profil bilgileriniz başarıyla güncellendi!')
+      setTimeout(() => {
+        setIsProfileOpen(false)
+        setSuccessMsg('')
+      }, 2000)
+    } catch (err: any) {
+      alert('Güncelleme hatası: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
-      
-      {/* SOL ÜST: SEPET BUTONU */}
-      <div className="absolute top-6 left-6 z-50">
-        <button
-          type="button"
-          onClick={openCart}
-          className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/80 px-4 py-2 backdrop-blur-md transition-all hover:border-primary cursor-pointer"
-        >
-          <ShoppingBag className="h-4 w-4 text-zinc-400 group-hover:text-primary" />
-          <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-300">Sepetim</span>
-          {count > 0 && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-black">
-              {count}
-            </span>
-          )}
-        </button>
-      </div>
+    <main className="relative h-screen w-full overflow-hidden bg-black text-white font-sans">
+      {/* HEADER - SOL ÜST SEPET KALDIRILDI, SAĞ ÜST KULLANICI & PROFİL */}
+      <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-6 sm:px-10">
+        <div className="flex items-center gap-2">
+          {/* Sol üst tamamen temizlendi */}
+        </div>
 
-      {/* SAĞ ÜST: GİRİŞ / KAYIT OL VEYA ÇIKIŞ */}
-      <div className="absolute top-6 right-6 z-50">
-        {user ? (
-          <div className="flex items-center gap-3 rounded-full border border-white/15 bg-zinc-900/90 px-4 py-2 backdrop-blur-md shadow-lg">
-            <span className="text-[11px] font-mono text-zinc-300 hidden sm:inline">
-              {user.email}
-            </span>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors"
+        <div className="flex items-center gap-4">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsProfileOpen(true)}
+                className="flex items-center gap-2 rounded-full border border-white/15 bg-black/60 px-4 py-2 text-xs font-mono text-zinc-300 backdrop-blur-md hover:border-primary hover:text-white transition-all cursor-pointer"
+              >
+                <User className="h-3.5 w-3.5 text-primary" />
+                <span className="truncate max-w-[150px]">{fullName || user.email}</span>
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-mono text-red-400 hover:bg-red-500/20 transition-all cursor-pointer"
+                title="Çıkış Yap"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">ÇIKIŞ</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/auth"
+              className="rounded-full border border-white/20 bg-black/60 px-5 py-2 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-md hover:border-primary hover:bg-primary hover:text-black transition-all"
             >
-              <LogOut className="h-3.5 w-3.5" />
-              <span>Çıkış</span>
-            </button>
+              Giriş Yap / Üye Ol
+            </Link>
+          )}
+        </div>
+      </header>
+
+      {/* ANA SPLIT HERO İÇERİĞİ */}
+      <div className="grid h-full w-full grid-cols-1 md:grid-cols-2">
+        {/* Sol Taraf: Topluluk */}
+        <div className="relative flex flex-col items-center justify-center p-8 text-center bg-zinc-950/60 border-r border-white/10 group overflow-hidden">
+          <div className="absolute inset-0 z-0 opacity-30 transition-transform duration-700 group-hover:scale-105">
+            <Image
+              src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop"
+              alt="Topluluk"
+              fill
+              className="object-cover grayscale"
+            />
+            <div className="absolute inset-0 bg-black/70" />
           </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setIsAuthOpen(true)}
-            className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-wider text-primary backdrop-blur-md hover:bg-primary/20 hover:border-primary transition-all duration-300 shadow-[0_0_20px_rgba(249,115,22,0.2)]"
-          >
-            <User className="h-3.5 w-3.5" />
-            <span>Giriş Yap / Kayıt Ol</span>
-          </button>
-        )}
-      </div>
 
-      {/* Merkez Dikey Ayrım Çizgisi */}
-      <div className="pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/10 to-transparent md:block" />
-
-      {/* Dinamik Merkez Çekirdek */}
-      <div
-        className={cn(
-          'pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-y-1/2 transition-all duration-500 ease-out md:block',
-          hovered === 'community'
-            ? '-translate-x-[calc(50%+10px)]'
-            : hovered === 'store'
-              ? '-translate-x-[calc(50%-10px)]'
-              : '-translate-x-1/2',
-        )}
-      >
-        <div
-          className={cn(
-            'absolute inset-0 -m-6 rounded-full bg-primary/25 blur-2xl transition-all duration-500',
-            hovered ? 'scale-125 opacity-100 bg-primary/45' : 'scale-100 opacity-40',
-          )}
-        />
-        <div
-          className={cn(
-            'absolute inset-0 -m-2 rounded-full border border-primary/25 transition-all duration-500',
-            hovered ? 'scale-110 border-primary/50 opacity-100' : 'scale-100 opacity-30',
-          )}
-        />
-        <div
-          className={cn(
-            'relative flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-black/85 backdrop-blur-2xl transition-all duration-500 lg:h-24 lg:w-24 shadow-[0_0_50px_rgba(0,0,0,0.9)]',
-            hovered ? 'border-primary/80 scale-105 shadow-[0_0_35px_rgba(249,115,22,0.35)]' : '',
-          )}
-        >
-          <OriseMark
-            className={cn(
-              'h-10 w-10 text-primary transition-transform duration-500 lg:h-11 lg:w-11',
-              hovered ? 'scale-110 drop-shadow-[0_0_12px_rgba(249,115,22,0.7)]' : 'scale-100',
-            )}
-          />
-        </div>
-      </div>
-
-      {/* Sol ve Sağ Paneller */}
-      {PANELS.map((panel) => {
-        const Icon = panel.icon
-        const isHovered = hovered === panel.id
-        const isOtherHovered = hovered !== null && hovered !== panel.id
-
-        return (
-          <Link
-            key={panel.href}
-            href={panel.href}
-            onMouseEnter={() => setHovered(panel.id as 'community' | 'store')}
-            onMouseLeave={() => setHovered(null)}
-            className="group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16 pb-28 md:pb-28"
-          >
-            <div className="absolute inset-0 z-0 overflow-hidden">
-              <Image
-                src={panel.bgImage}
-                alt={panel.title}
-                fill
-                priority
-                className={cn(
-                  'object-cover transition-all duration-1000 ease-out',
-                  isHovered
-                    ? 'scale-105 opacity-40 grayscale-0 contrast-115'
-                    : 'scale-100 opacity-20 grayscale contrast-125',
-                  isOtherHovered && 'opacity-10 blur-[2px]',
-                )}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40" />
+          <div className="relative z-10 space-y-4 max-w-md">
+            <span className="text-[10px] font-mono text-primary uppercase tracking-[0.3em]">KULÜBE KATIL · RİTMİNİ BUL</span>
+            <h1 className="text-4xl sm:text-6xl font-black tracking-tighter">TOPLULUK</h1>
+            <p className="text-xs sm:text-sm text-zinc-300">
+              Tek başınanlıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.
+            </p>
+            <div className="pt-4">
+              <Link
+                href="/community"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:scale-105 transition-transform"
+              >
+                <span>Buluşmaları Keşfet</span>
+              </Link>
             </div>
-
-            <div
-              className={cn(
-                'pointer-events-none absolute top-1/2 -translate-y-1/2 hidden 2xl:block text-[10px] font-mono tracking-[0.35em] text-zinc-600 uppercase [writing-mode:vertical-rl] transition-colors duration-500 group-hover:text-primary/80',
-                panel.align === 'left' ? 'left-8 rotate-180' : 'right-8',
-              )}
-            >
-              {panel.meta}
-            </div>
-
-            <div className="relative z-10 flex w-full max-w-md flex-col items-center space-y-4">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] text-primary backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary/20">
-                  <Sparkles className="h-3 w-3 text-primary" />
-                  <span>{panel.slogan}</span>
-                </div>
-              </div>
-
-              <h2 className="whitespace-nowrap font-sans text-4xl font-black tracking-tighter text-white sm:text-5xl lg:text-6xl transition-all duration-300 drop-shadow-md">
-                {panel.title}
-              </h2>
-
-              <p className="max-w-sm text-sm font-normal leading-relaxed text-zinc-300/90 text-pretty transition-colors duration-300 group-hover:text-white drop-shadow">
-                {panel.subtitle}
-              </p>
-
-              <div className="pt-2">
-                <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-zinc-900/80 px-7 py-3 text-xs font-bold tracking-wider uppercase text-zinc-100 backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-black group-hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] group-hover:scale-105">
-                  <Icon className="h-4 w-4 text-primary group-hover:text-black transition-colors" />
-                  <span>{panel.cta}</span>
-                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </div>
-              </div>
-            </div>
-          </Link>
-        )
-      })}
-
-      {/* BELİRGİN FOOTER & YASAL SÖZLEŞME MODALLARI */}
-      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-4 px-6 sm:px-10 py-3.5 bg-black/80 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
-        <div className="flex items-center gap-2.5">
-          <span className="font-bold text-white tracking-wider">ORISE CLUB</span>
-          <span className="text-zinc-600">/</span>
-          <span className="text-[11px] tracking-widest text-primary uppercase">ATHLETICS & STUDIO</span>
-        </div>
-
-        {/* Yasal Sözleşmeler / Gizlilik Metinleri */}
-        <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
-          <button
-            type="button"
-            onClick={() => setActiveLegalModal('kvkk')}
-            className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4"
-          >
-            KVKK
-          </button>
-          <span className="text-zinc-700">·</span>
-          <button
-            type="button"
-            onClick={() => setActiveLegalModal('privacy')}
-            className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4"
-          >
-            Gizlilik
-          </button>
-          <span className="text-zinc-700">·</span>
-          <button
-            type="button"
-            onClick={() => setActiveLegalModal('terms')}
-            className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4"
-          >
-            Mesafeli Satış
-          </button>
-          <span className="text-zinc-700">·</span>
-          <button
-            type="button"
-            onClick={() => setActiveLegalModal('refund')}
-            className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4"
-          >
-            İade Koşulları
-          </button>
-        </div>
-
-        {/* Sosyal Medya Butonları */}
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <a
-            href="https://www.instagram.com/orisecommunity/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-3.5 py-1 text-xs text-zinc-200 backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-white"
-          >
-            <span className="font-semibold text-white group-hover:text-primary">Topluluğa Katıl</span>
-          </a>
-
-          <a
-            href="https://www.instagram.com/orisestore/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/90 px-3.5 py-1 text-xs text-zinc-200 backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-white"
-          >
-            <span className="font-semibold text-white group-hover:text-primary">Mağazayı Keşfet</span>
-          </a>
-
-          <div className="flex items-center gap-2 pl-1 border-l border-white/10">
-            <a
-              href="mailto:oguzvir12@gmail.com"
-              className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-400 transition-colors hover:border-primary hover:text-white"
-              title="E-posta İletişim"
-            >
-              <Mail className="h-3.5 w-3.5" />
-            </a>
           </div>
         </div>
-      </footer>
 
-      {/* HUKUKİ METİN POP-UP MODAL */}
-      {activeLegalModal && LEGAL_DOCS[activeLegalModal] && (
+        {/* Sağ Taraf: Mağaza */}
+        <div className="relative flex flex-col items-center justify-center p-8 text-center bg-zinc-950/60 group overflow-hidden">
+          <div className="absolute inset-0 z-0 opacity-30 transition-transform duration-700 group-hover:scale-105">
+            <Image
+              src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop"
+              alt="Mağaza"
+              fill
+              className="object-cover grayscale"
+            />
+            <div className="absolute inset-0 bg-black/70" />
+          </div>
+
+          <div className="relative z-10 space-y-4 max-w-md">
+            <span className="text-[10px] font-mono text-primary uppercase tracking-[0.3em]">HAREKET KULÜBÜ & STÜDYO</span>
+            <h1 className="text-4xl sm:text-6xl font-black tracking-tighter">MAĞAZA</h1>
+            <p className="text-xs sm:text-sm text-zinc-300">
+              Kulüp kültüründen ilham alan özel tasarım teknik spor ve sokak parçaları.
+            </p>
+            <div className="pt-4">
+              <Link
+                href="/store"
+                className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/80 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-white hover:border-primary hover:bg-primary hover:text-black transition-all"
+              >
+                <span>Koleksiyonu İncele</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* PROFİL BİLGİ GÜNCELLEME MODALİ */}
+      {isProfileOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-md animate-fadeIn"
-          onClick={() => setActiveLegalModal(null)}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fadeIn"
+          onClick={() => setIsProfileOpen(false)}
         >
           <div
-            className="relative w-full max-w-xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-4"
+            className="relative w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
-                <ShieldCheck className="h-4 w-4" />
-                <span>Yasal Bilgilendirme</span>
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4 text-primary" />
+                <h3 className="font-bold text-sm text-white uppercase tracking-wider">Profil Bilgilerini Düzenle</h3>
               </div>
               <button
                 type="button"
-                onClick={() => setActiveLegalModal(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors"
+                onClick={() => setIsProfileOpen(false)}
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <h3 className="font-sans text-xl font-black text-white">
-              {LEGAL_DOCS[activeLegalModal].title}
-            </h3>
+            <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Adınız Soyadınız"
+                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                />
+              </div>
 
-            <p className="text-xs font-sans leading-relaxed text-zinc-300 whitespace-pre-line">
-              {LEGAL_DOCS[activeLegalModal].content}
-            </p>
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="05XX XXX XX XX"
+                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                />
+              </div>
 
-            <div className="pt-2 text-right">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat / İkamet Adresi</label>
+                <textarea
+                  rows={2}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Mahalle, sokak, no, ilçe/il..."
+                  className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
+                />
+              </div>
+
+              {successMsg && (
+                <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-xs text-emerald-400 text-center font-mono">
+                  {successMsg}
+                </div>
+              )}
+
               <button
-                type="button"
-                onClick={() => setActiveLegalModal(null)}
-                className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black hover:scale-105 transition-transform"
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50"
               >
-                Anladım
+                {loading ? 'Güncelleniyor...' : 'Değişiklikleri Kaydet'}
               </button>
-            </div>
+            </form>
           </div>
         </div>
       )}
-
-      {/* GİRİŞ / KAYIT MODAL BİLEŞENİ */}
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
-        onSuccess={() => {
-          supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
-        }}
-      />
-    </section>
+    </main>
   )
 }
