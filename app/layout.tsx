@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Space_Grotesk } from 'next/font/google'
 import { CartProvider } from '@/components/cart/cart-provider'
+import { SiteHeader } from '@/components/site-header'
 import { CartDrawer } from '@/components/cart/cart-drawer'
 import './globals.css'
 
@@ -54,7 +55,7 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased text-foreground bg-background">
         <CartProvider>
-          {/* Çift başlık çakışmasını önlemek için SiteHeader kaldırıldı */}
+          <SiteHeader />
           <div className="w-full">{children}</div>
           <CartDrawer />
         </CartProvider>
