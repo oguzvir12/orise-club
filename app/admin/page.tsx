@@ -19,12 +19,13 @@ import {
   Download,
   CheckCircle2,
   XCircle,
+  ShoppingBag,
+  Truck,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [sessionUser, setSessionUser] = useState<any>(null)
   const [adminProfile, setAdminProfile] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -33,6 +34,7 @@ export default function AdminPage() {
   const [products, setProducts] = useState<any[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [profiles, setProfiles] = useState<any[]>([])
+  const [orders, setOrders] = useState<any[]>([])
 
   // Yeni Ürün State'leri
   const [title, setTitle] = useState('')
@@ -78,7 +80,6 @@ export default function AdminPage() {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
       if (profile && (profile.role === 'admin' || profile.role === 'captain')) {
         setIsLoggedIn(true)
-        setSessionUser(session.user)
         setAdminProfile(profile)
         fetchData()
       }
@@ -99,6 +100,9 @@ export default function AdminPage() {
 
       const { data: profData } = await supabase.from('profiles').select('*').order('full_name', { ascending: true })
       if (profData) setProfiles(profData)
+
+      const { data: ordData } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
+      if (ordData) setOrders(ordData)
     } catch (e) {
       console.error(e)
     } finally {
@@ -208,27 +212,26 @@ export default function AdminPage() {
   }
 
   const handleUpdateRegistrationStatus = async (regId: string, newStatus: 'approved' | 'rejected') => {
-    const { error } = await supabase
-      .from('event_registrations')
-      .update({ status: newStatus })
-      .eq('id', regId)
+    const { error } = await supabase.from('event_registrations').update({ status: newStatus }).eq('id', regId)
+    if (!error) { alert('Güncellendi!'); fetchData() }
+  }
 
-    if (!error) {
-      alert(newStatus === 'approved' ? 'Katılım onaylandı!' : 'Talep reddedildi.')
-      fetchData()
-    } else {
-      alert('Hata: ' + error.message)
-    }
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string, trackingNum?: string) => {
+    const payload: any = { status: newStatus }
+    if (trackingNum !== undefined) payload.tracking_number = trackingNum
+
+    const { error } = await supabase.from('orders').update(payload).eq('id', orderId)
+    if (!error) { alert('Sipariş güncellendi!'); fetchData() }
   }
 
   const handleDeleteRegistration = async (id: string) => {
-    if (!confirm('Bu kaydı silmek istiyor musunuz?')) return
+    if (!confirm('Silinsin mi?')) return
     await supabase.from('event_registrations').delete().eq('id', id)
     setRegistrations((prev) => prev.filter((r) => r.id !== id))
   }
 
   const handleDeleteProfile = async (id: string) => {
-    if (!confirm('Bu kayıtlı üyeyi silmek istiyor musunuz?')) return
+    if (!confirm('Silinsin mi?')) return
     await supabase.from('profiles').delete().eq('id', id)
     setProfiles((prev) => prev.filter((p) => p.id !== id))
   }
@@ -275,14 +278,7 @@ export default function AdminPage() {
 
   const exportToCSV = () => {
     const headers = ['Katılımcı Adı', 'Telefon', 'E-posta', 'Etkinlik', 'Durum']
-    const rows = filteredRegistrations.map(r => [
-      `"${r.full_name || ''}"`,
-      `"${r.phone || ''}"`,
-      `"${r.email || ''}"`,
-      `"${r.events?.title || r.title || ''}"`,
-      `"${r.status || ''}"`
-    ])
-
+    const rows = filteredRegistrations.map(r => [`"${r.full_name || ''}"`, `"${r.phone || ''}"`, `"${r.email || ''}"`, `"${r.events?.title || ''}"`, `"${r.status || ''}"`])
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
@@ -296,27 +292,17 @@ export default function AdminPage() {
   const isSuperAdmin = adminProfile?.role === 'admin'
   const adminBranch = adminProfile?.branch?.toUpperCase()
 
-  const filteredEvents = isSuperAdmin 
-    ? events 
-    : events.filter(e => e.branch?.toUpperCase() === adminBranch)
-
+  const filteredEvents = isSuperAdmin ? events : events.filter(e => e.branch?.toUpperCase() === adminBranch)
   const allowedEventIds = filteredEvents.map(e => e.id)
-  const filteredRegistrations = isSuperAdmin
-    ? registrations
-    : registrations.filter(r => allowedEventIds.includes(r.event_id))
+  const filteredRegistrations = isSuperAdmin ? registrations : registrations.filter(r => allowedEventIds.includes(r.event_id))
 
   if (!isLoggedIn) {
     return (
       <div className="fixed inset-0 z-50 bg-black text-white flex items-center justify-center p-6 font-sans">
         <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-8 shadow-2xl space-y-6 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40">
-            <Lock className="h-5 w-5" />
-          </div>
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40"><Lock className="h-5 w-5" /></div>
           <h1 className="text-xl font-black text-white">Yönetici Girişi Gerekli</h1>
-          <p className="text-xs text-zinc-400">Yönetim paneline erişmek için ana sayfadan yetkili hesabınızla giriş yapmalısınız.</p>
-          <Link href="/" className="inline-block w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">
-            Ana Sayfaya Dön
-          </Link>
+          <Link href="/" className="inline-block w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Ana Sayfaya Dön</Link>
         </div>
       </div>
     )
@@ -326,295 +312,79 @@ export default function AdminPage() {
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black text-white p-6 sm:p-10 font-sans">
       <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
         <div className="flex items-center gap-4">
-          <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-300 hover:text-white">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
+          <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-300 hover:text-white"><ArrowLeft className="h-4 w-4" /></Link>
           <div>
             <h1 className="text-xl font-black text-white">ORISE Kontrol Paneli</h1>
-            <p className="text-xs font-mono text-primary uppercase">{adminProfile?.title || adminProfile?.role} {adminBranch ? `(${adminBranch})` : ''}</p>
+            <p className="text-xs font-mono text-primary uppercase">{adminProfile?.title || adminProfile?.role}</p>
           </div>
         </div>
-
-        <div className="flex items-center gap-3 relative z-50">
-          <button type="button" onClick={() => fetchData()} className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:border-primary cursor-pointer">
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Yenile</span>
-          </button>
-          <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20 cursor-pointer">
-            <LogOut className="h-3.5 w-3.5" />
-            <span>Çıkış</span>
-          </button>
+        <div className="flex items-center gap-3">
+          <button type="button" onClick={() => fetchData()} className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:border-primary cursor-pointer"><RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Yenile</button>
+          <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20 cursor-pointer"><LogOut className="h-3.5 w-3.5" /> Çıkış</button>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* YENİ ETKİNLİK OLUŞTURMA */}
-        {isSuperAdmin && (
-          <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-            <h2 className="text-base font-bold flex items-center gap-2 text-primary">
-              <Calendar className="h-5 w-5" />
-              <span>Yeni Topluluk Etkinliği Oluştur</span>
-            </h2>
-            <form onSubmit={handleAddEvent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <input type="text" placeholder="Etkinlik Adı" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="text" placeholder="Eğitmen İsmi" value={instructorName} onChange={(e) => setInstructorName(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <select value={evtBranch} onChange={(e) => setEvtBranch(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary">
-                <option value="KOŞU">KOŞU</option>
-                <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
-                <option value="TENİS">TENİS</option>
-                <option value="VOLEYBOL">VOLEYBOL</option>
-                <option value="YELKEN">YELKEN</option>
-              </select>
-              <input type="text" placeholder="Konum / Google Maps Linki" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="datetime-local" required value={evtDate} onChange={(e) => setEvtDate(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="number" placeholder="Bilet Fiyatı (0 = Ücretsiz)" required value={evtPrice} onChange={(e) => setEvtPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              
-              <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
-                <span className="text-xs text-zinc-400 truncate pointer-events-none">{uploading ? 'Yükleniyor...' : evtImage ? '✓ Afiş Yüklendi' : 'Etkinlik Afişi Seç'}</span>
-                <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
-                <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'event')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-              </div>
-
-              <textarea rows={1} placeholder="Açıklama" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-2 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-
-              <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">
-                Etkinliği Yayınla
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* ÜRÜN EKLEME */}
-        {isSuperAdmin && (
-          <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-            <h2 className="text-base font-bold flex items-center gap-2 text-primary">
-              <PlusCircle className="h-5 w-5" />
-              <span>Mağazaya Yeni Ürün / Drop Ekle</span>
-            </h2>
-            <form onSubmit={handleAddProduct} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="text" placeholder="Alt Başlık" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="number" placeholder="Fiyat (₺)" required value={price} onChange={(e) => setPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="number" placeholder="Stok Adedi" required value={stock} onChange={(e) => setStock(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              
-              <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
-                <span className="text-xs text-zinc-400 truncate pointer-events-none">{uploading ? 'Yükleniyor...' : imageUrl ? '✓ Ürün Görseli Yüklendi' : 'Ürün Görseli Seç'}</span>
-                <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
-                <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'product')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-              </div>
-
-              <textarea rows={1} placeholder="Açıklama" value={description} onChange={(e) => setDescription(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">
-                Ürünü Mağazada Yayınla
-              </button>
-            </form>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {isSuperAdmin && (
-            <div className="space-y-4">
-              <h2 className="text-base font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /><span>Yüklü Ürünler ({products.length})</span></h2>
-              <div className="space-y-3">
-                {products.map((prod) => (
-                  <div key={prod.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none">
-                        <Image src={prod.image_urls?.[0] || '/placeholder.svg'} alt={prod.title} fill className="object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-xs text-white">{prod.title}</h4>
-                        <div className="text-[10px] text-zinc-400">₺{prod.price} · Stok: {prod.stock}</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => openEditModal(prod)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
-                      <button onClick={() => handleDeleteProduct(prod.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-4 lg:col-span-2">
-            <h2 className="text-base font-bold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ({filteredEvents.length})</span></h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {filteredEvents.map((evt) => (
-                <div key={evt.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none">
-                      <Image src={evt.image_url || '/placeholder.svg'} alt={evt.title} fill className="object-cover" />
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-mono text-primary uppercase">{evt.branch} {evt.instructor_name ? `• ${evt.instructor_name}` : ''}</span>
-                      <h4 className="font-bold text-xs text-white">{evt.title}</h4>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => openEditEventModal(evt)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
-                    {isSuperAdmin && <button onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* KAYITLI SİSTEM ÜYELERİ & YETKİ YÖNETİMİ (Sadece Süper Admin) */}
-        {isSuperAdmin && (
-          <div className="space-y-6">
-            <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Kayıtlı Sistem Üyeleri & Yetki Yönetimi ({profiles.length})</span></h2>
-            <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
-                    <tr>
-                      <th className="p-4">Ad Soyad / E-posta</th>
-                      <th className="p-4">Rolü</th>
-                      <th className="p-4">Branşı</th>
-                      <th className="p-4">Yetkiyi Güncelle</th>
-                      <th className="p-4 text-right">İşlem</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-zinc-300">
-                    {profiles.map((prof) => (
-                      <tr key={prof.id} className="hover:bg-zinc-900/40">
-                        <td className="p-4">
-                          <div className="font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</div>
-                          <div className="text-[10px] text-zinc-500">{prof.email}</div>
-                        </td>
-                        <td className="p-4">
-                          <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${prof.role === 'admin' ? 'bg-primary/20 text-primary' : prof.role === 'captain' ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-800 text-zinc-400'}`}>
-                            {prof.role || 'member'}
-                          </span>
-                        </td>
-                        <td className="p-4 text-primary font-bold">{prof.branch || 'ALL'}</td>
-                        <td className="p-4">
-                          <div className="flex gap-2 items-center">
-                            <select 
-                              defaultValue={prof.role || 'member'} 
-                              id={`role-${prof.id}`}
-                              className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white focus:border-primary"
-                            >
-                              <option value="member">Üye</option>
-                              <option value="captain">Kaptan</option>
-                              <option value="admin">Admin</option>
-                            </select>
-                            <select 
-                              defaultValue={prof.branch || 'ALL'} 
-                              id={`branch-${prof.id}`}
-                              className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white focus:border-primary"
-                            >
-                              <option value="ALL">ALL (Tümü)</option>
-                              <option value="KOŞU">KOŞU</option>
-                              <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
-                              <option value="TENİS">TENİS</option>
-                              <option value="VOLEYBOL">VOLEYBOL</option>
-                              <option value="YELKEN">YELKEN</option>
-                            </select>
-                            <button 
-                              onClick={async () => {
-                                const newRole = (document.getElementById(`role-${prof.id}`) as HTMLSelectElement).value
-                                const newBranch = (document.getElementById(`branch-${prof.id}`) as HTMLSelectElement).value
-                                const { error } = await supabase.from('profiles').update({ role: newRole, branch: newBranch }).eq('id', prof.id)
-                                if (!error) { alert('Üye yetkileri güncellendi!'); fetchData() }
-                                else { alert('Hata: ' + error.message) }
-                              }}
-                              className="px-3 py-1.5 bg-primary text-black rounded-lg text-[11px] font-bold cursor-pointer hover:opacity-90"
-                            >
-                              Kaydet
-                            </button>
-                          </div>
-                        </td>
-                        <td className="p-4 text-right">
-                          <button onClick={() => handleDeleteProfile(prof.id)} className="p-2 text-zinc-500 hover:text-red-400 rounded-xl hover:bg-red-500/10 cursor-pointer">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ETKİNLİK KATILIMCILARI & ONAY MEKANİZMASI */}
+        {/* MAĞAZA SİPARİŞLERİ YÖNETİMİ */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              <span>Etkinlik Katılımcıları & Başvurular ({filteredRegistrations.length})</span>
-            </h2>
-            <button
-              onClick={exportToCSV}
-              className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary/20 cursor-pointer"
-            >
-              <Download className="h-3.5 w-3.5" />
-              <span>Excel'e Aktar (CSV)</span>
-            </button>
-          </div>
-
+          <h2 className="text-base font-bold flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><span>Mağaza Siparişleri ({orders.length})</span></h2>
           <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
                 <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
                   <tr>
-                    <th className="p-4">Katılımcı Adı</th>
-                    <th className="p-4">İletişim & E-posta</th>
-                    <th className="p-4">Etkinlik</th>
-                    <th className="p-4">Durum</th>
+                    <th className="p-4">Müşteri</th>
+                    <th className="p-4">Ürünler</th>
+                    <th className="p-4">Teslimat</th>
+                    <th className="p-4">Tutar</th>
+                    <th className="p-4">Durum / Kargo Takip</th>
                     <th className="p-4 text-right">İşlemler</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
-                  {filteredRegistrations.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="p-6 text-center text-zinc-500">Henüz başvuru bulunmuyor.</td>
-                    </tr>
+                  {orders.length === 0 ? (
+                    <tr><td colSpan={6} className="p-6 text-center text-zinc-500">Henüz sipariş bulunmuyor.</td></tr>
                   ) : (
-                    filteredRegistrations.map((reg) => {
-                      const isApproved = reg.status === 'approved'
-                      const isRejected = reg.status === 'rejected'
-
-                      return (
-                        <tr key={reg.id} className="hover:bg-zinc-900/40">
-                          <td className="p-4 font-bold text-white">{reg.full_name}</td>
-                          <td className="p-4">
-                            <div>{reg.phone}</div>
-                            <div className="text-[10px] text-zinc-500">{reg.email}</div>
-                          </td>
-                          <td className="p-4 text-primary font-bold">{reg.events?.title || reg.title || 'Etkinlik'}</td>
-                          <td className="p-4">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase border ${
-                              isApproved ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
-                              isRejected ? 'bg-red-500/10 text-red-400 border-red-500/30' :
-                              'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                            }`}>
-                              {isApproved ? 'Onaylandı' : isRejected ? 'Reddedildi' : 'Onay Bekliyor'}
-                            </span>
-                          </td>
-                          <td className="p-4 text-right space-x-2">
-                            {!isApproved && (
-                              <button onClick={() => handleUpdateRegistrationStatus(reg.id, 'approved')} className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 text-[10px] font-bold cursor-pointer inline-flex items-center gap-1">
-                                <CheckCircle2 size={12} /> Onayla
-                              </button>
-                            )}
-                            {!isRejected && (
-                              <button onClick={() => handleUpdateRegistrationStatus(reg.id, 'rejected')} className="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 text-[10px] font-bold cursor-pointer inline-flex items-center gap-1">
-                                <XCircle size={12} /> Reddet
-                              </button>
-                            )}
-                            <button onClick={() => handleDeleteRegistration(reg.id)} className="p-2 text-zinc-500 hover:text-red-400 cursor-pointer inline-block">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      )
-                    })
+                    orders.map((ord) => (
+                      <tr key={ord.id} className="hover:bg-zinc-900/40">
+                        <td className="p-4">
+                          <div className="font-bold text-white">{ord.customer_name}</div>
+                          <div className="text-[10px] text-zinc-500">{ord.phone}</div>
+                          <div className="text-[10px] text-zinc-500">{ord.address}</div>
+                        </td>
+                        <td className="p-4 max-w-xs">
+                          {ord.items?.map((i: any, idx: number) => (
+                            <div key={idx} className="text-[11px]">• {i.name} (x{i.quantity})</div>
+                          ))}
+                        </td>
+                        <td className="p-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${ord.delivery_type === 'shipping' ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                            {ord.delivery_type === 'shipping' ? 'Kargo' : 'Elden Teslim'}
+                          </span>
+                        </td>
+                        <td className="p-4 font-bold text-primary">₺{ord.total_price}</td>
+                        <td className="p-4 space-y-2">
+                          <span className="px-2 py-0.5 rounded text-[10px] uppercase bg-zinc-800 text-zinc-300">{ord.status}</span>
+                          <input 
+                            type="text" 
+                            placeholder="Kargo Takip No" 
+                            defaultValue={ord.tracking_number || ''} 
+                            id={`tracking-${ord.id}`}
+                            className="w-full bg-black border border-white/10 rounded px-2 py-1 text-[10px] text-white"
+                          />
+                        </td>
+                        <td className="p-4 text-right space-y-1">
+                          <div className="flex justify-end gap-1">
+                            <button onClick={() => handleUpdateOrderStatus(ord.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px]">Onayla</button>
+                            <button onClick={() => {
+                              const tracking = (document.getElementById(`tracking-${ord.id}`) as HTMLInputElement).value
+                              handleUpdateOrderStatus(ord.id, 'shipped', tracking)
+                            }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-[10px]">Kargola</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>
@@ -622,53 +392,39 @@ export default function AdminPage() {
           </div>
         </div>
 
-      </div>
+        {/* ETKİNLİK BAŞVURULARI */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Etkinlik Başvuruları ({filteredRegistrations.length})</span></h2>
+            <button onClick={exportToCSV} className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary/20 cursor-pointer"><Download className="h-3.5 w-3.5" /> Excel'e Aktar</button>
+          </div>
 
-      {/* DÜZENLEME MODALLARI */}
-      {editingEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Etkinliği Düzenle</h3>
-              <button onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white cursor-pointer"><X className="h-4 w-4" /></button>
+          <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
+                  <tr><th className="p-4">Katılımcı</th><th className="p-4">İletişim</th><th className="p-4">Etkinlik</th><th className="p-4">Durum</th><th className="p-4 text-right">İşlem</th></tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-zinc-300">
+                  {filteredRegistrations.map((reg) => (
+                    <tr key={reg.id} className="hover:bg-zinc-900/40">
+                      <td className="p-4 font-bold text-white">{reg.full_name}</td>
+                      <td className="p-4">{reg.phone} / {reg.email}</td>
+                      <td className="p-4 text-primary">{reg.events?.title || 'Etkinlik'}</td>
+                      <td className="p-4"><span className="px-2 py-0.5 rounded text-[10px] uppercase bg-zinc-800 text-zinc-300">{reg.status}</span></td>
+                      <td className="p-4 text-right space-x-1">
+                        {reg.status !== 'approved' && <button onClick={() => handleUpdateRegistrationStatus(reg.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px]">Onayla</button>}
+                        <button onClick={() => handleDeleteRegistration(reg.id)} className="p-1 text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <form onSubmit={handleUpdateEvent} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Etkinlik Adı</label>
-                <input type="text" required value={editEvtTitle} onChange={(e) => setEditEvtTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fiyat (₺)</label>
-                  <input type="number" required value={editEvtPrice} onChange={(e) => setEditEvtPrice(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Branş</label>
-                  <select value={editEvtBranch} onChange={(e) => setEditEvtBranch(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
-                    <option value="KOŞU">KOŞU</option>
-                    <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
-                    <option value="TENİS">TENİS</option>
-                    <option value="VOLEYBOL">VOLEYBOL</option>
-                    <option value="YELKEN">YELKEN</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Tarih & Saat</label>
-                <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              </div>
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Eğitmen İsmi</label>
-                <input type="text" value={editEvtInstructor} onChange={(e) => setEditEvtInstructor(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              </div>
-              <div className="pt-2 flex gap-3">
-                <button type="button" onClick={() => setEditingEvent(null)} className="flex-1 rounded-full border border-white/10 bg-zinc-900 py-3 text-xs font-bold uppercase text-zinc-300 cursor-pointer">İptal</button>
-                <button type="submit" className="flex-1 rounded-full bg-primary py-3 text-xs font-bold uppercase text-black cursor-pointer">Kaydet</button>
-              </div>
-            </form>
           </div>
         </div>
-      )}
+
+      </div>
     </div>
   )
 }
