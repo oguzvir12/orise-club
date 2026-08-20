@@ -17,7 +17,10 @@ import {
   LogOut,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import AuthModal from '../../../components/auth-modal'
+import AuthModal from '../../auth-modal' // root/components içinde olduğu için 3 seviye yukarı çıkıp sonra girmek gerekebilir
+
+// ÖNEMLİ: Eğer yukarıdaki import hata verirse, sadece şu satırı dene: 
+// import AuthModal from '../../../auth-modal'
 
 interface EventItem {
   id: string
