@@ -56,7 +56,7 @@ export function CartDrawer() {
             type="button"
             onClick={closeCart}
             aria-label="Sepeti kapat"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-zinc-300 transition-colors hover:bg-primary hover:text-black"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-zinc-300 transition-colors hover:bg-primary hover:text-black cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -109,20 +109,19 @@ export function CartDrawer() {
                       type="button"
                       onClick={() => removeItem(item.id)}
                       aria-label="Ürünü kaldır"
-                      className="text-zinc-500 transition-colors hover:text-red-400"
+                      className="text-zinc-500 transition-colors hover:text-red-400 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    {/* Eğer ürünse adet değiştirilebilir, biletse sabit 1 adettir */}
                     {item.type === 'product' ? (
                       <div className="inline-flex items-center rounded-full border border-white/10 bg-black/40">
                         <button
                           type="button"
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="inline-flex h-7 w-7 items-center justify-center text-zinc-400 hover:text-white"
+                          className="inline-flex h-7 w-7 items-center justify-center text-zinc-400 hover:text-white cursor-pointer"
                         >
                           <Minus className="h-3 w-3" />
                         </button>
@@ -132,7 +131,7 @@ export function CartDrawer() {
                         <button
                           type="button"
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="inline-flex h-7 w-7 items-center justify-center text-zinc-400 hover:text-white"
+                          className="inline-flex h-7 w-7 items-center justify-center text-zinc-400 hover:text-white cursor-pointer"
                         >
                           <Plus className="h-3 w-3" />
                         </button>
@@ -167,7 +166,7 @@ export function CartDrawer() {
             </div>
             <button
               type="button"
-              className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform"
+              className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
             >
               Ödemeyi Tamamla
             </button>
