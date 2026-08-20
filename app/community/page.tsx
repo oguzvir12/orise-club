@@ -66,7 +66,7 @@ export default function CommunityPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       if (currentSession?.user?.email) {
         setUserEmail(currentSession.user.email)
-        fetchUserData(currentSession.user.id, currentSession.user.email)
+        fetchUserData(currentSession.user.id)
         fetchMyRegistrations(currentSession.user.email)
       } else {
         setUserEmail('')
@@ -82,42 +82,23 @@ export default function CommunityPage() {
   const checkUserSession = async () => {
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession()
-      if (currentSession?.user?.email) {
-        const emailVal = currentSession.user.email
+      if (currentSession?.user) {
+        const emailVal = currentSession.user.email || ''
         setUserEmail(emailVal)
-        await fetchUserData(currentSession.user.id, emailVal)
-        await fetchMyRegistrations(emailVal)
+        await fetchUserData(currentSession.user.id)
+        if (emailVal) await fetchMyRegistrations(emailVal)
       }
     } catch (e) {
       console.error(e)
     }
   }
 
-  const fetchUserData = async (userId: string, email: string) => {
+  const fetchUserData = async (userId: string) => {
     try {
-      let found = false
-      const { data: p1 } = await supabase.from('profiler').select('*').eq('id', userId).maybeSingle()
-      if (p1 && p1.full_name) {
-        setFullName(p1.full_name)
-        setPhone(p1.phone || '')
-        found = true
-      }
-
-      if (!found) {
-        const { data: p2 } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
-        if (p2 && p2.full_name) {
-          setFullName(p2.full_name)
-          setPhone(p2.phone || '')
-          found = true
-        }
-      }
-
-      if (!found && email) {
-        const { data: p3 } = await supabase.from('profiles').select('*').ilike('email', email).maybeSingle()
-        if (p3) {
-          setFullName(p3.full_name || '')
-          setPhone(p3.phone || '')
-        }
+      const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+      if (data) {
+        setFullName(data.full_name || '')
+        setPhone(data.phone || '')
       }
     } catch (e) {
       console.error(e)
@@ -176,7 +157,7 @@ export default function CommunityPage() {
 
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
-      await fetchUserData(session.user.id, session.user.email!)
+      await fetchUserData(session.user.id)
     }
 
     setSelectedEvent(evt)
@@ -488,8 +469,8 @@ export default function CommunityPage() {
       )}
 
       <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
         onSuccess={() => {
           checkUserSession()
         }}
