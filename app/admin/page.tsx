@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   ArrowLeft,
   Users,
@@ -16,11 +17,10 @@ import {
   Package,
   Truck,
   PlusCircle,
-  Plus,
+  Layers,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-// Güçlendirilmiş Yönetici Hesapları
 const ADMIN_USERS: Record<string, { pass: string; branch: string; title: string; type: 'community' | 'store' | 'super' | 'community_director' }> = {
   orise_master_admin: { pass: 'Orise#2026_SecureKey!99', branch: 'ALL', title: 'Süper Admin (Tüm Yetkiler)', type: 'super' },
   community_director: { pass: 'Director#Community_2026!', branch: 'ALL', title: 'Genel Topluluk Yöneticisi', type: 'community_director' },
@@ -51,11 +51,13 @@ export default function AdminPage() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
 
-  // Yeni Ürün Ekleme State'leri
-  const [newTitle, setNewTitle] = useState('')
-  const [newPrice, setNewPrice] = useState('')
-  const [newStock, setNewStock] = useState('')
-  const [newImage, setNewImage] = useState('')
+  // Yeni Ürün Form State'leri
+  const [title, setTitle] = useState('')
+  const [subtitle, setSubtitle] = useState('')
+  const [price, setPrice] = useState('')
+  const [stock, setStock] = useState('')
+  const [description, setDescription] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
 
   useEffect(() => {
     const savedAuth = localStorage.getItem('orise_admin_user')
@@ -116,36 +118,45 @@ export default function AdminPage() {
     setOrders((prev) => prev.map((ord) => (ord.id === orderId ? { ...ord, status: newStatus } : ord)))
   }
 
-  // SÜPER ADMIN ÜRÜN EKLEME
+  // ÜRÜN EKLEME
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newTitle || !newPrice) return
+    if (!title || !price) return
 
     const { error } = await supabase.from('products').insert([{
-      title: newTitle,
-      price: Number(newPrice),
-      stock: Number(newStock) || 50,
-      image_urls: newImage ? [newImage] : ['https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop'],
+      title,
+      subtitle: subtitle || 'Kulüp Özel Parçası',
+      price: Number(price),
+      stock: Number(stock) || 50,
+      description: description || 'Yüksek kaliteli kulüp teknik tekstil ürünü.',
       category: 'tank',
-      category_label: 'ÖZEL DROP'
+      category_label: 'ÖZEL DROP',
+      image_urls: imageUrl ? [imageUrl] : ['https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop']
     }])
 
     if (!error) {
       alert('Ürün başarıyla mağazaya eklendi!')
-      setNewTitle('')
-      setNewPrice('')
-      setNewStock('')
-      setNewImage('')
+      setTitle('')
+      setSubtitle('')
+      setPrice('')
+      setStock('')
+      setDescription('')
+      setImageUrl('')
       fetchData()
     } else {
-      alert('Ürün eklenirken hata oluştu.')
+      alert('Ürün eklenirken veritabanı hatası oluştu.')
     }
   }
 
+  // ÜRÜN SİLME
   const handleDeleteProduct = async (id: string) => {
-    if (!confirm('Bu ürünü mağazadan silmek istediğinize emin misiniz?')) return
-    await supabase.from('products').delete().eq('id', id)
-    setProducts((prev) => prev.filter((p) => p.id !== id))
+    if (!confirm('Bu ürünü mağazadan kalıcı olarak silmek istiyor musunuz?')) return
+    const { error } = await supabase.from('products').delete().eq('id', id)
+    if (!error) {
+      setProducts((prev) => prev.filter((p) => p.id !== id))
+    } else {
+      alert('Silme sırasında hata oluştu.')
+    }
   }
 
   if (!isLoggedIn) {
@@ -254,51 +265,64 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* SÜPER ADMIN VEYA MAĞAZA YÖNETİCİSİ İÇİN ÜRÜN EKLEME & SİPARİŞ YÖNETİMİ */}
+      {/* SÜPER ADMIN / MAĞAZA YÖNETİCİSİ: ÜRÜN EKLEME & YÖNETİMİ */}
       {(currentUser?.type === 'store' || currentUser?.type === 'super') && (
         <div className="mx-auto max-w-7xl space-y-8 mb-16">
-          {/* Yeni Ürün Ekleme Formu (Sadece Süper Admin) */}
           {currentUser?.type === 'super' && (
-            <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-4">
+            <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
               <h2 className="text-base font-bold flex items-center gap-2 text-primary">
                 <PlusCircle className="h-5 w-5" />
-                <span>Mağazaya Yeni Drop Ürünü Ekle</span>
+                <span>Mağazaya Yeni Ürün / Drop Ekle</span>
               </h2>
-              <form onSubmit={handleAddProduct} className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <form onSubmit={handleAddProduct} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <input
                   type="text"
-                  placeholder="Ürün Adı (Örn: Pro Hoodie)"
+                  placeholder="Ürün Başlığı"
                   required
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Alt Başlık (Örn: Heavyweight Cotton)"
+                  value={subtitle}
+                  onChange={(e) => setSubtitle(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
                 />
                 <input
                   type="number"
                   placeholder="Fiyat (₺)"
                   required
-                  value={newPrice}
-                  onChange={(e) => setNewPrice(e.target.value)}
-                  className="rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
                 />
                 <input
                   type="number"
                   placeholder="Stok Adedi"
                   required
-                  value={newStock}
-                  onChange={(e) => setNewStock(e.target.value)}
-                  className="rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
                 />
                 <input
                   type="text"
-                  placeholder="Fotoğraf URL (Opsiyonel)"
-                  value={newImage}
-                  onChange={(e) => setNewImage(e.target.value)}
-                  className="rounded-xl border border-white/10 bg-black px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                  placeholder="Fotoğraf URL (Görsel Bağlantısı)"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                />
+                <textarea
+                  rows={1}
+                  placeholder="Ürün Açıklaması"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="sm:col-span-4 rounded-full bg-primary py-3 text-xs font-bold uppercase tracking-wider text-black shadow-lg hover:scale-[1.01] transition-transform"
+                  className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg hover:scale-[1.01] transition-transform"
                 >
                   Ürünü Mağazada Yayınla
                 </button>
@@ -306,8 +330,38 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Siparişler Listesi */}
-          <div className="flex items-center justify-between">
+          {/* YÜKLÜ ÜRÜNLER LİSTESİ VE SİLME */}
+          <div className="space-y-4">
+            <h2 className="text-base font-bold flex items-center gap-2">
+              <Layers className="h-4 w-4 text-primary" />
+              <span>Mağazada Yüklü Ürünler ({products.length})</span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {products.map((prod) => (
+                <div key={prod.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none">
+                      <Image src={prod.image_urls?.[0] || '/placeholder.svg'} alt={prod.title} fill className="object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-white line-clamp-1">{prod.title}</h4>
+                      <span className="text-[11px] font-mono text-primary font-bold">₺{prod.price}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteProduct(prod.id)}
+                    className="p-2 text-zinc-500 hover:text-red-400 transition-colors"
+                    title="Ürünü Sil"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Siparişler Yönetimi */}
+          <div className="flex items-center justify-between pt-4">
             <h2 className="text-base font-bold flex items-center gap-2">
               <ShoppingBag className="h-4 w-4 text-primary" />
               <span>Mağaza Siparişleri & Kargo Yönetimi ({orders.length})</span>
