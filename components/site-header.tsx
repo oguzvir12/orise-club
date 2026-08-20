@@ -180,7 +180,7 @@ export function SiteHeader() {
             </div>
 
             <p className="text-[11px] text-zinc-400">
-              Buraya girdiğiniz bilgiler; etkinliklere katılırken ve mağazadan alışveriş yaparken otomatik olarak kullanılacaktır.
+              Buraya girdiğiniz bilgiler; etkinliklere katılırken ve sipariş verirken otomatik olarak kullanılacaktır.
             </p>
 
             <form onSubmit={handleUpdateProfile} className="space-y-4">
@@ -221,7 +221,7 @@ export function SiteHeader() {
               </div>
 
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat Adresi</label>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat / Etkinlik Adresi</label>
                 <textarea
                   rows={2}
                   value={address}
