@@ -83,32 +83,40 @@ export function SplitHero() {
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
       
-      {/* Sağ Üst Giriş / Profil Butonu Alanı */}
-      <div className="absolute top-6 right-6 z-40">
-        {user ? (
-          <div className="flex items-center gap-3 rounded-full border border-white/15 bg-zinc-900/80 px-4 py-2 backdrop-blur-md">
-            <span className="text-[11px] font-mono text-zinc-300 hidden sm:inline">
-              {user.email}
-            </span>
+      {/* Üst Logo ve Giriş / Sepet Alanı (Çakışmayı önleyen düzen) */}
+      <div className="absolute top-0 inset-x-0 z-50 flex items-center justify-between px-6 py-5 sm:px-10 pointer-events-none">
+        <div className="flex items-center gap-3 pointer-events-auto">
+          {/* Sol üst marka göstergesi */}
+          <span className="text-xs font-mono font-bold tracking-widest text-zinc-400">ORISE</span>
+        </div>
+
+        <div className="flex items-center gap-4 pointer-events-auto">
+          {/* Giriş Yap / Kayıt Ol veya Profil/Çıkış Butonu */}
+          {user ? (
+            <div className="flex items-center gap-3 rounded-full border border-white/15 bg-zinc-900/90 px-4 py-1.5 backdrop-blur-md shadow-lg">
+              <span className="text-[11px] font-mono text-zinc-300 hidden sm:inline">
+                {user.email}
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Çıkış</span>
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors"
+              onClick={() => setIsAuthOpen(true)}
+              className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-primary backdrop-blur-md hover:bg-primary/20 hover:border-primary transition-all duration-300 shadow-[0_0_20px_rgba(249,115,22,0.2)]"
             >
-              <LogOut className="h-3.5 w-3.5" />
-              <span>Çıkış</span>
+              <User className="h-3.5 w-3.5" />
+              <span>Giriş Yap / Kayıt Ol</span>
             </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setIsAuthOpen(true)}
-            className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-wider text-primary backdrop-blur-md hover:bg-primary/20 hover:border-primary transition-all duration-300 shadow-[0_0_20px_rgba(249,115,22,0.2)]"
-          >
-            <User className="h-3.5 w-3.5" />
-            <span>Giriş Yap / Kayıt Ol</span>
-          </button>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Merkez Dikey Ayrım Çizgisi */}
