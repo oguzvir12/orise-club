@@ -36,10 +36,11 @@ export function SiteHeader() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setUser(session.user)
+        // DÜZELTME: E-posta yerine güvenli olan user.id ile sorguluyoruz
         const { data } = await supabase
           .from('profiler')
           .select('*')
-          .eq('email', session.user.email)
+          .eq('id', session.user.id)
           .single()
         
         if (data) {
@@ -73,6 +74,7 @@ export function SiteHeader() {
     setSuccessMsg('')
 
     try {
+      // DÜZELTME: Güncelleme işlemini user.id üzerinden yapıyoruz
       const { error } = await supabase
         .from('profiler')
         .update({ 
@@ -82,7 +84,7 @@ export function SiteHeader() {
           adres: address,
           billing_address: billingAddress 
         })
-        .eq('email', user.email)
+        .eq('id', user.id)
 
       if (error) throw error
       setSuccessMsg('Profil ve etkinlik bilgileriniz güncellendi!')
@@ -180,7 +182,7 @@ export function SiteHeader() {
             </div>
 
             <p className="text-[11px] text-zinc-400">
-              Buraya girdiğiniz bilgiler; etkinliklere katılırken ve sipariş verirken otomatik olarak kullanılacaktır.
+              Buraya girdiğiniz bilgiler; etkinliklere katılırken ve mağazadan alışveriş yaparken otomatik olarak kullanılacaktır.
             </p>
 
             <form onSubmit={handleUpdateProfile} className="space-y-4">
