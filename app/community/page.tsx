@@ -48,16 +48,16 @@ export default function CommunityPage() {
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
 
   // Oturum ve Kullanıcı Bilgileri
-  const [userSession, setUserSession] = useState<any>(null)
+  const [userEmail, setUserEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
   const [healthAccepted, setHealthAccepted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
   const [registrationCounts, setRegistrationCounts] = useState<Record<string, number>>({})
+  const [myRegisteredEventIds, setMyRegisteredEventIds] = useState<string[]>([])
 
   useEffect(() => {
     fetchEvents()
@@ -67,37 +67,43 @@ export default function CommunityPage() {
 
   const checkUserSession = async () => {
     try {
+      let emailVal = ''
       const localUser = localStorage.getItem('orise_logged_user')
       if (localUser) {
         const parsed = JSON.parse(localUser)
-        setUserSession(parsed)
+        emailVal = parsed.email || ''
         setFullName(parsed.full_name || parsed.name || '')
         setPhone(parsed.phone || '')
-        setEmail(parsed.email || '')
       } else {
         const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          setUserSession(session.user)
-          setEmail(session.user.email || '')
-          fetchUserProfile(session.user.email)
+        if (session?.user?.email) {
+          emailVal = session.user.email
+          const { data: prof } = await supabase.from('profiler').select('*').eq('email', emailVal).single()
+          if (prof) {
+            setFullName(prof.full_name || prof.name || '')
+            setPhone(prof.phone || '')
+          }
         }
+      }
+
+      if (emailVal) {
+        setUserEmail(emailVal)
+        fetchMyRegistrations(emailVal)
       }
     } catch (e) {
       console.error(e)
     }
   }
 
-  const fetchUserProfile = async (userEmail: string) => {
+  const fetchMyRegistrations = async (email: string) => {
     try {
       const { data } = await supabase
-        .from('profiler')
-        .select('*')
-        .eq('email', userEmail)
-        .single()
+        .from('event_registrations')
+        .select('event_id')
+        .ilike('email', email.trim())
 
       if (data) {
-        setFullName(data.full_name || data.name || '')
-        setPhone(data.phone || '')
+        setMyRegisteredEventIds(data.map((r: any) => r.event_id))
       }
     } catch (e) {
       console.error(e)
@@ -129,8 +135,14 @@ export default function CommunityPage() {
   }
 
   const openRegisterModal = (evt: EventItem) => {
-    if (!email && !userSession) {
+    if (!userEmail) {
       alert('Etkinliklere katılabilmek için öncelikle üye girişi yapmalısınız!')
+      return
+    }
+
+    // Zaten katıldıysa modal açma
+    if (myRegisteredEventIds.includes(evt.id)) {
+      alert('Bu etkinliğe zaten katıldın! Profilim sayfasından ödemeni ve detayları görebilirsin.')
       return
     }
 
@@ -153,16 +165,16 @@ export default function CommunityPage() {
     setErrorMsg('')
 
     try {
-      // Aynı kullanıcı bu etkinliğe daha önce kayıt olmuş mu kontrol edelim (Çift kayıt spamini önler)
+      // Çift kayıt kontrolü (güvenlik için)
       const { data: existing } = await supabase
         .from('event_registrations')
         .select('id')
         .eq('event_id', selectedEvent.id)
-        .eq('email', email.trim())
+        .ilike('email', userEmail.trim())
         .maybeSingle()
 
       if (existing) {
-        setErrorMsg('Bu etkinliğe zaten kayıt oluşturdun! Profilim sayfasından durumunu görebilirsin.')
+        setErrorMsg('Bu etkinliğe zaten kayıt oluşturdun!')
         setLoading(false)
         return
       }
@@ -173,11 +185,11 @@ export default function CommunityPage() {
       const { error } = await supabase.from('event_registrations').insert([
         {
           event_id: selectedEvent.id,
-          full_name: fullName.trim(),
-          phone: phone.trim(),
-          email: email.trim(),
-          status: isWaitlist ? 'waitlist' : 'pending', // Ödeme veya onay bekliyor
-          is_paid: Number(selectedEvent.price) === 0, // Ücretsizse otomatik ödenmiş sayılır
+          full_name: fullName.trim() || 'Kulüp Üyesi',
+          phone: phone.trim() || 'Belirtilmemiş',
+          email: userEmail.trim(),
+          status: isWaitlist ? 'waitlist' : 'pending',
+          is_paid: Number(selectedEvent.price) === 0,
         },
       ])
 
@@ -186,6 +198,7 @@ export default function CommunityPage() {
       setSuccess(true)
       setHealthAccepted(false)
       fetchRegistrations()
+      fetchMyRegistrations(userEmail)
 
       setTimeout(() => {
         setIsModalOpen(false)
@@ -205,7 +218,6 @@ export default function CommunityPage() {
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
-      {/* Üst Bar: Ana Sayfa ve Profilim */}
       <div className="fixed top-4 left-6 z-[60] flex items-center gap-3 sm:left-8">
         <Link
           href="/"
@@ -289,6 +301,7 @@ export default function CommunityPage() {
               const remaining = Math.max(0, capacity - enrolled)
               const isFull = remaining === 0
               const isFree = Number(evt.price) === 0
+              const alreadyJoined = myRegisteredEventIds.includes(evt.id)
 
               return (
                 <div
@@ -330,14 +343,21 @@ export default function CommunityPage() {
                   </div>
 
                   <div className="mt-6 pt-4 border-t border-white/10">
-                    <button
-                      type="button"
-                      onClick={() => openRegisterModal(evt)}
-                      className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-transform hover:scale-[1.02] cursor-pointer"
-                    >
-                      <span>{isFree ? 'Hemen Katıl' : 'Kayıt Ol & Ödemeyi Profile At'}</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
+                    {alreadyJoined ? (
+                      <div className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 py-3.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
+                        <Check className="h-4 w-4" />
+                        <span>Zaten Katıldın</span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => openRegisterModal(evt)}
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-transform hover:scale-[1.02] cursor-pointer"
+                      >
+                        <span>{isFree ? 'Hemen Katıl' : 'Kayıt Ol & Profile Gönder'}</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               )
@@ -381,7 +401,7 @@ export default function CommunityPage() {
                 </div>
                 <h4 className="font-sans text-xl font-bold text-white">Ön Kayıt Başarıyla Alındı!</h4>
                 <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                  Etkinlik profilindeki "Katıldığım Etkinlikler" sekmesine eklendi. Ödemeyi oradan tamamlayabilirsin.
+                  Etkinlik profilindeki "Katıldığım Etkinlikler" sekmesine eklendi.
                 </p>
               </div>
             ) : (
@@ -396,7 +416,7 @@ export default function CommunityPage() {
                 </div>
                 <div>
                   <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">E-Posta</label>
-                  <input type="email" value={email} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed" />
+                  <input type="email" value={userEmail} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed" />
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 space-y-2">
