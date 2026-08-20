@@ -86,8 +86,14 @@ export function SplitHero() {
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
       
-      {/* SOL ÜST: SEPET BUTONU */}
-      <div className="absolute top-6 left-6 z-50">
+      {/* SOL ÜST: ŞIK ORISE CLUB LOGOSU VE SEPET BUTONU Yanyana veya Uygun Düzen */}
+      <div className="absolute top-6 left-6 z-50 flex items-center gap-4">
+        {/* Sol Üst Orijinal Güzel Logonuz */}
+        <div className="flex items-center gap-2">
+          <OriseMark className="h-6 w-6 text-primary" />
+          <span className="font-black tracking-widest text-sm text-white">ORISE CLUB</span>
+        </div>
+
         <button
           type="button"
           onClick={openCart}
@@ -103,15 +109,7 @@ export function SplitHero() {
         </button>
       </div>
 
-      {/* MERKEZ ÜST: ORISE CLUB LOGOSU (Tam Ortada) */}
-      <div className="absolute top-7 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
-        <div className="flex items-center gap-2">
-          <OriseMark className="h-6 w-6 text-primary" />
-          <span className="font-black tracking-widest text-sm text-white">ORISE CLUB</span>
-        </div>
-      </div>
-
-      {/* SAĞ ÜST: GİRİŞ / KAYIT OL VEYA ÇIKIŞ */}
+      {/* SAĞ ÜST: GİRİŞ / KAYIT OL VEYA ÇIKIŞ (Üstündeki tüm fazlalık rozetler tamamen temizlendi) */}
       <div className="absolute top-6 right-6 z-50">
         {user ? (
           <div className="flex items-center gap-3 rounded-full border border-white/15 bg-zinc-900/90 px-4 py-2 backdrop-blur-md shadow-lg">
