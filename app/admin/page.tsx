@@ -61,6 +61,7 @@ export default function AdminPage() {
   const [evtDate, setEvtDate] = useState('')
   const [evtLocation, setEvtLocation] = useState('')
   const [evtPrice, setEvtPrice] = useState('0')
+  const [evtBranch, setEvtBranch] = useState('KOŞU')
   const [evtImage, setEvtImage] = useState('')
 
   // Düzenleme Modal State'leri
@@ -122,7 +123,6 @@ export default function AdminPage() {
     }
   }
 
-  // Genel Dosya Yükleme (Ürün veya Etkinlik Afişi için)
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'event' | 'edit') => {
     try {
       const file = e.target.files?.[0]
@@ -148,17 +148,15 @@ export default function AdminPage() {
         if (type === 'product') setImageUrl(data.publicUrl)
         else if (type === 'event') setEvtImage(data.publicUrl)
         else if (type === 'edit') setEditImage(data.publicUrl)
-        alert('Fotoğraf başarıyla yüklendi!')
+        alert('Fotoğraf yüklendi!')
       }
     } catch (err) {
       console.error(err)
-      alert('Beklenmeyen bir hata oluştu.')
     } finally {
       setUploading(false)
     }
   }
 
-  // ETKİNLİK EKLEME
   const handleAddEvent = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!evtTitle || !evtDate) return
@@ -169,32 +167,27 @@ export default function AdminPage() {
       date: evtDate,
       location: evtLocation || 'İstanbul',
       price: Number(evtPrice) || 0,
+      branch: evtBranch,
       image_url: evtImage || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop'
     }])
 
     if (!error) {
       alert('Etkinlik başarıyla oluşturuldu!')
-      setEvtTitle('')
-      setEvtDesc('')
-      setEvtDate('')
-      setEvtLocation('')
-      setEvtPrice('0')
-      setEvtImage('')
+      setEvtTitle(''); setEvtDesc(''); setEvtDate(''); setEvtLocation(''); setEvtPrice('0'); setEvtImage('')
       fetchData()
     } else {
       alert('Etkinlik eklenirken hata oluştu.')
     }
   }
 
-  // ETKİNLİK SİLME
   const handleDeleteEvent = async (id: string) => {
-    if (!confirm('Bu etkinliği silmek istediğinize emin misiniz?')) return
+    if (!confirm('Bu etkinliği silmek istiyor musunuz?')) return
     await supabase.from('events').delete().eq('id', id)
     setEvents((prev) => prev.filter((e) => e.id !== id))
   }
 
   const handleDeleteRegistration = async (id: string) => {
-    if (!confirm('Bu katılımcı kaydını silmek istediğinize emin misiniz?')) return
+    if (!confirm('Bu kaydı silmek istiyor musunuz?')) return
     await supabase.from('event_registrations').delete().eq('id', id)
     setRegistrations((prev) => prev.filter((r) => r.id !== id))
   }
@@ -207,31 +200,18 @@ export default function AdminPage() {
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !price) return
-
     const { error } = await supabase.from('products').insert([{
-      title,
-      subtitle: subtitle || 'Kulüp Özel Parçası',
-      price: Number(price),
-      stock: Number(stock) || 50,
-      description: description || 'Yüksek kaliteli kulüp teknik tekstil ürünü.',
-      category: 'tank',
-      category_label: 'ÖZEL DROP',
+      title, subtitle: subtitle || 'Özel Parça', price: Number(price), stock: Number(stock) || 50,
+      description: description || 'Kaliteli teknik tekstil.', category: 'tank', category_label: 'ÖZEL DROP',
       image_urls: imageUrl ? [imageUrl] : ['https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop']
     }])
-
-    if (!error) {
-      alert('Ürün başarıyla mağazaya eklendi!')
-      setTitle(''); setSubtitle(''); setPrice(''); setStock(''); setDescription(''); setImageUrl('')
-      fetchData()
-    } else {
-      alert('Ürün eklenirken hata oluştu.')
-    }
+    if (!error) { setTitle(''); setSubtitle(''); setPrice(''); setStock(''); setDescription(''); setImageUrl(''); fetchData() }
   }
 
   const handleDeleteProduct = async (id: string) => {
-    if (!confirm('Bu ürünü silmek istiyor musunuz?')) return
-    const { error } = await supabase.from('products').delete().eq('id', id)
-    if (!error) setProducts((prev) => prev.filter((p) => p.id !== id))
+    if (!confirm('Silinsin mi?')) return
+    await supabase.from('products').delete().eq('id', id)
+    setProducts((prev) => prev.filter((p) => p.id !== id))
   }
 
   const openEditModal = (prod: any) => {
@@ -245,16 +225,12 @@ export default function AdminPage() {
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingProduct) return
-    const { error } = await supabase.from('products').update({
+    await supabase.from('products').update({
       title: editTitle, price: Number(editPrice), stock: Number(editStock),
       image_urls: editImage ? [editImage] : editingProduct.image_urls
     }).eq('id', editingProduct.id)
-
-    if (!error) {
-      alert('Ürün güncellendi!')
-      setEditingProduct(null)
-      fetchData()
-    }
+    setEditingProduct(null)
+    fetchData()
   }
 
   if (!isLoggedIn) {
@@ -262,38 +238,16 @@ export default function AdminPage() {
       <div className="fixed inset-0 z-50 bg-black text-white flex items-center justify-center p-6 font-sans">
         <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-8 shadow-2xl space-y-6">
           <div className="text-center space-y-2">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40">
-              <Lock className="h-5 w-5" />
-            </div>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40"><Lock className="h-5 w-5" /></div>
             <h1 className="text-xl font-black text-white">ORISE Yönetim Girişi</h1>
-            <p className="text-xs text-zinc-400">Yetkili kullanıcı adı ve şifrenizle giriş yapın.</p>
           </div>
-
           <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Kullanıcı Adı</label>
-              <input
-                type="text" required value={username} onChange={(e) => setUsername(e.target.value)}
-                placeholder="orise_master_admin..."
-                className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Şifre</label>
-              <input
-                type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              />
-            </div>
-            {loginError && <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-3 text-xs text-red-400 text-center">{loginError}</div>}
-            <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">
-              Giriş Yap
-            </button>
+            <input type="text" required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Kullanıcı Adı" className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white focus:border-primary focus:outline-none" />
+            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Şifre" className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white focus:border-primary focus:outline-none" />
+            {loginError && <div className="text-xs text-red-400 text-center">{loginError}</div>}
+            <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Giriş Yap</button>
           </form>
-          <div className="text-center pt-2">
-            <Link href="/" className="text-xs text-zinc-500 hover:text-zinc-300 underline">← Ana Sayfaya Dön</Link>
-          </div>
+          <div className="text-center pt-2"><Link href="/" className="text-xs text-zinc-500 hover:text-zinc-300 underline">← Ana Sayfa</Link></div>
         </div>
       </div>
     )
@@ -303,89 +257,61 @@ export default function AdminPage() {
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black text-white p-6 sm:p-10 font-sans">
       <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
         <div className="flex items-center gap-4">
-          <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-300 hover:text-white">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
+          <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-300 hover:text-white"><ArrowLeft className="h-4 w-4" /></Link>
           <div>
             <h1 className="text-xl font-black text-white">ORISE Kontrol Paneli</h1>
             <p className="text-xs font-mono text-primary uppercase">{currentUser?.title}</p>
           </div>
         </div>
-
         <div className="flex items-center gap-3 relative z-50">
-          <button type="button" onClick={fetchData} className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:border-primary hover:text-white cursor-pointer">
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Yenile</span>
-          </button>
-          <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20 cursor-pointer">
-            <LogOut className="h-3.5 w-3.5" />
-            <span>Çıkış</span>
-          </button>
+          <button type="button" onClick={fetchData} className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:border-primary cursor-pointer"><RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /><span>Yenile</span></button>
+          <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20 cursor-pointer"><LogOut className="h-3.5 w-3.5" /><span>Çıkış</span></button>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* ================= 1. YENİ ETKİNLİK OLUŞTURMA (SÜPER ADMIN) ================= */}
+        {/* ETKİNLİK EKLEME */}
         {currentUser?.type === 'super' && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary">
               <Calendar className="h-5 w-5" />
-              <span>Yeni Topluluk Etkinliği Oluştur (Ücretsiz / Ücretli)</span>
+              <span>Yeni Topluluk Etkinliği Oluştur</span>
             </h2>
             <form onSubmit={handleAddEvent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <input
-                type="text" placeholder="Etkinlik Adı (Örn: Cadde Tempo Koşusu)" required
-                value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              />
-              <input
-                type="datetime-local" required
-                value={evtDate} onChange={(e) => setEvtDate(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              />
-              <input
-                type="text" placeholder="Lokasyon (Örn: Caddebostan Sahil)"
-                value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              />
-              <input
-                type="number" placeholder="Bilet Fiyatı (0 = Ücretsiz)" required
-                value={evtPrice} onChange={(e) => setEvtPrice(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              />
+              <input type="text" placeholder="Etkinlik Adı" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               
-              {/* Etkinlik Afişi Yükleme */}
+              {/* Branş Seçimi */}
+              <select value={evtBranch} onChange={(e) => setEvtBranch(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary">
+                <option value="KOŞU">KOŞU</option>
+                <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
+                <option value="TENİS">TENİS</option>
+                <option value="VOLEYBOL">VOLEYBOL</option>
+                <option value="YELKEN">YELKEN</option>
+              </select>
+
+              <input type="datetime-local" required value={evtDate} onChange={(e) => setEvtDate(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <input type="text" placeholder="Lokasyon (Örn: Caddebostan Sahil)" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <input type="number" placeholder="Bilet Fiyatı (0 = Ücretsiz)" required value={evtPrice} onChange={(e) => setEvtPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              
               <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
-                <span className="text-xs text-zinc-400 truncate pointer-events-none">
-                  {uploading ? 'Yükleniyor...' : evtImage ? '✓ Etkinlik Afişi Yüklendi' : 'Etkinlik Afişi Seç (Görsel)'}
-                </span>
+                <span className="text-xs text-zinc-400 truncate pointer-events-none">{uploading ? 'Yükleniyor...' : evtImage ? '✓ Afiş Yüklendi' : 'Etkinlik Afişi Seç'}</span>
                 <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
-                <input
-                  type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'event')}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                />
+                <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'event')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
               </div>
 
-              <input
-                type="text" placeholder="Kısa Açıklama"
-                value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              />
+              <textarea rows={1} placeholder="Açıklama" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-3 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
 
-              <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer hover:scale-[1.01]">
+              <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">
                 Etkinliği Yayınla
               </button>
             </form>
           </div>
         )}
 
-        {/* ================= 2. YÜKLÜ ETKİNLİKLER LİSTESİ ================= */}
+        {/* AKTİF ETKİNLİKLER LİSTESİ */}
         <div className="space-y-4">
-          <h2 className="text-base font-bold flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-primary" />
-            <span>Aktif Kulüp Etkinlikleri ({events.length})</span>
-          </h2>
+          <h2 className="text-base font-bold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ({events.length})</span></h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {events.map((evt) => (
               <div key={evt.id} className="flex flex-col justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4 space-y-4">
@@ -394,9 +320,10 @@ export default function AdminPage() {
                     <Image src={evt.image_url || '/placeholder.svg'} alt={evt.title} fill className="object-cover" />
                   </div>
                   <div>
+                    <span className="text-[10px] font-mono text-primary uppercase">{evt.branch}</span>
                     <h4 className="font-bold text-xs text-white line-clamp-1">{evt.title}</h4>
-                    <div className="text-[11px] font-mono text-primary font-bold">
-                      {Number(evt.price) === 0 ? 'ÜCRETSİZ (Katıl)' : `₺${evt.price} (Katıl & Öde)`}
+                    <div className="text-[11px] font-mono text-zinc-400">
+                      {Number(evt.price) === 0 ? 'Ücretsiz Katılım' : `₺${evt.price} Ödemeli`}
                     </div>
                   </div>
                 </div>
@@ -410,75 +337,9 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* ================= 3. MAĞAZA ÜRÜN YÖNETİMİ ================= */}
-        {(currentUser?.type === 'store' || currentUser?.type === 'super') && (
-          <div className="space-y-8">
-            {currentUser?.type === 'super' && (
-              <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-                <h2 className="text-base font-bold flex items-center gap-2 text-primary">
-                  <PlusCircle className="h-5 w-5" />
-                  <span>Mağazaya Yeni Ürün / Drop Ekle</span>
-                </h2>
-                <form onSubmit={handleAddProduct} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  <input type="text" placeholder="Alt Başlık" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  <input type="number" placeholder="Fiyat (₺)" required value={price} onChange={(e) => setPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  <input type="number" placeholder="Stok Adedi" required value={stock} onChange={(e) => setStock(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  
-                  <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
-                    <span className="text-xs text-zinc-400 truncate pointer-events-none">
-                      {uploading ? 'Yükleniyor...' : imageUrl ? '✓ Ürün Görseli Yüklendi' : 'Ürün Görseli Seç'}
-                    </span>
-                    <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
-                    <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'product')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-                  </div>
-
-                  <textarea rows={1} placeholder="Açıklama" value={description} onChange={(e) => setDescription(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">
-                    Ürünü Mağazada Yayınla
-                  </button>
-                </form>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <h2 className="text-base font-bold flex items-center gap-2">
-                <Layers className="h-4 w-4 text-primary" />
-                <span>Mağazada Yüklü Ürünler ({products.length})</span>
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {products.map((prod) => (
-                  <div key={prod.id} className="flex flex-col justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none">
-                        <Image src={prod.image_urls?.[0] || '/placeholder.svg'} alt={prod.title} fill className="object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-xs text-white line-clamp-1">{prod.title}</h4>
-                        <div className="text-[11px] font-mono text-primary font-bold">₺{prod.price} · Stok: {prod.stock}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 pt-2 border-t border-white/5">
-                      <button onClick={() => openEditModal(prod)} className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 py-2 text-xs font-bold text-zinc-200 cursor-pointer">
-                        <Edit3 className="h-3.5 w-3.5 text-primary" /><span>Düzenle</span>
-                      </button>
-                      <button onClick={() => handleDeleteProduct(prod.id)} className="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 cursor-pointer" title="Sil">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ================= 4. ETKİNLİK KATILIMCILARI ================= */}
+        {/* KATILIMCILAR */}
         <div className="space-y-6">
-          <h2 className="text-base font-bold flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary" />
-            <span>Etkinlik Katılımcıları ({registrations.length})</span>
-          </h2>
+          <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Etkinlik Katılımcıları ({registrations.length})</span></h2>
           <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
@@ -486,34 +347,22 @@ export default function AdminPage() {
                   <tr>
                     <th className="p-4">Katılımcı</th>
                     <th className="p-4">İletişim</th>
-                    <th className="p-4">Katılım Tipi</th>
+                    <th className="p-4">Tür</th>
                     <th className="p-4 text-right">İşlem</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
                   {registrations.length > 0 ? (
                     registrations.map((reg) => (
-                      <tr key={reg.id} className="hover:bg-zinc-900/40 transition-colors">
-                        <td className="p-4 font-bold text-white flex items-center gap-2">
-                          <span>{reg.full_name}</span>
-                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-                        </td>
-                        <td className="p-4 space-y-0.5">
-                          <div>{reg.phone}</div>
-                          <div className="text-zinc-500">{reg.email}</div>
-                        </td>
-                        <td className="p-4 text-primary font-bold">
-                          {reg.is_paid ? 'Katıl & Öde (Ücretli)' : 'Katıl (Ücretsiz)'}
-                        </td>
-                        <td className="p-4 text-right">
-                          <button onClick={() => handleDeleteRegistration(reg.id)} className="p-2 text-zinc-500 hover:text-red-400 cursor-pointer">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </td>
+                      <tr key={reg.id} className="hover:bg-zinc-900/40">
+                        <td className="p-4 font-bold text-white">{reg.full_name}</td>
+                        <td className="p-4">{reg.phone} / {reg.email}</td>
+                        <td className="p-4 text-primary font-bold">{reg.is_paid ? 'Ücretli Bilet' : 'Ücretsiz Kayıt'}</td>
+                        <td className="p-4 text-right"><button onClick={() => handleDeleteRegistration(reg.id)} className="p-2 text-zinc-500 hover:text-red-400 cursor-pointer"><Trash2 className="h-4 w-4" /></button></td>
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan={4} className="p-6 text-center text-zinc-500">Henüz etkinlik kaydı yok.</td></tr>
+                    <tr><td colSpan={4} className="p-6 text-center text-zinc-500">Kayıt bulunmuyor.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -522,40 +371,6 @@ export default function AdminPage() {
         </div>
 
       </div>
-
-      {/* DÜZENLEME MODALİ */}
-      {editingProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Ürünü Düzenle</h3>
-              <button onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white cursor-pointer">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <form onSubmit={handleUpdateProduct} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ürün Başlığı</label>
-                <input type="text" required value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fiyat (₺)</label>
-                  <input type="number" required value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Stok</label>
-                  <input type="number" required value={editStock} onChange={(e) => setEditStock(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-              </div>
-              <div className="pt-2 flex gap-3">
-                <button type="button" onClick={() => setEditingProduct(null)} className="flex-1 rounded-full border border-white/10 bg-zinc-900 py-3 text-xs font-bold uppercase text-zinc-300 cursor-pointer">İptal</button>
-                <button type="submit" className="flex-1 rounded-full bg-primary py-3 text-xs font-bold uppercase text-black cursor-pointer">Kaydet</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
