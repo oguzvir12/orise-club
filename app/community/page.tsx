@@ -16,7 +16,7 @@ import {
   Ticket,
   ChevronRight,
   Filter,
-  Lock,
+  CreditCard,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -61,7 +61,7 @@ export default function CommunityPage() {
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  // Katılımcı Sayıları (Canlı Sayaç)
+  // Katılımcı Sayıları
   const [registrationCounts, setRegistrationCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
@@ -151,7 +151,7 @@ export default function CommunityPage() {
     setErrorMsg('')
   }
 
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent, isPaidAction: boolean = false) => {
     e.preventDefault()
     if (!selectedEvent) return
 
@@ -174,11 +174,16 @@ export default function CommunityPage() {
           phone: phone.trim(),
           email: email.trim(),
           status: isWaitlist ? 'waitlist' : 'confirmed',
-          is_paid: selectedEvent.price > 0,
+          is_paid: isPaidAction,
         },
       ])
 
       if (error) throw error
+
+      if (isPaidAction) {
+        // Buraya PayTR veya ödeme entegrasyonu yönlendirmesi eklenebilir
+        alert('Ödeme sayfasına yönlendiriliyorsunuz (PayTR entegrasyon alanı).')
+      }
 
       setSuccess(true)
       setHealthAccepted(false)
@@ -202,7 +207,6 @@ export default function CommunityPage() {
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
-      {/* Sol Üst Ana Sayfa Butonu */}
       <div className="fixed top-4 left-6 z-[60] sm:left-8">
         <Link
           href="/"
@@ -213,7 +217,6 @@ export default function CommunityPage() {
         </Link>
       </div>
 
-      {/* 1. HERO BAŞLIK */}
       <section className="relative overflow-hidden border-b border-white/10 pt-32 pb-16 lg:pt-40 lg:pb-20">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image
@@ -237,14 +240,10 @@ export default function CommunityPage() {
                 Şehri Hisset.
               </span>
             </h1>
-            <p className="text-base font-normal leading-relaxed text-zinc-300 sm:text-lg">
-              ORISE Community buluşmalarına katıl, kontenjanını ayırt ve antrenman gününde kulüple buluş.
-            </p>
           </div>
         </div>
       </section>
 
-      {/* 2. BRANŞ FİLTRELEME ÇUBUĞU */}
       <section className="border-b border-white/10 bg-zinc-950/80 sticky top-0 z-40 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -266,7 +265,6 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* 3. ETKİNLİK LİSTESİ */}
       <section className="border-b border-white/10 bg-zinc-950/40 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <div className="mb-10 flex items-center justify-between border-b border-white/10 pb-4">
@@ -276,94 +274,70 @@ export default function CommunityPage() {
             </span>
           </div>
 
-          {filteredEvents.length === 0 ? (
-            <div className="py-20 text-center text-zinc-500 font-mono text-xs">
-              Bu branşta henüz aktif bir etkinlik bulunmuyor.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {filteredEvents.map((evt) => {
-                const capacity = evt.capacity || 30
-                const enrolled = registrationCounts[evt.id] || 0
-                const remaining = Math.max(0, capacity - enrolled)
-                const isFull = remaining === 0
-                const isFree = Number(evt.price) === 0
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {filteredEvents.map((evt) => {
+              const capacity = evt.capacity || 30
+              const enrolled = registrationCounts[evt.id] || 0
+              const remaining = Math.max(0, capacity - enrolled)
+              const isFull = remaining === 0
+              const isFree = Number(evt.price) === 0
 
-                return (
-                  <div
-                    key={evt.id}
-                    className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur-md transition-all duration-500 hover:border-primary/60 hover:bg-zinc-900/80 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)]"
-                  >
-                    <div className="space-y-4">
-                      {/* Görsel & Branş */}
-                      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-zinc-950">
-                        <Image
-                          src={evt.image_url || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop'}
-                          alt={evt.title}
-                          fill
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        <div className="absolute top-3 left-3 rounded-full border border-primary/40 bg-black/80 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary backdrop-blur-md">
-                          {evt.branch || 'KULÜP'}
-                        </div>
-
-                        <div className="absolute bottom-3 right-3 rounded-full bg-black/80 border border-white/10 px-3 py-1 text-[10px] font-mono text-zinc-300 backdrop-blur-md">
-                          {isFull ? (
-                            <span className="text-amber-400 font-bold">KONTENJAN DOLDU (YEDEK)</span>
-                          ) : (
-                            <span>Son {remaining} Kişilik Kontenjan</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="font-sans text-xl font-black text-white group-hover:text-primary transition-colors">
-                          {evt.title}
-                        </h3>
-                        <p className="mt-2 text-xs leading-relaxed text-zinc-400 line-clamp-2">
-                          {evt.description}
-                        </p>
-                      </div>
-
-                      {/* Detaylar */}
-                      <div className="space-y-2 rounded-xl bg-black/40 p-3 border border-white/5 text-xs font-mono text-zinc-300">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-3.5 w-3.5 text-primary" />
-                          <span>{new Date(evt.date).toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-3.5 w-3.5 text-primary" />
-                          <span className="truncate">{evt.location}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Ticket className="h-3.5 w-3.5 text-primary" />
-                          <span>
-                            {isFree ? 'Ücretsiz / Kulüp Etkinliği' : `₺${evt.price} (Katıl & Öde)`}
-                          </span>
-                        </div>
+              return (
+                <div
+                  key={evt.id}
+                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur-md transition-all duration-500 hover:border-primary/60 hover:bg-zinc-900/80"
+                >
+                  <div className="space-y-4">
+                    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-zinc-950">
+                      <Image
+                        src={evt.image_url || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop'}
+                        alt={evt.title}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute top-3 left-3 rounded-full border border-primary/40 bg-black/80 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                        {evt.branch || 'KULÜP'}
                       </div>
                     </div>
 
-                    {/* Katıl Butonu */}
-                    <div className="mt-6 pt-4 border-t border-white/10">
-                      <button
-                        type="button"
-                        onClick={() => openRegisterModal(evt)}
-                        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-transform hover:scale-[1.02] cursor-pointer"
-                      >
-                        <span>{isFree ? (isFull ? 'Yedek Listeye Katıl' : 'Hemen Katıl') : (isFull ? 'Yedek Liste (Ödemeli)' : 'Katıl & Öde')}</span>
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
+                    <div>
+                      <h3 className="font-sans text-xl font-black text-white group-hover:text-primary transition-colors">
+                        {evt.title}
+                      </h3>
+                      <p className="mt-2 text-xs leading-relaxed text-zinc-400 line-clamp-2">
+                        {evt.description}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 rounded-xl bg-black/40 p-3 border border-white/5 text-xs font-mono text-zinc-300">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3.5 w-3.5 text-primary" />
+                        <span>{new Date(evt.date).toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Ticket className="h-3.5 w-3.5 text-primary" />
+                        <span>{isFree ? 'Ücretsiz Etkinlik' : `₺${evt.price} Biletli`}</span>
+                      </div>
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          )}
+
+                  <div className="mt-6 pt-4 border-t border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => openRegisterModal(evt)}
+                      className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-transform hover:scale-[1.02] cursor-pointer"
+                    >
+                      <span>{isFree ? 'Hemen Katıl' : 'Katıl & Ödeme Yap'}</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </section>
 
-      {/* 4. KAYIT MODALI & SAĞLIK BEYANI */}
       {isModalOpen && selectedEvent && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn"
@@ -376,7 +350,7 @@ export default function CommunityPage() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <span className="text-[10px] font-mono uppercase text-primary tracking-widest block">
-                  {selectedEvent.branch} · {Number(selectedEvent.price) === 0 ? 'ÜCRETSİZ REZERVASYON' : `₺${selectedEvent.price} BİLETLİ`}
+                  {selectedEvent.branch} · {Number(selectedEvent.price) === 0 ? 'ÜCRETSİZ ETKİNLİK' : `₺${selectedEvent.price} ÜCRETLİ ETKİNLİK`}
                 </span>
                 <h3 className="font-sans text-lg font-black text-white mt-0.5">
                   {selectedEvent.title}
@@ -396,40 +370,32 @@ export default function CommunityPage() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   <Check className="h-7 w-7" />
                 </div>
-                <h4 className="font-sans text-xl font-bold text-white">Kaydın Başarıyla Alındı!</h4>
+                <h4 className="font-sans text-xl font-bold text-white">İşleminiz Başarıyla Alındı!</h4>
                 <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                  Buluşma günü ve saatinde etkinlik noktasında olman yeterlidir. Bilgilerin yönetici paneline işlenmiştir.
+                  Etkinlik kaydınız sisteme işlenmiştir.
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad (Hesap Bilginiz)</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
                   <input
-                    type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Örn: Oğuzhan Beydoğan"
-                    readOnly={!!fullName}
-                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none read-only:opacity-75 read-only:cursor-not-allowed"
+                    type="text" value={fullName} readOnly
+                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed"
                   />
                 </div>
-
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon</label>
                   <input
-                    type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)}
-                    placeholder="05XX XXX XX XX"
-                    readOnly={!!phone}
-                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none read-only:opacity-75 read-only:cursor-not-allowed"
+                    type="tel" value={phone} readOnly
+                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed"
                   />
                 </div>
-
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">E-Posta Adresi</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">E-Posta</label>
                   <input
-                    type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ornek@gmail.com"
-                    readOnly={!!email}
-                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none read-only:opacity-75 read-only:cursor-not-allowed"
+                    type="email" value={email} readOnly
+                    className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed"
                   />
                 </div>
 
@@ -456,19 +422,44 @@ export default function CommunityPage() {
                   </div>
                 )}
 
-                <button
-                  type="submit" disabled={loading}
-                  className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform disabled:opacity-50 cursor-pointer"
-                >
-                  {loading ? 'İşleniyor...' : Number(selectedEvent.price) === 0 ? 'Katılımı Onayla (Katıl)' : `₺${selectedEvent.price} — Ödemeyi Tamamla ve Katıl`}
-                </button>
-              </form>
+                {/* ÜCRETSİZ VEYA ÜCRETLİ DURUMUNA GÖRE BUTONLAR */}
+                {Number(selectedEvent.price) === 0 ? (
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={(e) => handleRegisterSubmit(e, false)}
+                    className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
+                  >
+                    {loading ? 'İşleniyor...' : 'Ücretsiz Katılımı Onayla'}
+                  </button>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={(e) => handleRegisterSubmit(e, false)}
+                      className="rounded-full border border-white/20 bg-zinc-900 py-3.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                    >
+                      Sadece Kayıt Ol
+                    </button>
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={(e) => handleRegisterSubmit(e, true)}
+                      className="flex items-center justify-center gap-1.5 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-wider text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      <span>₺{selectedEvent.price} Öde</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
       )}
 
-      {/* 5. SAĞLIK BEYANI MODALİ */}
+      {/* SAĞLIK BEYANI MODALİ */}
       {isHealthModalOpen && (
         <div
           className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn"
