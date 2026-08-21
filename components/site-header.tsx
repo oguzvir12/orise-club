@@ -10,7 +10,6 @@ import { supabase } from '@/lib/supabase'
 import AuthModal from './auth-modal'
 import Image from 'next/image'
 
-// SOL ALT KÖŞEDE KONUMLANAN ENERJİK AI CANLI DESTEK BİLEŞENİ
 function AiChatButton() {
   const [isOpen, setIsOpen] = useState(false)
   const [msg, setMsg] = useState('')
@@ -89,6 +88,14 @@ export function SiteHeader() {
   const [title, setTitle] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
   const [xp, setXp] = useState(0)
+
+  // Yeni Sağlık & Acil Durum Alanları
+  const [bloodType, setBloodType] = useState('')
+  const [emergencyContact, setEmergencyContact] = useState('')
+  const [emergencyPhone, setEmergencyPhone] = useState('')
+  const [medicalNotes, setMedicalNotes] = useState('')
+  const [dailyMedication, setDailyMedication] = useState('')
+
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
@@ -110,6 +117,11 @@ export function SiteHeader() {
         setTitle(data.title || '')
         setAvatarUrl(data.avatar_url || '')
         setXp(data.xp || 0)
+        setBloodType(data.blood_type || '')
+        setEmergencyContact(data.emergency_contact || '')
+        setEmergencyPhone(data.emergency_phone || '')
+        setMedicalNotes(data.medical_notes || '')
+        setDailyMedication(data.daily_medication || '')
       }
 
       if (userEmail) {
@@ -146,7 +158,7 @@ export function SiteHeader() {
       if (session?.user) {
         await fetchProfile(session.user.id, session.user.email)
       } else {
-        setFullName(''); setPhone(''); setInstagram(''); setAddress(''); setBillingAddress(''); setTitle(''); setAvatarUrl(''); setXp(0); setMyEvents([]); setMyOrders([])
+        setFullName(''); setPhone(''); setInstagram(''); setAddress(''); setBillingAddress(''); setTitle(''); setAvatarUrl(''); setXp(0); setBloodType(''); setEmergencyContact(''); setEmergencyPhone(''); setMedicalNotes(''); setDailyMedication(''); setMyEvents([]); setMyOrders([])
       }
     })
     return () => subscription.unsubscribe()
@@ -191,13 +203,26 @@ export function SiteHeader() {
 
     try {
       const payload = { 
-        id: user.id, email: user.email, full_name: fullName, phone: phone, instagram: instagram, address: address, billing_address: billingAddress, title: title, avatar_url: avatarUrl
+        id: user.id, 
+        email: user.email, 
+        full_name: fullName, 
+        phone: phone, 
+        instagram: instagram, 
+        address: address, 
+        billing_address: billingAddress, 
+        title: title, 
+        avatar_url: avatarUrl,
+        blood_type: bloodType,
+        emergency_contact: emergencyContact,
+        emergency_phone: emergencyPhone,
+        medical_notes: medicalNotes,
+        daily_medication: dailyMedication
       }
 
       const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
       if (error) throw error
 
-      setSuccessMsg('Profil bilgileriniz güncellendi!')
+      setSuccessMsg('Profil ve sağlık bilgileriniz güncellendi!')
       setTimeout(() => { setSuccessMsg(''); window.location.reload() }, 1000)
     } catch (err: any) {
       alert('Kayıt Hatası: ' + err.message)
@@ -206,7 +231,6 @@ export function SiteHeader() {
     }
   }
 
-  // Kıdem hesaplama fonksiyonu
   const getRank = (score: number) => {
     if (score >= 500) return '🏆 Efsane Üye'
     if (score >= 200) return '⭐ Elit Sporcu'
@@ -266,12 +290,11 @@ export function SiteHeader() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-primary" />
-                <h3 className="font-bold text-sm uppercase tracking-wider">Kulüp Profili & Kıdem</h3>
+                <h3 className="font-bold text-sm uppercase tracking-wider">Kulüp Profili & Sağlık Kartı</h3>
               </div>
               <button type="button" onClick={() => setIsProfileOpen(false)} className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
 
-            {/* XP ve Kıdem Rozeti */}
             <div className="flex items-center justify-between rounded-2xl bg-zinc-900/80 p-4 border border-white/10">
               <div>
                 <span className="text-[10px] font-mono uppercase text-zinc-400 block">Kulüp Statüsü</span>
@@ -284,7 +307,7 @@ export function SiteHeader() {
             </div>
 
             <div className="flex gap-2 border-b border-white/10 pb-3 overflow-x-auto">
-              <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${activeTab === 'profile' ? 'bg-primary text-black' : 'bg-white/5 text-zinc-400 hover:text-white'}`}>Profil</button>
+              <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${activeTab === 'profile' ? 'bg-primary text-black' : 'bg-white/5 text-zinc-400 hover:text-white'}`}>Profil & Sağlık</button>
               <button onClick={() => setActiveTab('events')} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${activeTab === 'events' ? 'bg-primary text-black' : 'bg-white/5 text-zinc-400 hover:text-white'}`}>Etkinliklerim ({myEvents.length})</button>
               <button onClick={() => setActiveTab('orders')} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${activeTab === 'orders' ? 'bg-primary text-black' : 'bg-white/5 text-zinc-400 hover:text-white'}`}>Siparişlerim ({myOrders.length})</button>
             </div>
@@ -315,9 +338,41 @@ export function SiteHeader() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Instagram</label>
-                  <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-primary block mb-1 font-bold">Kan Grubu</label>
+                    <input type="text" value={bloodType} onChange={(e) => setBloodType(e.target.value)} placeholder="Örn: 0 Rh(+)" className="w-full rounded-xl border border-primary/30 bg-black px-4 py-3 text-xs text-white" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Instagram</label>
+                    <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  </div>
+                </div>
+
+                {/* ACİL DURUM VE SAĞLIK BİLGİLERİ */}
+                <div className="border-t border-white/10 pt-4 space-y-4">
+                  <h4 className="text-xs font-bold text-primary uppercase">Acil Durum & Sağlık Bilgileri</h4>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Acil Durumda Aranacak Kişi</label>
+                      <input type="text" value={emergencyContact} onChange={(e) => setEmergencyContact(e.target.value)} placeholder="Adı Soyadı / Yakınlık" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Acil Durum Telefonu</label>
+                      <input type="tel" value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} placeholder="05XX XXX XX XX" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Bilinen Hastalık / Kronik Rahatsızlık</label>
+                    <input type="text" value={medicalNotes} onChange={(e) => setMedicalNotes(e.target.value)} placeholder="Yoksa 'Yok' yazabilirsiniz" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Düzenli Kullandığı İlaçlar</label>
+                    <input type="text" value={dailyMedication} onChange={(e) => setDailyMedication(e.target.value)} placeholder="Yoksa 'Yok' yazabilirsiniz" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  </div>
                 </div>
 
                 <div>
