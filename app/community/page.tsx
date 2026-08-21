@@ -54,6 +54,7 @@ export default function CommunityPage() {
   const [phone, setPhone] = useState('')
   const [healthAccepted, setHealthAccepted] = useState(false)
   const [kvkkAccepted, setKvkkAccepted] = useState(false)
+  const [waiverAccepted, setWaiverAccepted] = useState(false) // Feragatname onay durumu
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
@@ -181,8 +182,13 @@ export default function CommunityPage() {
       return
     }
 
+    if (!waiverAccepted) {
+      setErrorMsg('Lütfen sorumluluk reddi ve feragatnameyi onaylayınız.')
+      return
+    }
+
     if (!kvkkAccepted) {
-      setErrorMsg('Lütfen KVKK aydınlatma metnini onaylayınız.')
+      setErrorMsg('Lütfen KVKK ve medya kullanım iznini onaylayınız.')
       return
     }
 
@@ -216,7 +222,6 @@ export default function CommunityPage() {
 
       if (error) throw error
 
-      // Etkinliğe kayıt olduğu için kullanıcıya +50 XP ekle
       if (userId) {
         const { data: profileData } = await supabase.from('profiles').select('xp').eq('id', userId).maybeSingle()
         const currentXp = profileData?.xp || 0
@@ -226,6 +231,7 @@ export default function CommunityPage() {
       setSuccess(true)
       setHealthAccepted(false)
       setKvkkAccepted(false)
+      setWaiverAccepted(false)
       fetchRegistrations()
       fetchMyRegistrations(userEmail)
 
@@ -433,6 +439,7 @@ export default function CommunityPage() {
                   <input type="email" value={userEmail} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed" />
                 </div>
 
+                {/* YASAL FERAGATNAME VE SAĞLIK ONAYLARI */}
                 <div className="space-y-3 pt-2">
                   <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 p-3.5">
                     <input
@@ -441,10 +448,21 @@ export default function CommunityPage() {
                       className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-black text-primary focus:ring-primary cursor-pointer"
                     />
                     <label htmlFor="healthCheck" className="text-[11px] leading-relaxed text-zinc-300">
-                      Fiziksel antrenmana katılmaya engel bir sağlık problemim olmadığını beyan ederim.{' '}
+                      Fiziksel antrenmanlara katılmaya, yüksek efor sarf etmeye engel bir sağlık problemim olmadığını beyan ederim.{' '}
                       <button type="button" onClick={() => setIsHealthModalOpen(true)} className="text-primary underline hover:text-white cursor-pointer">
                         (Oku)
                       </button>
+                    </label>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 p-3.5">
+                    <input
+                      type="checkbox" id="waiverCheck" required checked={waiverAccepted}
+                      onChange={(e) => setWaiverAccepted(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-black text-primary focus:ring-primary cursor-pointer"
+                    />
+                    <label htmlFor="waiverCheck" className="text-[11px] leading-relaxed text-zinc-300">
+                      <strong className="text-white">Feragatname & Sorumluluk Reddi:</strong> Kulüp etkinlikleri sırasındaki her türlü fiziksel kaza, yaralanma, sakatlık veya maddi/manevi zarardan katılımcının bizzat kendisinin sorumlu olduğunu, kulüp yönetimini ve liderleri bu durumlardan sorumlu tutmayacağımı kabul ve taahhüt ederim.
                     </label>
                   </div>
 
@@ -455,11 +473,10 @@ export default function CommunityPage() {
                       className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-black text-primary focus:ring-primary cursor-pointer"
                     />
                     <label htmlFor="kvkkCheck" className="text-[11px] leading-relaxed text-zinc-300">
-                      Kişisel verilerimin kulüp faaliyetleri kapsamında işlenmesine yönelik{' '}
+                      Etkinlik boyunca çekilecek fotoğraf ve videolarımın kulüp sosyal medya hesaplarında / tanıtımlarında kullanılmasına (<strong className="text-white">Medya İzni</strong>) ve KVKK kapsamında işlenmesine onay veriyorum.{' '}
                       <button type="button" onClick={() => setIsKvkkModalOpen(true)} className="text-primary underline hover:text-white cursor-pointer">
-                        KVKK Aydınlatma Metnini
-                      </button>{' '}
-                      okudum ve kabul ediyorum.
+                        (Detaylar)
+                      </button>
                     </label>
                   </div>
                 </div>
@@ -490,7 +507,7 @@ export default function CommunityPage() {
               <span className="text-primary font-bold text-xs uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Sağlık Beyanı</span>
               <button onClick={() => setIsHealthModalOpen(false)} className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-white cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
-            <p className="text-xs text-zinc-300 leading-relaxed">Kulüp etkinliklerine katılmama engel olacak bilinen bir rahatsızlığım bulunmamaktadır. Sorumluluk tarafıma aittir.</p>
+            <p className="text-xs text-zinc-300 leading-relaxed">Kulüp etkinliklerine katılmama engel olacak, kalp, tansiyon veya ortopedik ciddi bir rahatsızlığım bulunmamaktadır. Sağlık durumumun her türlü sportif faaliyete uygun olduğunu beyan ederim.</p>
             <div className="text-right">
               <button type="button" onClick={() => { setHealthAccepted(true); setIsHealthModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer">Onayla</button>
             </div>
@@ -502,11 +519,11 @@ export default function CommunityPage() {
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl" onClick={() => setIsKvkkModalOpen(false)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 space-y-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <span className="text-primary font-bold text-xs uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> KVKK Aydınlatma Metni</span>
+              <span className="text-primary font-bold text-xs uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> KVKK & Medya Aydınlatma Metni</span>
               <button onClick={() => setIsKvkkModalOpen(false)} className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-white cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed">
-              6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, Orise Club topluluk faaliyetlerinin yürütülmesi, etkinlik organizasyonları ve iletişim faaliyetleri amacıyla ad soyad, telefon ve e-posta bilgileriniz işlenmektedir. Verileriniz üçüncü taraflarla paylaşılmaz.
+              6698 sayılı KVKK uyarınca, kulüp faaliyetleri, acil durum yönetimi ve organizasyon amacıyla ad soyad, telefon, e-posta, kan grubu ve acil durum iletişim bilgileriniz işlenmektedir. Ayrıca etkinliklerde çekilen fotoğraf/videolarınız kulüp iletişim kanallarında tanıtım amacıyla kullanılabilir.
             </p>
             <div className="text-right">
               <button type="button" onClick={() => { setKvkkAccepted(true); setIsKvkkModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer">Anladım / Onayla</button>
