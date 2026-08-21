@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Settings, X, AtSign, Calendar, Upload, Package } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Settings, X, AtSign, Calendar, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -266,23 +266,47 @@ export function SiteHeader() {
                 {myOrders.length === 0 ? (
                   <div className="py-12 text-center text-zinc-500 text-xs font-mono">Henüz mağazadan siparişiniz yok.</div>
                 ) : (
-                  myOrders.map((ord) => (
-                    <div key={ord.id} className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono uppercase text-primary bg-primary/10 px-2.5 py-1 rounded-full">₺{ord.total_price}</span>
-                        <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">{ord.status}</span>
+                  myOrders.map((ord) => {
+                    const isShipped = ord.status === 'shipped'
+                    const isDelivered = ord.status === 'delivered' || ord.status === 'approved'
+
+                    return (
+                      <div key={ord.id} className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono uppercase text-primary bg-primary/10 px-2.5 py-1 rounded-full">₺{ord.total_price}</span>
+                          <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                            {isDelivered ? 'Teslim Edildi / Onaylandı' : isShipped ? 'Kargoda' : 'Onay Bekliyor'}
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          {ord.items?.map((i: any, idx: number) => (
+                            <div key={idx} className="text-xs text-white">• {i.name} (x{i.quantity})</div>
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] font-mono text-zinc-400">
+                          <span>Teslimat: {ord.delivery_type === 'shipping' ? 'Kargo' : 'Elden Teslim'}</span>
+                          {ord.tracking_number && <span className="text-primary font-bold">Kargo Takip: {ord.tracking_number}</span>}
+                        </div>
+
+                        {isShipped && (
+                          <div className="pt-2 text-right">
+                            <button
+                              onClick={async () => {
+                                const { error } = await supabase.from('orders').update({ status: 'delivered' }).eq('id', ord.id)
+                                if (!error) {
+                                  alert('Sipariş teslim alındı olarak onaylandı!')
+                                  window.location.reload()
+                                }
+                              }}
+                              className="px-3 py-1.5 bg-emerald-500 text-black rounded-lg text-xs font-bold uppercase cursor-pointer"
+                            >
+                              Siparişi Onayla (Teslim Aldım)
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      <div className="space-y-1">
-                        {ord.items?.map((i: any, idx: number) => (
-                          <div key={idx} className="text-xs text-white">• {i.name} (x{i.quantity})</div>
-                        ))}
-                      </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] font-mono text-zinc-400">
-                        <span>Teslimat: {ord.delivery_type === 'shipping' ? 'Kargo' : 'Elden Teslim'}</span>
-                        {ord.tracking_number && <span className="text-primary font-bold">Kargo Takip: {ord.tracking_number}</span>}
-                      </div>
-                    </div>
-                  ))
+                    )
+                  })
                 )}
               </div>
             )}
