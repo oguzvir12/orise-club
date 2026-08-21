@@ -2,35 +2,44 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const { message } = await req.json();
-  const lowerMsg = message.toLowerCase();
+  const msg = message.toLowerCase();
 
-  // Botun kişiliği: Profesyonel bir şirket disiplini + ORISE Club enerjisi + Absürt mizah
-  let responseText = "";
+  // BİLGİ BANKASI VE AKILLI YANITLAR
+  let response = "";
 
-  // BİLGİ BANKASI VE PROFESYONEL YANITLAR
-  if (lowerMsg.includes('iade') || lowerMsg.includes('para') || lowerMsg.includes('ücret')) {
-    responseText = "İade süreçlerimizi profesyonel standartlarda yönetiyoruz. Onaylanan iadelerin tutarı, bankaların yoğunluğuna bağlı olarak 3-7 iş günü içinde kartınıza yansır. Bu süreçte bir aksilik olursa biz buradayız, rahat ol! 💳";
+  // 1. KİŞİSEL / SOSYAL
+  if (msg.includes('naber') || msg.includes('selam') || msg.includes('merhaba')) {
+    response = "Selam! ORISE Club olarak hareket halindeyiz, enerji tam gaz! 💪 Sen nasılsın? Kulüp veya Store hakkında neyi merak ediyorsun?";
   } 
-  else if (lowerMsg.includes('fatura') || lowerMsg.includes('mail') || lowerMsg.includes('e-fatura')) {
-    responseText = "Dijitalleşmeyi seviyoruz! Tüm faturalarınız şirketimiz tarafından sisteminize kayıtlı e-posta adresinize dijital e-fatura olarak gönderiliyor. Spam kutusuna da bir göz atmanı öneririm, bazen oraya kaçabiliyorlar! 🧾";
-  } 
-  else if (lowerMsg.includes('etkinlik') || lowerMsg.includes('koşu') || lowerMsg.includes('voleybol')) {
-    responseText = "ORISE Club etkinlik takvimimiz oldukça yoğun! Tüm buluşmalarımızı oriseclub.com üzerinden biletleyebilirsin. Unutma, etkinlikte ter dökmeye gelmeden önce feragatnameyi onaylaman yasal olarak şart; yani, 'ben bilmiyordum' bahanesi kabul edilmez, şaka şaka! 😉";
-  } 
-  else if (lowerMsg.includes('kimsiniz') || lowerMsg.includes('orise')) {
-    responseText = "Biz, sporun ve tarzın birleştiği o nadir noktayız. ORISE Club olarak hem topluluk etkinlikleri düzenliyor, hem de @orisestore ile sokak giyimine yön veriyoruz. Yani özetle; hem terletiyoruz, hem giydiriyoruz. Çok yönlü şirketiz biz! 😎";
+  else if (msg.includes('yaş') || msg.includes('kaç yaşındasın')) {
+    response = "ORISE Club ile doğdum, yani kulübün enerjisini taşıyorum. Ruhum hep 20, performansım ise 100! 😎";
   }
+  
+  // 2. FAALİYETLER & ETKİNLİKLER
+  else if (msg.includes('branş') || msg.includes('etkinlik') || msg.includes('koşu') || msg.includes('yoga') || msg.includes('tenis') || msg.includes('voleybol') || msg.includes('yelken')) {
+    response = "ORISE Club'da Koşu, Yürüyüş, Voleybol, Tenis, Yoga ve Yelken branşlarımız var. Etkinliklere oriseclub.com üzerinden bilet alarak veya kayıt oluşturarak katılabilirsin. Gelmeden önce dijital feragatnameyi onaylamayı unutma, güvenliğimiz her şeyden önemli! 🎾🏃‍♂️";
+  }
+  
+  // 3. MAĞAZA, FATURA & İADE
+  else if (msg.includes('iade') || msg.includes('para')) {
+    response = "İade işlemlerini profesyonelce yönetiyoruz. İaden onaylandıktan sonra, bankanın hızına bağlı olarak 3-7 iş günü içinde paran kartına yansır. Sabırlı ol, ORISE güvencesindesin! 💳";
+  }
+  else if (msg.includes('fatura') || msg.includes('mail')) {
+    response = "Siparişlerin ve biletlerin için dijital e-faturaların, sipariş sırasında kullandığın e-posta adresine otomatik gönderilir. Gelmediyse spam kutusunu kontrol etmeyi unutma! 🧾";
+  }
+  else if (msg.includes('ödeme') || msg.includes('güvenlik')) {
+    response = "Tüm ödemelerimizi PayTr'nin güvenli sanal POS altyapısı üzerinden alıyoruz. Verilerin bizde ve PayTr'de şifreli bir şekilde güvende. Gönül rahatlığıyla hareketine odaklan! 🔒";
+  }
+
+  // 4. KİMLİK & İLETİŞİM
+  else if (msg.includes('kimsiniz') || msg.includes('orise')) {
+    response = "Biz ORISE Club'ız! Spor, hareket ve sokak giyimini (@orisestore) birleştiren bir topluluk hareketiyiz. Instagram'da @orisecommunity ve @orisestore hesaplarından bizi takip edebilirsin. Daha fazlası için oriseclub.com'a göz at! 🚀";
+  }
+
+  // 5. YETKİNLİK DIŞI / YÖNLENDİRME
   else {
-    // Profesyonel ama esprili/absürt Fallback
-    const fallbackOptions = [
-      `"${message}" konusunu sistemime işledim. Eğer cevabı ben veremiyorsam, emin ol admin ekibimiz bunu benden daha iyi biliyordur. Bildirimi ilettim, en yakın zamanda profesyonel bir şekilde dönecekler! 🚀`,
-      `Şu an ORISE Club sunucularında biraz voleybol maçı izliyordum da... 🏐 "${message}" sorunu yönetime ilettim, onlar daha resmi ama bir o kadar da nazik bir şekilde sana dönecekler.`,
-      `Vay, oldukça derin bir soru! 🤔 "${message}" başlığı altında bu talebi şirket yetkililerimize raporluyorum. Bizde her şey kayıtlı, merak etme!`
-    ];
-    responseText = fallbackOptions[Math.floor(Math.random() * fallbackOptions.length)];
+    response = `"${message}" konusunu tam olarak anlayamadım ama ORISE Club ile ilgili olduğunu biliyorum! 🧐 Kulüp kurallarımız, etkinliklerimiz veya mağazamız hakkında daha net sorular sorarsan sana daha iyi yardımcı olabilirim. Eğer çok özel bir durumsa hemen admin ekibimize paslıyorum, sana en kısa sürede dönüş yapacaklar!`;
   }
 
-  return NextResponse.json({ 
-    response: responseText 
-  });
+  return NextResponse.json({ response });
 }
