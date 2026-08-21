@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Flame, Image as ImageIcon, Send, Trash2, User } from 'lucide-react'
+import { ArrowLeft, Flame, Image as ImageIcon, Send, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SiteHeader } from '@/components/site-header'
 
@@ -61,11 +61,12 @@ export default function HubPage() {
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) { alert('Paylaşım yapmak için giriş yapmalısınız.'); return }
+    if (!user) { alert('Paylaşım yapmak için giriş yapmalısın.'); return }
     if (!content.trim() && !imageUrl) return
 
     setLoading(true)
     try {
+      // Gönderi ekleme
       const { error } = await supabase.from('posts').insert([{
         user_id: user.id,
         author_name: profile?.full_name || user.email,
@@ -76,9 +77,15 @@ export default function HubPage() {
 
       if (error) throw error
 
+      // Her paylaşımda kullanıcıya +10 XP kazandır
+      const currentXp = profile?.xp || 0
+      await supabase.from('profiles').update({ xp: currentXp + 10 }).eq('id', user.id)
+
       setContent('')
       setImageUrl('')
       fetchPosts()
+      checkUser()
+      alert('Paylaşım yapıldı! +10 XP kazandın 🎉')
     } catch (err: any) {
       alert('Hata: ' + err.message)
     } finally {
@@ -112,7 +119,6 @@ export default function HubPage() {
           </div>
         </div>
 
-        {/* GÖNDERİ OLUŞTURMA KUTUSU */}
         {user ? (
           <form onSubmit={handleCreatePost} className="rounded-3xl border border-white/10 bg-zinc-950 p-6 space-y-4 shadow-xl">
             <textarea
@@ -152,7 +158,6 @@ export default function HubPage() {
           </div>
         )}
 
-        {/* AKIŞ LİSTESİ */}
         <div className="space-y-6">
           {posts.length === 0 ? (
             <div className="py-16 text-center text-zinc-500 text-xs font-mono">Henüz bir paylaşım yapılmadı. İlk sen ol!</div>
