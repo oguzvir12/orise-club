@@ -46,6 +46,10 @@ export function CartDrawer() {
       const { error } = await supabase.from('orders').insert([orderPayload])
       if (error) throw error
 
+      // Mağazadan alışveriş yaptığı için kullanıcıya +100 XP kazandır
+      const currentXp = profile?.xp || 0
+      await supabase.from('profiles').update({ xp: currentXp + 100 }).eq('id', session.user.id)
+
       setSuccess(true)
       clearCart()
       setTimeout(() => {
@@ -79,7 +83,7 @@ export function CartDrawer() {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
               <ShoppingBag className="h-8 w-8" />
             </div>
-            <h3 className="text-lg font-bold text-white">Siparişiniz Alındı!</h3>
+            <h3 className="text-lg font-bold text-white">Siparişiniz Alındى! (+100 XP)</h3>
             <p className="text-xs text-zinc-400">Sipariş durumunu profilinizden takip edebilirsiniz. Admin onayı bekleniyor.</p>
           </div>
         ) : items.length === 0 ? (
