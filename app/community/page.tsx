@@ -48,6 +48,7 @@ export default function CommunityPage() {
   const [isKvkkModalOpen, setIsKvkkModalOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
+  const [userId, setUserId] = useState('')
   const [userEmail, setUserEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -66,12 +67,14 @@ export default function CommunityPage() {
     checkUserSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
-      if (currentSession?.user?.email) {
-        setUserEmail(currentSession.user.email)
+      if (currentSession?.user) {
+        setUserEmail(currentSession.user.email || '')
+        setUserId(currentSession.user.id)
         fetchUserData(currentSession.user.id)
-        fetchMyRegistrations(currentSession.user.email)
+        if (currentSession.user.email) fetchMyRegistrations(currentSession.user.email)
       } else {
         setUserEmail('')
+        setUserId('')
         setFullName('')
         setPhone('')
         setMyRegisteredEventIds([])
@@ -85,19 +88,19 @@ export default function CommunityPage() {
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession()
       if (currentSession?.user) {
-        const emailVal = currentSession.user.email || ''
-        setUserEmail(emailVal)
+        setUserEmail(currentSession.user.email || '')
+        setUserId(currentSession.user.id)
         await fetchUserData(currentSession.user.id)
-        if (emailVal) await fetchMyRegistrations(emailVal)
+        if (currentSession.user.email) await fetchMyRegistrations(currentSession.user.email)
       }
     } catch (e) {
       console.error(e)
     }
   }
 
-  const fetchUserData = async (userId: string) => {
+  const fetchUserData = async (uid: string) => {
     try {
-      const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+      const { data } = await supabase.from('profiles').select('*').eq('id', uid).maybeSingle()
       if (data) {
         setFullName(data.full_name || '')
         setPhone(data.phone || '')
@@ -159,6 +162,7 @@ export default function CommunityPage() {
 
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
+      setUserId(session.user.id)
       await fetchUserData(session.user.id)
     }
 
@@ -199,7 +203,6 @@ export default function CommunityPage() {
         return
       }
 
-      // Hata çıkaran 'title' alanı kaldırıldı, veritabanı şemasıyla uyumlu hale getirildi
       const { error } = await supabase.from('event_registrations').insert([
         {
           event_id: selectedEvent.id,
@@ -212,6 +215,13 @@ export default function CommunityPage() {
       ])
 
       if (error) throw error
+
+      // Etkinliğe kayıt olduğu için kullanıcıya +50 XP ekle
+      if (userId) {
+        const { data: profileData } = await supabase.from('profiles').select('xp').eq('id', userId).maybeSingle()
+        const currentXp = profileData?.xp || 0
+        await supabase.from('profiles').update({ xp: currentXp + 50 }).eq('id', userId)
+      }
 
       setSuccess(true)
       setHealthAccepted(false)
@@ -403,7 +413,7 @@ export default function CommunityPage() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   <Check className="h-7 w-7" />
                 </div>
-                <h4 className="font-sans text-xl font-bold text-white">Katılım Talebiniz Alındı!</h4>
+                <h4 className="font-sans text-xl font-bold text-white">Katılım Talebiniz Alındı! (+50 XP)</h4>
                 <p className="text-xs text-zinc-400 max-w-xs mx-auto">
                   Lider onayından sonra durum profilinize yansıyacak ve WhatsApp grubu açılacaktır.
                 </p>
