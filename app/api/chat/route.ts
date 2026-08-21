@@ -1,45 +1,50 @@
 import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(req: Request) {
-  const { message } = await req.json();
-  const msg = message.toLowerCase();
+  try {
+    const { message } = await req.json();
+    const msg = message.toLowerCase();
 
-  // BİLGİ BANKASI VE AKILLI YANITLAR
-  let response = "";
+    let response = "";
 
-  // 1. KİŞİSEL / SOSYAL
-  if (msg.includes('naber') || msg.includes('selam') || msg.includes('merhaba')) {
-    response = "Selam! ORISE Club olarak hareket halindeyiz, enerji tam gaz! 💪 Sen nasılsın? Kulüp veya Store hakkında neyi merak ediyorsun?";
-  } 
-  else if (msg.includes('yaş') || msg.includes('kaç yaşındasın')) {
-    response = "ORISE Club ile doğdum, yani kulübün enerjisini taşıyorum. Ruhum hep 20, performansım ise 100! 😎";
-  }
-  
-  // 2. FAALİYETLER & ETKİNLİKLER
-  else if (msg.includes('branş') || msg.includes('etkinlik') || msg.includes('koşu') || msg.includes('yoga') || msg.includes('tenis') || msg.includes('voleybol') || msg.includes('yelken')) {
-    response = "ORISE Club'da Koşu, Yürüyüş, Voleybol, Tenis, Yoga ve Yelken branşlarımız var. Etkinliklere oriseclub.com üzerinden bilet alarak veya kayıt oluşturarak katılabilirsin. Gelmeden önce dijital feragatnameyi onaylamayı unutma, güvenliğimiz her şeyden önemli! 🎾🏃‍♂️";
-  }
-  
-  // 3. MAĞAZA, FATURA & İADE
-  else if (msg.includes('iade') || msg.includes('para')) {
-    response = "İade işlemlerini profesyonelce yönetiyoruz. İaden onaylandıktan sonra, bankanın hızına bağlı olarak 3-7 iş günü içinde paran kartına yansır. Sabırlı ol, ORISE güvencesindesin! 💳";
-  }
-  else if (msg.includes('fatura') || msg.includes('mail')) {
-    response = "Siparişlerin ve biletlerin için dijital e-faturaların, sipariş sırasında kullandığın e-posta adresine otomatik gönderilir. Gelmediyse spam kutusunu kontrol etmeyi unutma! 🧾";
-  }
-  else if (msg.includes('ödeme') || msg.includes('güvenlik')) {
-    response = "Tüm ödemelerimizi PayTr'nin güvenli sanal POS altyapısı üzerinden alıyoruz. Verilerin bizde ve PayTr'de şifreli bir şekilde güvende. Gönül rahatlığıyla hareketine odaklan! 🔒";
-  }
+    // 1. SOSYAL VE KİŞİSEL (Yaş, Naber, Kimsin vb.)
+    if (msg.includes('yaş') || msg.includes('kaç') || msg.includes('doğdun')) {
+      response = "Ben ORISE Club'ın dijital beyinlerinden biriyim, yaşım yok ama enerjim her zaman 20! 😎";
+    } 
+    else if (msg.includes('naber') || msg.includes('selam') || msg.includes('merhaba') || msg.includes('nasılsın')) {
+      response = "Selam şampiyon! 🔥 ORISE sunucularında koşturmaca devam ediyor. Sen nasılsın, bugün hangi branşta hareket ediyoruz?";
+    }
+    else if (msg.includes('kimsin') || msg.includes('sen ne') || msg.includes('orise')) {
+      response = "Ben ORISE Club asistanıyım. Sporu, hareketi ve sokak giyimini (@orisestore) harmanlayan bu modern topluluğun tüm kurallarını, etkinliklerini ve mağaza süreçlerini cebimde taşırım! 🚀";
+    }
 
-  // 4. KİMLİK & İLETİŞİM
-  else if (msg.includes('kimsiniz') || msg.includes('orise')) {
-    response = "Biz ORISE Club'ız! Spor, hareket ve sokak giyimini (@orisestore) birleştiren bir topluluk hareketiyiz. Instagram'da @orisecommunity ve @orisestore hesaplarından bizi takip edebilirsin. Daha fazlası için oriseclub.com'a göz at! 🚀";
-  }
+    // 2. KULÜP & ETKİNLİK
+    else if (msg.includes('etkinlik') || msg.includes('koşu') || msg.includes('voleybol') || msg.includes('tenis') || msg.includes('yoga') || msg.includes('yelken') || msg.includes('branş')) {
+      response = "Koşu, voleybol, tenis, yoga ve yelken gibi pek çok branşta sahalardayız! 🎾 Oriseclub.com üzerinden etkinliklerimize bilet alabilir veya kayıt oluşturabilirsin. Gelmeden önce dijital feragatnameyi onaylamayı unutma!";
+    }
 
-  // 5. YETKİNLİK DIŞI / YÖNLENDİRME
-  else {
-    response = `"${message}" konusunu tam olarak anlayamadım ama ORISE Club ile ilgili olduğunu biliyorum! 🧐 Kulüp kurallarımız, etkinliklerimiz veya mağazamız hakkında daha net sorular sorarsan sana daha iyi yardımcı olabilirim. Eğer çok özel bir durumsa hemen admin ekibimize paslıyorum, sana en kısa sürede dönüş yapacaklar!`;
-  }
+    // 3. MAĞAZA, FATURA & İADE
+    else if (msg.includes('iade') || msg.includes('para') || msg.includes('ücret')) {
+      response = "İadelerini profesyonel standartlarda işleme alıyoruz. Onaylanan iade tutarın, bankanın işlem süresine bağlı olarak ortalama 3-7 iş günü içinde kartına yansır. Gönlün ferah olsun! 💳";
+    }
+    else if (msg.includes('fatura') || msg.includes('mail') || msg.includes('e-fatura')) {
+      response = "Alışverişlerin ve etkinlik biletlerin için düzenlenen dijital e-faturalar, sistemimizde kayıtlı olan e-posta adresine otomatik olarak gönderilir. Spam klasörüne de bir göz atmanı öneririm! 🧾";
+    }
+    else if (msg.includes('ödeme') || msg.includes('kredi')) {
+      response = "Ödemelerini PayTr'nin güvenli sanal POS altyapısı üzerinden kredi veya banka kartınla gönül rahatlığıyla yapabilirsin. Güvenliğin bizim için en önde gelir! 🔒";
+    }
 
-  return NextResponse.json({ response });
+    // 4. ANLAMADIĞI VEYA DESTEK GEREKEN DURUMLAR (Burada veritabanına ve sana raporlar)
+    else {
+      response = `"${message}" konusunu not aldım! 🧐 Bunu hemen admin ekibimize ilettim, en kısa sürede seninle e-posta veya telefon üzerinden iletişime geçecekler.`;
+
+      // Eğer kullanıcı giriş yapmışsa veya maile iletmek istersek ai_chat_logs tablosuna atabiliriz
+      await supabase.from('ai_chat_logs').insert([{ message: message, response: 'Admin desteğine yönlendirildi' }]);
+    }
+
+    return NextResponse.json({ response });
+  } catch (err: any) {
+    return NextResponse.json({ response: "Bir hata oluştu ama notumu aldım, admin ekibimize ilettim!" });
+  }
 }
