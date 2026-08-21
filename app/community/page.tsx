@@ -199,14 +199,14 @@ export default function CommunityPage() {
         return
       }
 
+      // Hata çıkaran 'title' alanı kaldırıldı, veritabanı şemasıyla uyumlu hale getirildi
       const { error } = await supabase.from('event_registrations').insert([
         {
           event_id: selectedEvent.id,
-          title: selectedEvent.title,
           full_name: fullName.trim() || 'Kulüp Üyesi',
           phone: phone.trim() || 'Belirtilmemiş',
           email: userEmail.trim(),
-          status: 'requested', // Onay mekanizması için talep olarak düşer
+          status: 'requested',
           is_paid: Number(selectedEvent.price) === 0,
         },
       ])
