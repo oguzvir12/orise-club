@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Mail, Lock, User, Phone, MapPin, Check, ShieldCheck } from 'lucide-react'
+import { X, Mail, Lock, User, Phone, MapPin, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface AuthModalProps {
@@ -68,7 +68,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           onClose()
         }, 1500)
       } else {
-        const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
+        // 1. Kullanıcıyı Kayıt Et
+        const { data, error: signUpError } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              phone: phone,
+            }
+          }
+        })
         
         if (signUpError) {
           if (signUpError.message.includes('already registered')) {
@@ -77,14 +87,20 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           throw signUpError
         }
 
+        // 2. Eğer kullanıcı oluştuysa profiles tablosuna güvenli şekilde yaz
         if (data.user) {
           const { error: profileError } = await supabase.from('profiles').upsert({
             id: data.user.id,
+            email: email,
             full_name: fullName,
             phone: phone,
             address: address,
-          })
-          if (profileError) throw profileError
+          }, { onConflict: 'id' })
+
+          // Eğer profil tablosunda hata olursa logla ama üyelik engel olmasın
+          if (profileError) {
+            console.error('Profil oluşturulurken uyarı:', profileError.message)
+          }
         }
 
         setSuccessMsg(true)
