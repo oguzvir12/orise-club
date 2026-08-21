@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Settings, X, AtSign, Calendar, Upload } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Settings, X, AtSign, Calendar, Upload, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -24,6 +24,7 @@ export function SiteHeader() {
   const [billingAddress, setBillingAddress] = useState('')
   const [title, setTitle] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
+  const [xp, setXp] = useState(0)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
@@ -44,6 +45,7 @@ export function SiteHeader() {
         setBillingAddress(data.billing_address || '')
         setTitle(data.title || '')
         setAvatarUrl(data.avatar_url || '')
+        setXp(data.xp || 0)
       }
 
       if (userEmail) {
@@ -80,7 +82,7 @@ export function SiteHeader() {
       if (session?.user) {
         await fetchProfile(session.user.id, session.user.email)
       } else {
-        setFullName(''); setPhone(''); setInstagram(''); setAddress(''); setBillingAddress(''); setTitle(''); setAvatarUrl(''); setMyEvents([]); setMyOrders([])
+        setFullName(''); setPhone(''); setInstagram(''); setAddress(''); setBillingAddress(''); setTitle(''); setAvatarUrl(''); setXp(0); setMyEvents([]); setMyOrders([])
       }
     })
     return () => subscription.unsubscribe()
@@ -140,13 +142,31 @@ export function SiteHeader() {
     }
   }
 
+  // Kıdem hesaplama fonksiyonu
+  const getRank = (score: number) => {
+    if (score >= 500) return '🏆 Efsane Üye'
+    if (score >= 200) return '⭐ Elit Sporcu'
+    if (score >= 50) return '🏃 Aktif Sporcu'
+    return '🌱 Çaylak Üye'
+  }
+
   return (
     <>
       <header className={cn('fixed inset-x-0 top-0 z-50 transition-all duration-300', scrolled ? 'border-b border-border bg-background/80 backdrop-blur-xl' : 'border-b border-transparent bg-transparent')}>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-          <Link href="/" aria-label="ORISE CLUB Ana Sayfa"><Logo /></Link>
+          <div className="flex items-center gap-6">
+            <Link href="/" aria-label="ORISE CLUB Ana Sayfa"><Logo /></Link>
+            <Link href="/hub" className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-zinc-300 hover:text-primary transition-colors">
+              <MessageSquare className="h-4 w-4 text-primary" />
+              <span>ORISE HUB</span>
+            </Link>
+          </div>
 
           <div className="flex items-center gap-3">
+            <Link href="/hub" className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-secondary/50 text-foreground backdrop-blur-md hover:border-primary hover:text-primary">
+              <MessageSquare className="h-4 w-4" />
+            </Link>
+
             <button type="button" onClick={openCart} aria-label="Sepeti aç" className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-secondary/50 text-foreground backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-primary cursor-pointer">
               <ShoppingBag className="h-[18px] w-[18px]" />
               {count > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground">{count}</span>}
@@ -182,9 +202,21 @@ export function SiteHeader() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-primary" />
-                <h3 className="font-bold text-sm uppercase tracking-wider">Kulüp Profili & Takip</h3>
+                <h3 className="font-bold text-sm uppercase tracking-wider">Kulüp Profili & Kıdem</h3>
               </div>
               <button type="button" onClick={() => setIsProfileOpen(false)} className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"><X className="h-4 w-4" /></button>
+            </div>
+
+            {/* XP ve Kıdem Rozeti */}
+            <div className="flex items-center justify-between rounded-2xl bg-zinc-900/80 p-4 border border-white/10">
+              <div>
+                <span className="text-[10px] font-mono uppercase text-zinc-400 block">Kulüp Statüsü</span>
+                <span className="text-sm font-bold text-primary">{getRank(xp)}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] font-mono uppercase text-zinc-400 block">Deneyim Puanı</span>
+                <span className="text-lg font-black text-white">{xp} XP</span>
+              </div>
             </div>
 
             <div className="flex gap-2 border-b border-white/10 pb-3 overflow-x-auto">
@@ -214,20 +246,14 @@ export function SiteHeader() {
                     <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ünvan / Rol</label>
-                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
                     <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon</label>
                     <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   </div>
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Instagram</label>
-                    <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Instagram</label>
+                  <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                 </div>
 
                 <div>
