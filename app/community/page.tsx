@@ -10,7 +10,6 @@ import {
   ShieldCheck,
   AlertCircle,
   X,
-  Ticket,
   ChevronRight,
   Filter,
   Instagram,
@@ -60,12 +59,10 @@ export default function CommunityPage() {
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  const [registrationCounts, setRegistrationCounts] = useState<Record<string, number>>({})
   const [myRegisteredEventIds, setMyRegisteredEventIds] = useState<string[]>([])
 
   useEffect(() => {
     fetchEvents()
-    fetchRegistrations()
     checkUserSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
@@ -136,21 +133,6 @@ export default function CommunityPage() {
     }
   }
 
-  const fetchRegistrations = async () => {
-    try {
-      const { data } = await supabase.from('event_registrations').select('event_id')
-      if (data) {
-        const counts: Record<string, number> = {}
-        data.forEach((r: any) => {
-          counts[r.event_id] = (counts[r.event_id] || 0) + 1
-        })
-        setRegistrationCounts(counts)
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
   const openRegisterModal = async (evt: EventItem) => {
     if (!userEmail) {
       setIsAuthModalOpen(true)
@@ -158,7 +140,7 @@ export default function CommunityPage() {
     }
 
     if (myRegisteredEventIds.includes(evt.id)) {
-      alert('Bu etkinliğe zaten katılım talebinde / ön kayıtta bulundunuz!')
+      alert('Bu etkinliğe zaten katılım talebinde bulundunuz!')
       return
     }
 
@@ -233,7 +215,6 @@ export default function CommunityPage() {
       setHealthAccepted(false)
       setKvkkAccepted(false)
       setWaiverAccepted(false)
-      fetchRegistrations()
       fetchMyRegistrations(userEmail)
 
       setTimeout(() => {
@@ -334,7 +315,6 @@ export default function CommunityPage() {
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {filteredEvents.map((evt) => {
-              const isFree = Number(evt.price) === 0
               const alreadyJoined = myRegisteredEventIds.includes(evt.id)
 
               return (
@@ -369,10 +349,6 @@ export default function CommunityPage() {
                         <Calendar className="h-3.5 w-3.5 text-primary" />
                         <span>{new Date(evt.date).toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Ticket className="h-3.5 w-3.5 text-primary" />
-                        <span>{isFree ? 'Ücretsiz Buluşma' : `₺${evt.price} Katılım Bedeli`}</span>
-                      </div>
                     </div>
                   </div>
 
@@ -380,7 +356,7 @@ export default function CommunityPage() {
                     {alreadyJoined ? (
                       <div className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 py-3 text-xs font-bold uppercase tracking-widest text-emerald-400">
                         <Check className="h-4 w-4" />
-                        <span>Ön Kayıt / Talep Alındı</span>
+                        <span>Katılım Talebi Gönderildi</span>
                       </div>
                     ) : (
                       <button
@@ -388,7 +364,7 @@ export default function CommunityPage() {
                         onClick={() => openRegisterModal(evt)}
                         className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-transform hover:scale-[1.02] cursor-pointer"
                       >
-                        <span>Ön Kayıt / Katılım Talebi</span>
+                        <span>Katılım Talebi Gönder</span>
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     )}
@@ -422,10 +398,10 @@ export default function CommunityPage() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <span className="text-[10px] font-mono uppercase text-primary tracking-widest block">
-                  {selectedEvent.branch} · {Number(selectedEvent.price) === 0 ? 'ÜCRETSİZ' : `₺${selectedEvent.price}`}
+                  {selectedEvent.branch}
                 </span>
                 <h3 className="font-sans text-lg font-black text-white mt-0.5">
-                  {selectedEvent.title} - Ön Kayıt
+                  {selectedEvent.title} - Katılım Talebi
                 </h3>
               </div>
               <button
@@ -442,9 +418,9 @@ export default function CommunityPage() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   <Check className="h-7 w-7" />
                 </div>
-                <h4 className="font-sans text-xl font-bold text-white">Ön Kayıt Talebiniz Alındı! (+50 XP)</h4>
+                <h4 className="font-sans text-xl font-bold text-white">Katılım Talebiniz Alındı! (+50 XP)</h4>
                 <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                  Yönetici onayından sonra durum profilinize yansıyacak. Tüm detaylar, saat ve parkur güncellemeleri için <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="text-primary underline">@orisecommunity</a> hesabını takip etmeyi unutmayın!
+                  Yönetici onayından sonra durum profilinize yansıyacaktır. Tüm detaylar, parkur ve buluşma yeri güncellemeleri için <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="text-primary underline">@orisecommunity</a> hesabını takip etmeyi unutmayın!
                 </p>
               </div>
             ) : (
@@ -514,7 +490,7 @@ export default function CommunityPage() {
                   type="submit" disabled={loading}
                   className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
                 >
-                  {loading ? 'İşleniyor...' : 'Ön Kayıt / Talep Oluştur'}
+                  {loading ? 'İşleniyor...' : 'Katılım Talebini Gönder'}
                 </button>
               </form>
             )}
