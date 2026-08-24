@@ -46,7 +46,6 @@ export function CartDrawer() {
       const { error } = await supabase.from('orders').insert([orderPayload])
       if (error) throw error
 
-      // Mağazadan alışveriş yaptığı için kullanıcıya +100 XP kazandır
       const currentXp = profile?.xp || 0
       await supabase.from('profiles').update({ xp: currentXp + 100 }).eq('id', session.user.id)
 
@@ -83,8 +82,8 @@ export function CartDrawer() {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
               <ShoppingBag className="h-8 w-8" />
             </div>
-            <h3 className="text-lg font-bold text-white">Siparişiniz Alındى! (+100 XP)</h3>
-            <p className="text-xs text-zinc-400">Sipariş durumunu profilinizden takip edebilirsiniz. Admin onayı bekleniyor.</p>
+            <h3 className="text-lg font-bold text-white">Siparişiniz Alındı! (+100 XP)</h3>
+            <p className="text-xs text-zinc-400">Sipariş durumunu profilinizden takip edebilirsiniz. Ödeme ve faturalandırma onay bekliyor.</p>
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
@@ -92,7 +91,7 @@ export function CartDrawer() {
               <ShoppingBag className="h-7 w-7 text-zinc-500" />
             </div>
             <p className="text-base font-bold text-white">Sepetiniz şimdilik boş</p>
-            <p className="text-xs text-zinc-400">Kulübe özel drop parçalarını veya etkinlik biletlerini ekleyin.</p>
+            <p className="text-xs text-zinc-400">Kulübe özel drop parçalarını ekleyin.</p>
           </div>
         ) : (
           <ul className="flex-1 divide-y divide-white/5 overflow-y-auto px-6">
@@ -100,21 +99,11 @@ export function CartDrawer() {
               <li key={item.id} className="flex gap-4 py-5 items-center">
                 <div className="relative h-20 w-20 flex-none overflow-hidden rounded-2xl border border-white/10 bg-zinc-900">
                   <Image src={item.image || '/placeholder.svg'} alt={item.name} fill sizes="80px" className="object-cover" />
-                  {item.type === 'ticket' && (
-                    <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px] flex items-center justify-center">
-                      <Ticket className="h-6 w-6 text-primary drop-shadow" />
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex flex-1 flex-col justify-between space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      {item.type === 'ticket' && (
-                        <span className="text-[9px] font-mono uppercase tracking-widest text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full inline-block mb-1">
-                          Etkinlik Rezervasyonu
-                        </span>
-                      )}
                       <p className="text-xs font-bold leading-snug text-white">{item.name}</p>
                     </div>
                     <button type="button" onClick={() => removeItem(item.id)} className="text-zinc-500 hover:text-red-400 cursor-pointer">
@@ -123,15 +112,11 @@ export function CartDrawer() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    {item.type === 'product' ? (
-                      <div className="inline-flex items-center rounded-full border border-white/10 bg-black/40">
-                        <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} className="inline-flex h-7 w-7 items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><Minus className="h-3 w-3" /></button>
-                        <span className="w-6 text-center text-xs font-bold text-white tabular-nums">{item.quantity}</span>
-                        <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} className="inline-flex h-7 w-7 items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><Plus className="h-3 w-3" /></button>
-                      </div>
-                    ) : (
-                      <span className="text-[10px] font-mono text-zinc-400">1 Kişilik Bilet</span>
-                    )}
+                    <div className="inline-flex items-center rounded-full border border-white/10 bg-black/40">
+                      <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} className="inline-flex h-7 w-7 items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><Minus className="h-3 w-3" /></button>
+                      <span className="w-6 text-center text-xs font-bold text-white tabular-nums">{item.quantity}</span>
+                      <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} className="inline-flex h-7 w-7 items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><Plus className="h-3 w-3" /></button>
+                    </div>
                     <span className="text-xs font-bold text-primary">{formatTL(item.price * (item.quantity || 1))}</span>
                   </div>
                 </div>
@@ -160,7 +145,7 @@ export function CartDrawer() {
             </div>
 
             <button type="button" disabled={loading} onClick={handleCheckout} className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50">
-              {loading ? 'Sipariş Oluşturuluyor...' : 'Siparişi Tamamla & Onaya Gönder'}
+              {loading ? 'İşleniyor...' : 'Siparişi Tamamla & Ödemeye Geç'}
             </button>
           </div>
         )}
