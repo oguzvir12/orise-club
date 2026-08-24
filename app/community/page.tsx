@@ -13,6 +13,7 @@ import {
   Ticket,
   ChevronRight,
   Filter,
+  Instagram,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SiteHeader } from '../../components/site-header'
@@ -54,7 +55,7 @@ export default function CommunityPage() {
   const [phone, setPhone] = useState('')
   const [healthAccepted, setHealthAccepted] = useState(false)
   const [kvkkAccepted, setKvkkAccepted] = useState(false)
-  const [waiverAccepted, setWaiverAccepted] = useState(false) // Feragatname onay durumu
+  const [waiverAccepted, setWaiverAccepted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
@@ -157,7 +158,7 @@ export default function CommunityPage() {
     }
 
     if (myRegisteredEventIds.includes(evt.id)) {
-      alert('Bu etkinliğe zaten katılım talebinde bulundunuz!')
+      alert('Bu etkinliğe zaten katılım talebinde / ön kayıtta bulundunuz!')
       return
     }
 
@@ -238,7 +239,7 @@ export default function CommunityPage() {
       setTimeout(() => {
         setIsModalOpen(false)
         setSuccess(false)
-      }, 3500)
+      }, 4000)
     } catch (err: any) {
       setErrorMsg(err.message || 'Kayıt sırasında bir hata oluştu.')
     } finally {
@@ -291,21 +292,33 @@ export default function CommunityPage() {
 
       <section className="border-b border-white/10 bg-zinc-950/80 sticky top-16 z-40 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-            <Filter className="h-4 w-4 text-primary shrink-0 mr-2" />
-            {BRANCHES.map((branch) => (
-              <button
-                key={branch}
-                onClick={() => setSelectedBranch(branch)}
-                className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
-                  selectedBranch === branch
-                    ? 'bg-primary text-black shadow-[0_0_15px_rgba(249,115,22,0.4)]'
-                    : 'border border-white/10 bg-black/60 text-zinc-400 hover:border-white/30 hover:text-white'
-                }`}
-              >
-                {branch}
-              </button>
-            ))}
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              <Filter className="h-4 w-4 text-primary shrink-0 mr-2" />
+              {BRANCHES.map((branch) => (
+                <button
+                  key={branch}
+                  onClick={() => setSelectedBranch(branch)}
+                  className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
+                    selectedBranch === branch
+                      ? 'bg-primary text-black shadow-[0_0_15px_rgba(249,115,22,0.4)]'
+                      : 'border border-white/10 bg-black/60 text-zinc-400 hover:border-white/30 hover:text-white'
+                  }`}
+                >
+                  {branch}
+                </button>
+              ))}
+            </div>
+
+            <a
+              href="https://www.instagram.com/orisecommunity/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-zinc-900/80 px-4 py-2 text-xs font-bold uppercase tracking-wider text-zinc-200 hover:border-primary hover:text-primary transition-all"
+            >
+              <Instagram className="h-4 w-4 text-primary" />
+              <span>Detaylar İçin Instagram</span>
+            </a>
           </div>
         </div>
       </section>
@@ -358,27 +371,37 @@ export default function CommunityPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Ticket className="h-3.5 w-3.5 text-primary" />
-                        <span>{isFree ? 'Ücretsiz Etkinlik' : `₺${evt.price} Biletli`}</span>
+                        <span>{isFree ? 'Ücretsiz Buluşma' : `₺${evt.price} Katılım Bedeli`}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-4 border-t border-white/10">
+                  <div className="mt-6 pt-4 border-t border-white/10 space-y-2">
                     {alreadyJoined ? (
-                      <div className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 py-3.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
+                      <div className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 py-3 text-xs font-bold uppercase tracking-widest text-emerald-400">
                         <Check className="h-4 w-4" />
-                        <span>Başvuru Yapıldı</span>
+                        <span>Ön Kayıt / Talep Alındı</span>
                       </div>
                     ) : (
                       <button
                         type="button"
                         onClick={() => openRegisterModal(evt)}
-                        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-transform hover:scale-[1.02] cursor-pointer"
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-transform hover:scale-[1.02] cursor-pointer"
                       >
-                        <span>Katılım Talebi Gönder</span>
+                        <span>Ön Kayıt / Katılım Talebi</span>
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     )}
+
+                    <a
+                      href="https://www.instagram.com/orisecommunity/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center justify-center gap-1.5 rounded-full border border-white/10 bg-black/60 py-2.5 text-[11px] font-bold uppercase tracking-wider text-zinc-300 hover:border-white/30 hover:text-white transition-all"
+                    >
+                      <Instagram className="h-3.5 w-3.5 text-primary" />
+                      <span>Detaylar & Konum Instagram'da</span>
+                    </a>
                   </div>
                 </div>
               )
@@ -402,7 +425,7 @@ export default function CommunityPage() {
                   {selectedEvent.branch} · {Number(selectedEvent.price) === 0 ? 'ÜCRETSİZ' : `₺${selectedEvent.price}`}
                 </span>
                 <h3 className="font-sans text-lg font-black text-white mt-0.5">
-                  {selectedEvent.title}
+                  {selectedEvent.title} - Ön Kayıt
                 </h3>
               </div>
               <button
@@ -419,9 +442,9 @@ export default function CommunityPage() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   <Check className="h-7 w-7" />
                 </div>
-                <h4 className="font-sans text-xl font-bold text-white">Katılım Talebiniz Alındı! (+50 XP)</h4>
+                <h4 className="font-sans text-xl font-bold text-white">Ön Kayıt Talebiniz Alındı! (+50 XP)</h4>
                 <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                  Lider onayından sonra durum profilinize yansıyacak ve WhatsApp grubu açılacaktır.
+                  Yönetici onayından sonra durum profilinize yansıyacak. Tüm detaylar, saat ve parkur güncellemeleri için <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="text-primary underline">@orisecommunity</a> hesabını takip etmeyi unutmayın!
                 </p>
               </div>
             ) : (
@@ -439,7 +462,6 @@ export default function CommunityPage() {
                   <input type="email" value={userEmail} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-2.5 text-xs text-white opacity-75 cursor-not-allowed" />
                 </div>
 
-                {/* YASAL FERAGATNAME VE SAĞLIK ONAYLARI */}
                 <div className="space-y-3 pt-2">
                   <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 p-3.5">
                     <input
@@ -492,7 +514,7 @@ export default function CommunityPage() {
                   type="submit" disabled={loading}
                   className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer"
                 >
-                  {loading ? 'İşleniyor...' : 'Katılım Talebini Gönder'}
+                  {loading ? 'İşleniyor...' : 'Ön Kayıt / Talep Oluştur'}
                 </button>
               </form>
             )}
@@ -523,7 +545,7 @@ export default function CommunityPage() {
               <button onClick={() => setIsKvkkModalOpen(false)} className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-white cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed">
-              6698 sayılı KVKK uyarınca, kulüp faaliyetleri, acil durum yönetimi ve organizasyon amacıyla ad soyad, telefon, e-posta, kan grubu ve acil durum iletişim bilgileriniz işlenmektedir. Ayrıca etkinliklerde çekilen fotoğraf/videolarınız kulüp iletişim kanallarında tanıtım amacıyla kullanılabilir.
+              6698 sayılı KVKK uyarınca, kulüp faaliyetleri, acil durum yönetimi ve organizasyon amacıyla ad soyad, telefon, e-posta ve sağlık beyanı bilgileriniz işlenmektedir. Ayrıca etkinliklerde çekilen fotoğraf/videolarınız kulüp iletişim kanallarında tanıtım amacıyla kullanılabilir.
             </p>
             <div className="text-right">
               <button type="button" onClick={() => { setKvkkAccepted(true); setIsKvkkModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer">Anladım / Onayla</button>
