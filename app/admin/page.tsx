@@ -17,8 +17,6 @@ import {
   Upload,
   Calendar,
   Download,
-  CheckCircle2,
-  XCircle,
   ShoppingBag,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -35,7 +33,6 @@ export default function AdminPage() {
   const [profiles, setProfiles] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
 
-  // Yeni Ürün State'leri
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
@@ -43,17 +40,14 @@ export default function AdminPage() {
   const [description, setDescription] = useState('')
   const [imageUrl, setImageUrl] = useState('')
 
-  // Yeni Etkinlik State'leri
   const [evtTitle, setEvtTitle] = useState('')
   const [evtDesc, setEvtDesc] = useState('')
   const [evtDate, setEvtDate] = useState('')
   const [evtLocation, setEvtLocation] = useState('')
-  const [evtPrice, setEvtPrice] = useState('0')
   const [evtBranch, setEvtBranch] = useState('KOŞU')
   const [instructorName, setInstructorName] = useState('')
   const [evtImage, setEvtImage] = useState('')
 
-  // Düzenleme Modal State'leri
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editPrice, setEditPrice] = useState('')
@@ -62,7 +56,6 @@ export default function AdminPage() {
 
   const [editingEvent, setEditingEvent] = useState<any | null>(null)
   const [editEvtTitle, setEditEvtTitle] = useState('')
-  const [editEvtPrice, setEditEvtPrice] = useState('')
   const [editEvtBranch, setEditEvtBranch] = useState('KOŞU')
   const [editEvtLocation, setEditEvtLocation] = useState('')
   const [editEvtDate, setEditEvtDate] = useState('')
@@ -152,10 +145,9 @@ export default function AdminPage() {
 
     const { error } = await supabase.from('events').insert([{
       title: evtTitle,
-      description: evtDesc || 'Kulüp buluşması ve antrenman seansı.',
+      description: evtDesc || 'Kulüp buluşması. Detaylar Instagram hesabımızda.',
       date: evtDate,
       location: evtLocation || 'İstanbul',
-      price: Number(evtPrice) || 0,
       branch: evtBranch,
       instructor_name: instructorName || 'Kulüp Eğitmeni',
       image_url: evtImage || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop'
@@ -163,7 +155,7 @@ export default function AdminPage() {
 
     if (!error) {
       alert('Etkinlik başarıyla oluşturuldu!')
-      setEvtTitle(''); setEvtDesc(''); setEvtDate(''); setEvtLocation(''); setEvtPrice('0'); setInstructorName(''); setEvtImage('')
+      setEvtTitle(''); setEvtDesc(''); setEvtDate(''); setEvtLocation(''); setInstructorName(''); setEvtImage('')
       fetchData()
     } else {
       alert('Hata: ' + error.message)
@@ -179,7 +171,6 @@ export default function AdminPage() {
   const openEditEventModal = (evt: any) => {
     setEditingEvent(evt)
     setEditEvtTitle(evt.title || '')
-    setEditEvtPrice(evt.price || '0')
     setEditEvtBranch(evt.branch || 'KOŞU')
     setEditEvtLocation(evt.location || '')
     setEditEvtDate(evt.date ? evt.date.slice(0, 16) : '')
@@ -193,7 +184,6 @@ export default function AdminPage() {
 
     const { error } = await supabase.from('events').update({
       title: editEvtTitle,
-      price: Number(editEvtPrice) || 0,
       branch: editEvtBranch,
       location: editEvtLocation,
       date: editEvtDate,
@@ -212,7 +202,12 @@ export default function AdminPage() {
 
   const handleUpdateRegistrationStatus = async (regId: string, newStatus: 'approved' | 'rejected') => {
     const { error } = await supabase.from('event_registrations').update({ status: newStatus }).eq('id', regId)
-    if (!error) { alert('Başvuru güncellendi!'); fetchData() }
+    if (!error) { 
+      alert('Başvuru durumu güncellendi!'); 
+      fetchData(); 
+    } else {
+      alert('Hata: ' + error.message);
+    }
   }
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string, trackingNum?: string) => {
@@ -220,7 +215,23 @@ export default function AdminPage() {
     if (trackingNum !== undefined) payload.tracking_number = trackingNum
 
     const { error } = await supabase.from('orders').update(payload).eq('id', orderId)
-    if (!error) { alert('Sipariş güncellendi!'); fetchData() }
+    if (!error) { 
+      alert('Sipariş durumu güncellendi!'); 
+      fetchData(); 
+    } else {
+      alert('Hata: ' + error.message);
+    }
+  }
+
+  const handleRefundOrder = async (orderId: string) => {
+    if (!confirm('Sipariş iptal edilsin ve iade süreci başlatılsın mı?')) return
+    const { error } = await supabase.from('orders').update({ status: 'refunded' }).eq('id', orderId)
+    if (!error) {
+      alert('Sipariş iptal edildi ve iade süreci başlatıldı.')
+      fetchData()
+    } else {
+      alert('İade hatası: ' + error.message)
+    }
   }
 
   const handleDeleteRegistration = async (id: string) => {
@@ -374,12 +385,13 @@ export default function AdminPage() {
                           />
                         </td>
                         <td className="p-4 text-right space-y-1">
-                          <div className="flex justify-end gap-1">
-                            <button onClick={() => handleUpdateOrderStatus(ord.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px]">Onayla</button>
+                          <div className="flex justify-end gap-1 flex-wrap">
+                            <button onClick={() => handleUpdateOrderStatus(ord.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px] cursor-pointer">Onayla</button>
                             <button onClick={() => {
                               const tracking = (document.getElementById(`tracking-${ord.id}`) as HTMLInputElement).value
                               handleUpdateOrderStatus(ord.id, 'shipped', tracking)
-                            }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-[10px]">Kargola</button>
+                            }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-[10px] cursor-pointer">Kargola</button>
+                            <button onClick={() => handleRefundOrder(ord.id)} className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] cursor-pointer">İptal/İade</button>
                           </div>
                         </td>
                       </tr>
@@ -407,7 +419,6 @@ export default function AdminPage() {
               </select>
               <input type="text" placeholder="Konum / Google Maps Linki" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="datetime-local" required value={evtDate} onChange={(e) => setEvtDate(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="number" placeholder="Bilet Fiyatı (0 = Ücretsiz)" required value={evtPrice} onChange={(e) => setEvtPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               
               <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
                 <span className="text-xs text-zinc-400 truncate pointer-events-none">{uploading ? 'Yükleniyor...' : evtImage ? '✓ Afiş Yüklendi' : 'Etkinlik Afişi Seç'}</span>
@@ -583,7 +594,6 @@ export default function AdminPage() {
             </div>
             <form onSubmit={handleUpdateEvent} className="space-y-4">
               <input type="text" required value={editEvtTitle} onChange={(e) => setEditEvtTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="number" required value={editEvtPrice} onChange={(e) => setEditEvtPrice(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <button type="submit" className="w-full rounded-full bg-primary py-3 text-xs font-bold uppercase text-black">Kaydet</button>
             </form>
