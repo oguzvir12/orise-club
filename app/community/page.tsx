@@ -24,7 +24,6 @@ interface EventItem {
   date: string
   location: string
   capacity: number
-  price: number
   description: string
   image_url: string
 }
@@ -198,7 +197,7 @@ export default function CommunityPage() {
           phone: phone.trim() || 'Belirtilmemiş',
           email: userEmail.trim(),
           status: 'requested',
-          is_paid: Number(selectedEvent.price) === 0,
+          is_paid: true,
         },
       ])
 
