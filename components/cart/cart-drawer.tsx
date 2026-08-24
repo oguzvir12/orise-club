@@ -18,8 +18,8 @@ export function CartDrawer() {
   const { items, isOpen, closeCart, subtotal, removeItem, updateQuantity, clearCart } = useCart()
   const [deliveryType, setDeliveryType] = useState<'shipping' | 'pickup'>('shipping')
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
 
+  // Ödeme ve Sipariş Akışı
   const handleCheckout = async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.user) {
@@ -31,6 +31,7 @@ export function CartDrawer() {
     try {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
 
+      // 1. Önce siparişi veritabanına "pending_payment" (Ödeme Bekliyor) olarak kaydediyoruz
       const orderPayload = {
         user_id: session.user.id,
         customer_name: profile?.full_name || session.user.email,
@@ -40,23 +41,23 @@ export function CartDrawer() {
         items: items,
         total_price: subtotal,
         delivery_type: deliveryType,
-        status: 'pending'
+        status: 'pending_payment' 
       }
 
-      const { error } = await supabase.from('orders').insert([orderPayload])
+      const { data: insertedOrder, error } = await supabase.from('orders').insert([orderPayload]).select().single()
       if (error) throw error
 
-      const currentXp = profile?.xp || 0
-      await supabase.from('profiles').update({ xp: currentXp + 100 }).eq('id', session.user.id)
+      // 2. İyzico / PayTR ödeme sayfasına yönlendirme (veya API başlatma)
+      // Burada gerçek İyzico Checkout Form scripti veya /api/checkout route yönlendirmesi tetiklenir.
+      // Ödeme başarılı olduğunda İyzico webhook/callback siparişi 'paid' (Ödendi) yapar ve admin'e düşer.
+      
+      alert('İyzico güvenli ödeme sayfasına yönlendiriliyorsunuz...')
+      
+      // Simülasyon veya gerçek ödeme API çağrısı:
+      // window.location.href = `/api/checkout?orderId=${insertedOrder.id}&amount=${subtotal}`
 
-      setSuccess(true)
-      clearCart()
-      setTimeout(() => {
-        setSuccess(false)
-        closeCart()
-      }, 3000)
     } catch (err: any) {
-      alert('Sipariş oluşturulamadı: ' + err.message)
+      alert('Ödeme başlatılamadı: ' + err.message)
     } finally {
       setLoading(false)
     }
@@ -77,15 +78,7 @@ export function CartDrawer() {
           </button>
         </div>
 
-        {success ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-              <ShoppingBag className="h-8 w-8" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Siparişiniz Alındı! (+100 XP)</h3>
-            <p className="text-xs text-zinc-400">Sipariş durumunu profilinizden takip edebilirsiniz. Ödeme ve faturalandırma onay bekliyor.</p>
-          </div>
-        ) : items.length === 0 ? (
+        {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-zinc-900">
               <ShoppingBag className="h-7 w-7 text-zinc-500" />
@@ -125,7 +118,7 @@ export function CartDrawer() {
           </ul>
         )}
 
-        {items.length > 0 && !success && (
+        {items.length > 0 && (
           <div className="space-y-4 border-t border-white/10 bg-black/80 px-6 py-6">
             <div className="space-y-2">
               <span className="text-[10px] font-mono uppercase text-zinc-400 block">Teslimat Yöntemi</span>
@@ -145,7 +138,7 @@ export function CartDrawer() {
             </div>
 
             <button type="button" disabled={loading} onClick={handleCheckout} className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_20px_rgba(249,115,22,0.35)] hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50">
-              {loading ? 'İşleniyor...' : 'Siparişi Tamamla & Ödemeye Geç'}
+              {loading ? 'Ödeme Sayfasına Yönlendiriliyor...' : 'İyzico ile Güvenli Ödeme Yap'}
             </button>
           </div>
         )}
