@@ -20,7 +20,7 @@ const PANELS = [
     icon: Users,
     bgImage: '/community-hero.jpeg',
     align: 'left',
-    badge: 'Bilgilendirme & Buluşma',
+    subText: 'Haftalık Antrenman & Atölyeler',
   },
   {
     id: 'store',
@@ -34,8 +34,8 @@ const PANELS = [
     icon: ShoppingBag,
     bgImage: '/store-hero.jpeg',
     align: 'right',
-    badge: 'Güvenli E-Ticaret & Drop',
-    primary: true, // Mağaza odağını öne çıkaran bayrak
+    subText: 'Özel Seri Teknik Drop Parçalar',
+    primary: true,
   },
 ]
 
@@ -45,14 +45,14 @@ const LEGAL_DOCS: Record<string, { title: string; content: string[] }> = {
     content: [
       '1. Veri Sorumlusunun Kimliği: 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, Orise Club olarak kişisel verileriniz, veri sorumlusu sıfatıyla aşağıda açıklanan kapsamda işlenmektedir.',
       '2. İşlenen Kişisel Verileriniz: Ad-soyad, e-posta adresi, telefon numarası, teslimat/fatura adresleri ve etkinlik katılım/sağlık beyanı bilgileriniz.',
-      '3. Kişisel Verilerin İşlenme Amaçları: Mağaza alışverişlerinizin faturalandırma ve kargo teslimat süreçlerinin yürütülmesi, İyzico güvenli ödeme altyapısının sağlanması ve topluluk etkinliklerine katılım süreçlerinin yönetilmesi.',
+      '3. Kişisel Verilerin İşlenme Amaçları: Mağaza alışverişlerinizin faturalandırma ve kargo teslimat süreçlerinin yürütülmesi, güvenli ödeme altyapısının sağlanması ve topluluk etkinliklerine katılım süreçlerinin yönetilmesi.',
       '4. İletişim: Mağaza işlemleri için store@oriseclub.com, topluluk için community@oriseclub.com adresleri üzerinden bize ulaşabilirsiniz.'
     ],
   },
   privacy: {
     title: 'Gizlilik ve Çerez Politikası',
     content: [
-      '1. Gizlilik İlkemiz: Orise Club, e-ticaret müşterilerinin ve topluluk üyelerinin gizliliğine son derece önem verir. Tüm ödeme verileri 256-bit SSL ve İyzico güvencesiyle korunur.',
+      '1. Gizlilik İlkemiz: Orise Club, e-ticaret müşterilerinin ve topluluk üyelerinin gizliliğine son derece önem verir. Tüm ödeme verileri şifrelenmiş güvenli altyapıyla korunur.',
       '2. Çerez Kullanımı: Sitemizdeki alışveriş sepeti ve oturum işlemlerinin yürütülmesi için zorunlu çerezler kullanılmaktadır.',
       '3. İletişim Kanalları: Sorularınız için store@oriseclub.com üzerinden destek alabilirsiniz.'
     ],
@@ -61,7 +61,7 @@ const LEGAL_DOCS: Record<string, { title: string; content: string[] }> = {
     title: 'Mesafeli Satış ve Hizmet Sözleşmesi',
     content: [
       '1. Taraflar: İş bu sözleşme, Orise Club ("Satıcı") ile internet sitesi üzerinden alışveriş yapan Alıcı arasında akdedilmiştir.',
-      '2. Konu: İnternet sitesi üzerinden satışa sunulan teknik tekstil ürünlerinin teslimatı ve satış şartlarını düzenler. Topluluk etkinlikleri ise ücretsiz buluşma niteliğinde olup ticari satış içermez.',
+      '2. Konu: İnternet sitesi üzerinden satışa sunulan teknik tekstil ürünlerinin teslimatı ve satış şartlarını düzenler. Topluluk etkinlikleri ise ücretsiz buluşma niteliğindedir.',
       '3. İletişim: store@oriseclub.com'
     ],
   },
@@ -134,7 +134,7 @@ export function SplitHero() {
             onMouseLeave={() => setHovered(null)}
             className={cn(
               "group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-700 last:border-b-0 md:h-full md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16 pb-24 md:pb-24",
-              panel.primary ? "md:w-[52%]" : "md:w-[48%]" // Mağaza tarafına hafif bir genişlik ağırlığı vererek odak oluşturuyoruz
+              panel.primary ? "md:w-[52%]" : "md:w-[48%]"
             )}
           >
             {/* Arka Plan Görseli */}
@@ -202,13 +202,9 @@ export function SplitHero() {
                 </div>
               </div>
 
-              {/* İyzico ve Şeffaflık İpucu */}
-              <div className="pt-1 text-[10px] font-mono text-zinc-400 tracking-wider">
-                {panel.id === 'store' ? (
-                  <span className="text-primary/90">⚡ 256-Bit SSL & İyzico Güvenceli Alışveriş</span>
-                ) : (
-                  <span>📍 Açık Hava Etkinlikleri & Bilgilendirme</span>
-                )}
+              {/* Temiz, Emojisiz Editoryal Alt Etiket */}
+              <div className="pt-1 text-[10px] font-mono text-zinc-500 tracking-[0.25em] uppercase">
+                {panel.subText}
               </div>
             </div>
           </Link>
@@ -237,7 +233,7 @@ export function SplitHero() {
           ))}
         </div>
 
-        {/* Doğru Sosyal Medya ve Mağaza/Topluluk Bilgileri */}
+        {/* E-posta ve Sosyal Medya Bağlantıları */}
         <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] font-bold uppercase tracking-wider">
           <div className="flex items-center gap-1.5 text-zinc-300">
             <Mail className="h-3 w-3 text-primary" />
@@ -257,7 +253,7 @@ export function SplitHero() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setActiveLegalModal(null)}>
           <div className="relative w-full max-w-xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 space-y-4 text-white max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <span className="text-primary font-bold text-sm uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Yasal Bilgilendirme & İyzico Şeffaflığı</span>
+              <span className="text-primary font-bold text-sm uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Yasal Bilgilendirme</span>
               <button onClick={() => setActiveLegalModal(null)} className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
             <h3 className="text-xl font-black">{LEGAL_DOCS[activeLegalModal].title}</h3>
