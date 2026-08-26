@@ -30,7 +30,7 @@ export default function HomePage() {
         <div className="relative z-10 mx-auto max-w-5xl text-center space-y-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-primary backdrop-blur-md">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Harekete İlham Veren Teknik Tasarımlار</span>
+            <span>Harekete İlham Veren Teknik Tasarımlar</span>
           </div>
 
           <h1 className="font-sans text-5xl font-black tracking-tighter text-white sm:text-7xl lg:text-8xl leading-[1.02]">
@@ -55,12 +55,21 @@ export default function HomePage() {
             </Link>
 
             <Link
-              href="/store"
+              href="/community"
               className="inline-flex w-full sm:w-auto items-center justify-center gap-3 rounded-full border border-white/20 bg-zinc-900/80 px-8 py-4 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-md hover:border-primary hover:text-primary transition-all cursor-pointer"
             >
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span>Yeni Sezon Drop</span>
+              <Users className="h-4 w-4 text-primary" />
+              <span>Topluluk & Etkinlikler</span>
             </Link>
+          </div>
+
+          {/* ÜSTTE / ORTADA YER ALAN SOSYAL MEDYA BAĞLANTILARI */}
+          <div className="pt-6 flex items-center justify-center gap-6 text-xs font-mono uppercase tracking-widest text-zinc-400">
+            <span className="text-zinc-600">|</span>
+            <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Instagram</a>
+            <span className="text-zinc-600">·</span>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a>
+            <span className="text-zinc-600">|</span>
           </div>
         </div>
       </section>
