@@ -3,25 +3,24 @@ import { cn } from '@/lib/utils'
 export function OriseMark({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 36 36"
+      viewBox="0 0 100 100"
       fill="none"
       aria-hidden="true"
       className={cn('h-6 w-6', className)}
     >
-      {/* Sol altta açıklığı olan turuncu çember */}
-      <path
-        d="M18 4C10.268 4 4 10.268 4 18C4 23.25 6.89 27.81 11.16 30.22"
+      {/* Ana Çember (Sol alttaki diyagonal kesik efekti maskelenmiş veya stroke-dasharray ile hassas ayarlanmış hali) */}
+      <circle
+        cx="50"
+        cy="50"
+        r="38"
         stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinecap="round"
+        strokeWidth="11"
+        strokeLinecap="butt"
+        strokeDasharray="210 28"
+        transform="rotate(130 50 50)"
       />
-      <path
-        d="M14.5 32.5C15.65 32.83 16.81 33 18 33C25.732 33 32 26.732 32 19C32 11.268 25.732 5 18 5"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-      />
-      <circle cx="18" cy="19" r="2.5" fill="currentColor" />
+      {/* Merkez Noktası */}
+      <circle cx="50" cy="50" r="11" fill="currentColor" />
     </svg>
   )
 }
