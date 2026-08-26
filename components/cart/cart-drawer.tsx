@@ -19,7 +19,7 @@ export function CartDrawer() {
   const [deliveryType, setDeliveryType] = useState<'shipping' | 'pickup'>('shipping')
   const [loading, setLoading] = useState(false)
 
-  // Ödeme ve Sipariş Akışı
+  // Ödeme ve Sipariş Akışı (İyzico API Onay Süreci Bekleniyor)
   const handleCheckout = async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.user) {
@@ -28,35 +28,13 @@ export function CartDrawer() {
     }
 
     setLoading(true)
-    try {
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
-
-      // Siparişi veritabanına kaydediyoruz
-      const orderPayload = {
-        user_id: session.user.id,
-        customer_name: profile?.full_name || session.user.email,
-        email: session.user.email,
-        phone: profile?.phone || 'Belirtilmemiş',
-        address: profile?.address || profile?.adres || 'Adres belirtilmemiş',
-        items: items,
-        total_price: subtotal,
-        delivery_type: deliveryType,
-        status: 'pending_payment' 
-      }
-
-      const { error } = await supabase.from('orders').insert([orderPayload]).select().single()
-      if (error) throw error
-
-      alert('İyzico güvenli ödeme sayfasına yönlendiriliyorsunuz...')
-      
-      // Ödeme simülasyonu veya yönlendirme
-      // window.location.href = `/api/checkout?orderId=${insertedOrder.id}&amount=${subtotal}`
-
-    } catch (err: any) {
-      alert('Ödeme başlatılamadı: ' + err.message)
-    } finally {
+    
+    // İyzico entegrasyonu tamamlanana ve API anahtarları alınana kadar 
+    // ödeme alınmadan siparişlerin panele düşmemesi için test uyarısı:
+    setTimeout(() => {
       setLoading(false)
-    }
+      alert('İyzico ödeme altyapısı entegrasyon aşamasındadır. API anahtarlarınız tanımlandıktan sonra canlı ödemeler aktifleşecek ve siparişleriniz ödeme onayından sonra panelinize düşecektir.')
+    }, 800)
   }
 
   return (
@@ -163,7 +141,7 @@ export function CartDrawer() {
               onClick={handleCheckout} 
               className="w-full rounded-full bg-primary py-4 text-xs font-black uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-50"
             >
-              {loading ? 'Ödeme Sayfasına Yönlendiriliyor...' : 'İyzico ile Güvenli Ödeme Yap'}
+              {loading ? 'İşleniyor...' : 'İyzico ile Güvenli Ödeme Yap'}
             </button>
           </div>
         )}
