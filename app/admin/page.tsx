@@ -33,7 +33,7 @@ export default function AdminPage() {
   const [profiles, setProfiles] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
 
-  // Ürün form state'leri (Çoklu fotoğraf desteği için imageList)
+  // Yeni Ürün Form State'leri
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
@@ -41,6 +41,7 @@ export default function AdminPage() {
   const [description, setDescription] = useState('')
   const [imageList, setImageList] = useState<string[]>([])
 
+  // Etkinlik Form State'leri
   const [evtTitle, setEvtTitle] = useState('')
   const [evtDesc, setEvtDesc] = useState('')
   const [evtDate, setEvtDate] = useState('')
@@ -49,12 +50,16 @@ export default function AdminPage() {
   const [instructorName, setInstructorName] = useState('')
   const [evtImage, setEvtImage] = useState('')
 
+  // Ürün Düzenleme Modal State'leri
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
+  const [editSubtitle, setEditSubtitle] = useState('')
   const [editPrice, setEditPrice] = useState('')
   const [editStock, setEditStock] = useState('')
+  const [editDescription, setEditDescription] = useState('')
   const [editImages, setEditImages] = useState<string[]>([])
 
+  // Etkinlik Düzenleme Modal State'leri
   const [editingEvent, setEditingEvent] = useState<any | null>(null)
   const [editEvtTitle, setEditEvtTitle] = useState('')
   const [editEvtBranch, setEditEvtBranch] = useState('KOŞU')
@@ -109,7 +114,7 @@ export default function AdminPage() {
     window.location.href = '/'
   }
 
-  // ÇOKLU FOTOĞRAF YÜKLEME FONKSİYONU
+  // Çoklu Fotoğraf Yükleme Fonksiyonu (Yeni Ürün & Düzenleme)
   const handleMultipleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'new' | 'edit') => {
     try {
       const files = e.target.files
@@ -141,7 +146,7 @@ export default function AdminPage() {
         setEditImages((prev) => [...prev, ...uploadedUrls])
       }
 
-      alert('Fotoğraflar başarıyla yüklendi!')
+      alert('Fotoğraflar yüklendi!')
     } catch (err) {
       console.error(err)
     } finally {
@@ -318,24 +323,33 @@ export default function AdminPage() {
   const openEditModal = (prod: any) => {
     setEditingProduct(prod)
     setEditTitle(prod.title || '')
+    setEditSubtitle(prod.subtitle || '')
     setEditPrice(prod.price || '')
     setEditStock(prod.stock || '')
-    setEditImages(prod.image_urls || [prod.image_url] || [])
+    setEditDescription(prod.description || '')
+    setEditImages(prod.image_urls || (prod.image_url ? [prod.image_url] : []))
   }
 
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingProduct) return
     
-    await supabase.from('products').update({
-      title: editTitle, 
-      price: Number(editPrice), 
+    const { error } = await supabase.from('products').update({
+      title: editTitle,
+      subtitle: editSubtitle,
+      price: Number(editPrice),
       stock: Number(editStock),
+      description: editDescription,
       image_urls: editImages
     }).eq('id', editingProduct.id)
-    
-    setEditingProduct(null)
-    fetchData()
+
+    if (!error) {
+      alert('Ürün başarıyla güncellendi!')
+      setEditingProduct(null)
+      fetchData()
+    } else {
+      alert('Güncelleme hatası: ' + error.message)
+    }
   }
 
   const exportToCSV = () => {
@@ -483,7 +497,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ÜRÜN EKLEME (ÇOKLU FOTOĞRAF DESTEKLİ) */}
+        {/* ÜRÜN EKLEME */}
         {isSuperAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Yeni Ürün / Drop Ekle (Çoklu Fotoğraf)</span></h2>
@@ -493,7 +507,6 @@ export default function AdminPage() {
               <input type="number" placeholder="Fiyat (₺)" required value={price} onChange={(e) => setPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="number" placeholder="Stok Adedi" required value={stock} onChange={(e) => setStock(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               
-              {/* Çoklu Fotoğraf Seçim Alanı */}
               <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
                 <span className="text-xs text-zinc-400 truncate pointer-events-none">
                   {uploading ? 'Yükleniyor...' : imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf Yüklendi` : 'Birden Fazla Fotoğraf Seç'}
@@ -506,7 +519,6 @@ export default function AdminPage() {
               <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">Ürünü Mağazada Yayınla</button>
             </form>
 
-            {/* Yüklenen Fotoğrafların Önizlemesi */}
             {imageList.length > 0 && (
               <div className="flex items-center gap-3 pt-2 overflow-x-auto">
                 {imageList.map((url, idx) => (
@@ -534,8 +546,8 @@ export default function AdminPage() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => openEditModal(prod)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
-                      <button onClick={() => handleDeleteProduct(prod.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
+                      <button type="button" onClick={() => openEditModal(prod)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
+                      <button type="button" onClick={() => handleDeleteProduct(prod.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
                     </div>
                   </div>
                 ))}
@@ -556,8 +568,8 @@ export default function AdminPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => openEditEventModal(evt)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
-                    {isSuperAdmin && <button onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>}
+                    <button type="button" onClick={() => openEditEventModal(evt)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
+                    {isSuperAdmin && <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>}
                   </div>
                 </div>
               ))}
@@ -599,7 +611,7 @@ export default function AdminPage() {
                               <option value="VOLEYBOL">VOLEYBOL</option>
                               <option value="YELKEN">YELKEN</option>
                             </select>
-                            <button onClick={async () => {
+                            <button type="button" onClick={async () => {
                               const newRole = (document.getElementById(`role-${prof.id}`) as HTMLSelectElement).value
                               const newBranch = (document.getElementById(`branch-${prof.id}`) as HTMLSelectElement).value
                               const { error } = await supabase.from('profiles').update({ role: newRole, branch: newBranch }).eq('id', prof.id)
@@ -607,7 +619,7 @@ export default function AdminPage() {
                             }} className="px-3 py-1.5 bg-primary text-black rounded-lg text-[11px] font-bold cursor-pointer">Kaydet</button>
                           </div>
                         </td>
-                        <td className="p-4 text-right"><button onClick={() => handleDeleteProfile(prof.id)} className="p-2 text-zinc-500 hover:text-red-400 rounded-xl"><Trash2 className="h-4 w-4" /></button></td>
+                        <td className="p-4 text-right"><button type="button" onClick={() => handleDeleteProfile(prof.id)} className="p-2 text-zinc-500 hover:text-red-400 rounded-xl"><Trash2 className="h-4 w-4" /></button></td>
                       </tr>
                     ))}
                   </tbody>
@@ -621,7 +633,7 @@ export default function AdminPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Etkinlik Katılımcıları & Başvurular ({filteredRegistrations.length})</span></h2>
-            <button onClick={exportToCSV} className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary/20 cursor-pointer"><Download className="h-3.5 w-3.5" /> Excel'e Aktar</button>
+            <button type="button" onClick={exportToCSV} className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary/20 cursor-pointer"><Download className="h-3.5 w-3.5" /> Excel'e Aktar</button>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
@@ -638,8 +650,8 @@ export default function AdminPage() {
                       <td className="p-4 text-primary">{reg.events?.title || 'Etkinlik'}</td>
                       <td className="p-4"><span className="px-2 py-0.5 rounded text-[10px] uppercase bg-zinc-800 text-zinc-300">{reg.status}</span></td>
                       <td className="p-4 text-right space-x-1">
-                        {reg.status !== 'approved' && <button onClick={() => handleUpdateRegistrationStatus(reg.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px]">Onayla</button>}
-                        <button onClick={() => handleDeleteRegistration(reg.id)} className="p-1 text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>
+                        {reg.status !== 'approved' && <button type="button" onClick={() => handleUpdateRegistrationStatus(reg.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px]">Onayla</button>}
+                        <button type="button" onClick={() => handleDeleteRegistration(reg.id)} className="p-1 text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>
                       </td>
                     </tr>
                   ))}
@@ -651,18 +663,88 @@ export default function AdminPage() {
 
       </div>
 
-      {/* DÜZENLEME MODALLARI */}
+      {/* ÜRÜN DÜZENLEME MODALİ (FİYAT, AÇIKLAMA, STOK VE FOTOĞRAFLAR) */}
+      {editingProduct && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
+          <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <h3 className="font-bold text-base text-white">Ürünü Düzenle</h3>
+              <button type="button" onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
+            </div>
+
+            <form onSubmit={handleUpdateProduct} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ürün Başlığı</label>
+                <input type="text" required value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Alt Başlık</label>
+                <input type="text" value={editSubtitle} onChange={(e) => setEditSubtitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fiyat (₺)</label>
+                  <input type="number" required value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Stok Adedi</label>
+                  <input type="number" required value={editStock} onChange={(e) => setEditStock(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Açıklama</label>
+                <textarea rows={3} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-2">Ürün Fotoğrafları</label>
+                <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
+                  <span className="text-xs text-zinc-400 truncate pointer-events-none">
+                    {uploading ? 'Yükleniyor...' : 'Yeni Fotoğraf Ekle (Çoklu)'}
+                  </span>
+                  <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
+                  <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'edit')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                </div>
+
+                {editImages.length > 0 && (
+                  <div className="flex items-center gap-3 pt-3 overflow-x-auto">
+                    {editImages.map((imgUrl, imgIdx) => (
+                      <div key={imgIdx} className="relative h-16 w-16 rounded-xl overflow-hidden border border-white/20 flex-none group">
+                        <Image src={imgUrl} alt="Ürün Foto" fill className="object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setEditImages(editImages.filter((_, i) => i !== imgIdx))}
+                          className="absolute inset-0 bg-red-600/70 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-xs font-bold"
+                        >
+                          Kaldır
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer shadow-lg hover:scale-[1.02] transition-transform">Değişiklikleri Kaydet</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ETKİNLİK DÜZENLEME MODALİ */}
       {editingEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <h3 className="font-bold text-base text-white">Etkinliği Düzenle</h3>
-              <button onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white"><X className="h-4 w-4" /></button>
+              <button type="button" onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleUpdateEvent} className="space-y-4">
               <input type="text" required value={editEvtTitle} onChange={(e) => setEditEvtTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <button type="submit" className="w-full rounded-full bg-primary py-3 text-xs font-bold uppercase text-black">Kaydet</button>
+              <button type="submit" className="w-full rounded-full bg-primary py-3 text-xs font-bold uppercase text-black cursor-pointer">Kaydet</button>
             </form>
           </div>
         </div>
