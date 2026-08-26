@@ -33,12 +33,13 @@ export default function AdminPage() {
   const [profiles, setProfiles] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
 
+  // Ürün form state'leri (Çoklu fotoğraf desteği için imageList)
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
   const [stock, setStock] = useState('')
   const [description, setDescription] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
+  const [imageList, setImageList] = useState<string[]>([])
 
   const [evtTitle, setEvtTitle] = useState('')
   const [evtDesc, setEvtDesc] = useState('')
@@ -52,7 +53,7 @@ export default function AdminPage() {
   const [editTitle, setEditTitle] = useState('')
   const [editPrice, setEditPrice] = useState('')
   const [editStock, setEditStock] = useState('')
-  const [editImage, setEditImage] = useState('')
+  const [editImages, setEditImages] = useState<string[]>([])
 
   const [editingEvent, setEditingEvent] = useState<any | null>(null)
   const [editEvtTitle, setEditEvtTitle] = useState('')
@@ -108,7 +109,47 @@ export default function AdminPage() {
     window.location.href = '/'
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'event' | 'edit' | 'editev') => {
+  // ÇOKLU FOTOĞRAF YÜKLEME FONKSİYONU
+  const handleMultipleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'new' | 'edit') => {
+    try {
+      const files = e.target.files
+      if (!files || files.length === 0) return
+
+      setUploading(true)
+      const uploadedUrls: string[] = []
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${i}.${fileExt}`
+
+        const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
+        if (uploadError) {
+          alert('Yükleme hatası: ' + uploadError.message)
+          continue
+        }
+
+        const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
+        if (data?.publicUrl) {
+          uploadedUrls.push(data.publicUrl)
+        }
+      }
+
+      if (target === 'new') {
+        setImageList((prev) => [...prev, ...uploadedUrls])
+      } else {
+        setEditImages((prev) => [...prev, ...uploadedUrls])
+      }
+
+      alert('Fotoğraflar başarıyla yüklendi!')
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'event' | 'editev') => {
     try {
       const file = e.target.files?.[0]
       if (!file) return
@@ -126,9 +167,7 @@ export default function AdminPage() {
 
       const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
       if (data?.publicUrl) {
-        if (type === 'product') setImageUrl(data.publicUrl)
-        else if (type === 'event') setEvtImage(data.publicUrl)
-        else if (type === 'edit') setEditImage(data.publicUrl)
+        if (type === 'event') setEvtImage(data.publicUrl)
         else if (type === 'editev') setEditEvtImage(data.publicUrl)
         alert('Fotoğraf yüklendi!')
       }
@@ -249,15 +288,24 @@ export default function AdminPage() {
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !price) return
+    
     const { error } = await supabase.from('products').insert([{
-      title, subtitle: subtitle || 'Özel Parça', price: Number(price), stock: Number(stock) || 50,
-      description: description || 'Kaliteli teknik tekstil.', category: 'tank', category_label: 'ÖZEL DROP',
-      image_urls: imageUrl ? [imageUrl] : ['https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop']
+      title, 
+      subtitle: subtitle || 'Özel Parça', 
+      price: Number(price), 
+      stock: Number(stock) || 50,
+      description: description || 'Kaliteli teknik tekstil.', 
+      category: 'tank', 
+      category_label: 'ÖZEL DROP',
+      image_urls: imageList.length > 0 ? imageList : ['https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop']
     }])
+
     if (!error) {
-      alert('Ürün eklendi!')
-      setTitle(''); setSubtitle(''); setPrice(''); setStock(''); setDescription(''); setImageUrl('')
+      alert('Ürün başarıyla eklendi!')
+      setTitle(''); setSubtitle(''); setPrice(''); setStock(''); setDescription(''); setImageList([])
       fetchData()
+    } else {
+      alert('Hata: ' + error.message)
     }
   }
 
@@ -272,16 +320,20 @@ export default function AdminPage() {
     setEditTitle(prod.title || '')
     setEditPrice(prod.price || '')
     setEditStock(prod.stock || '')
-    setEditImage(prod.image_urls?.[0] || '')
+    setEditImages(prod.image_urls || [prod.image_url] || [])
   }
 
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingProduct) return
+    
     await supabase.from('products').update({
-      title: editTitle, price: Number(editPrice), stock: Number(editStock),
-      image_urls: editImage ? [editImage] : editingProduct.image_urls
+      title: editTitle, 
+      price: Number(editPrice), 
+      stock: Number(editStock),
+      image_urls: editImages
     }).eq('id', editingProduct.id)
+    
     setEditingProduct(null)
     fetchData()
   }
@@ -431,24 +483,39 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ÜRÜN EKLEME */}
+        {/* ÜRÜN EKLEME (ÇOKLU FOTOĞRAF DESTEKLİ) */}
         {isSuperAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-            <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Yeni Ürün / Drop Ekle</span></h2>
+            <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Yeni Ürün / Drop Ekle (Çoklu Fotoğraf)</span></h2>
             <form onSubmit={handleAddProduct} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="text" placeholder="Alt Başlık" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="number" placeholder="Fiyat (₺)" required value={price} onChange={(e) => setPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="number" placeholder="Stok Adedi" required value={stock} onChange={(e) => setStock(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               
+              {/* Çoklu Fotoğraf Seçim Alanı */}
               <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
-                <span className="text-xs text-zinc-400 truncate pointer-events-none">{uploading ? 'Yükleniyor...' : imageUrl ? '✓ Ürün Görseli Yüklendi' : 'Ürün Görseli Seç'}</span>
+                <span className="text-xs text-zinc-400 truncate pointer-events-none">
+                  {uploading ? 'Yükleniyor...' : imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf Yüklendi` : 'Birden Fazla Fotoğraf Seç'}
+                </span>
                 <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
-                <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'product')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'new')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
               </div>
+
               <textarea rows={1} placeholder="Açıklama" value={description} onChange={(e) => setDescription(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">Ürünü Mağazada Yayınla</button>
             </form>
+
+            {/* Yüklenen Fotoğrafların Önizlemesi */}
+            {imageList.length > 0 && (
+              <div className="flex items-center gap-3 pt-2 overflow-x-auto">
+                {imageList.map((url, idx) => (
+                  <div key={idx} className="relative h-16 w-16 rounded-xl overflow-hidden border border-primary flex-none">
+                    <Image src={url} alt="Önizleme" fill className="object-cover" />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -460,10 +527,10 @@ export default function AdminPage() {
                 {products.map((prod) => (
                   <div key={prod.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none"><Image src={prod.image_urls?.[0] || '/placeholder.svg'} alt={prod.title} fill className="object-cover" /></div>
+                      <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none"><Image src={prod.image_urls?.[0] || prod.image_url || '/placeholder.svg'} alt={prod.title} fill className="object-cover" /></div>
                       <div>
                         <h4 className="font-bold text-xs text-white">{prod.title}</h4>
-                        <div className="text-[10px] text-zinc-400">₺{prod.price} · Stok: {prod.stock}</div>
+                        <div className="text-[10px] text-zinc-400">₺{prod.price} · Stok: {prod.stock} · {prod.image_urls?.length || 1} Fotoğraf</div>
                       </div>
                     </div>
                     <div className="flex gap-2">
