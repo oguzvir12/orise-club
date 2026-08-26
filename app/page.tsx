@@ -63,7 +63,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* ÜSTTE / ORTADA YER ALAN SOSYAL MEDYA BAĞLANTILARI */}
+          {/* SOSYAL MEDYA BAĞLANTILARI */}
           <div className="pt-6 flex items-center justify-center gap-6 text-xs font-mono uppercase tracking-widest text-zinc-400">
             <span className="text-zinc-600">|</span>
             <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Instagram</a>
