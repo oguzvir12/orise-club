@@ -1,19 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
-  <!-- Arka plan siyah daire -->
+  <defs>
+    <mask id="favicon-cutout">
+      <rect width="100" height="100" fill="white" />
+      <line x1="14" y1="78" x2="36" y2="56" stroke="black" strokeWidth="12" strokeLinecap="butt" />
+    </mask>
+  </defs>
+
   <circle cx="50" cy="50" r="50" fill="black" />
   
-  <!-- Orijinal logodaki kalın halka ve sol-alt paralel kesit (Turuncu #F97316) -->
   <circle
     cx="50"
     cy="50"
-    r="36"
+    r="34"
     fill="none"
     stroke="#F97316"
-    strokeWidth="14"
-    strokeDasharray="200 26"
-    transform="rotate(135 50 50)"
+    strokeWidth="20"
+    mask="url(#favicon-cutout)"
   />
   
-  <!-- Merkezdeki turuncu nokta -->
-  <circle cx="50" cy="50" r="11" fill="#F97316" />
+  <circle cx="50" cy="50" r="10" fill="#F97316" />
 </svg>
