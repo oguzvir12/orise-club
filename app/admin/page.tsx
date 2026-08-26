@@ -18,6 +18,7 @@ import {
   Calendar,
   Download,
   ShoppingBag,
+  RotateCcw,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -126,7 +127,7 @@ export default function AdminPage() {
     }
   }
 
-  // Çoklu Fotoğraf Yükleme Fonksiyonu (Yeni Ürün & Düzenleme)
+  // Çoklu Fotoğraf Yükleme Fonksiyonu
   const handleMultipleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'new' | 'edit') => {
     try {
       const files = e.target.files
@@ -266,27 +267,29 @@ export default function AdminPage() {
     }
   }
 
+  // Sipariş Durumu Güncelleme (İleriye dönük kilitli akış)
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string, trackingNum?: string) => {
     const payload: any = { status: newStatus }
     if (trackingNum !== undefined) payload.tracking_number = trackingNum
 
     const { error } = await supabase.from('orders').update(payload).eq('id', orderId)
     if (!error) { 
-      alert('Sipariş durumu güncellendi!'); 
+      alert('Sipariş durumu güncellendi ve kilitlendi!'); 
       fetchData(); 
     } else {
       alert('Hata: ' + error.message);
     }
   }
 
-  const handleRefundOrder = async (orderId: string) => {
-    if (!confirm('Sipariş iptal edilsin ve iade süreci başlatılsın mı?')) return
+  // İade Onaylama / Gerçekleştirme
+  const handleApproveRefund = async (orderId: string) => {
+    if (!confirm('İade onaylansın ve müşteriye iade süreci başlatılsın mı?')) return
     const { error } = await supabase.from('orders').update({ status: 'refunded' }).eq('id', orderId)
     if (!error) {
-      alert('Sipariş iptal edildi ve iade süreci başlatıldı.')
+      alert('İade onaylandı ve sipariş statüsü güncellendi.')
       fetchData()
     } else {
-      alert('İade hatası: ' + error.message)
+      alert('Hata: ' + error.message)
     }
   }
 
@@ -414,7 +417,7 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* MAĞAZA SİPARİŞLERİ YÖNETİMİ */}
+        {/* MAĞAZA SİPARİŞLERİ YÖNETİMİ (KİLİTLİ AKIŞ & İADE TALEPLERİ) */}
         <div className="space-y-6">
           <h2 className="text-base font-bold flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><span>Mağaza Siparişleri ({orders.length})</span></h2>
           <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
@@ -426,58 +429,89 @@ export default function AdminPage() {
                     <th className="p-4">Ürünler</th>
                     <th className="p-4">Teslimat</th>
                     <th className="p-4">Tutar</th>
-                    <th className="p-4">Durum / Kargo Takip</th>
-                    <th className="p-4 text-right">İşlemler (Sil / Yönet)</th>
+                    <th className="p-4">Durum / Kargo Takip / İade Nedeni</th>
+                    <th className="p-4 text-right">İşlemler</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
                   {orders.length === 0 ? (
                     <tr><td colSpan={6} className="p-6 text-center text-zinc-500">Henüz sipariş bulunmuyor.</td></tr>
                   ) : (
-                    orders.map((ord) => (
-                      <tr key={ord.id} className="hover:bg-zinc-900/40">
-                        <td className="p-4">
-                          <div className="font-bold text-white">{ord.customer_name}</div>
-                          <div className="text-[10px] text-zinc-500">{ord.phone}</div>
-                          <div className="text-[10px] text-zinc-500">{ord.address}</div>
-                        </td>
-                        <td className="p-4 max-w-xs">
-                          {ord.items?.map((i: any, idx: number) => (
-                            <div key={idx} className="text-[11px]">• {i.name} (x{i.quantity})</div>
-                          ))}
-                        </td>
-                        <td className="p-4">
-                          <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${ord.delivery_type === 'shipping' ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                            {ord.delivery_type === 'shipping' ? 'Kargo' : 'Elden Teslim'}
-                          </span>
-                        </td>
-                        <td className="p-4 font-bold text-primary">₺{ord.total_price}</td>
-                        <td className="p-4 space-y-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] uppercase bg-zinc-800 text-zinc-300">{ord.status}</span>
-                          <input 
-                            type="text" 
-                            placeholder="Kargo Takip No" 
-                            defaultValue={ord.tracking_number || ''} 
-                            id={`tracking-${ord.id}`}
-                            className="w-full bg-black border border-white/10 rounded px-2 py-1 text-[10px] text-white"
-                          />
-                        </td>
-                        <td className="p-4 text-right">
-                          <div className="flex justify-end gap-1.5 items-center flex-wrap">
-                            <button type="button" onClick={() => handleUpdateOrderStatus(ord.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px] cursor-pointer hover:bg-emerald-500/30">Onayla</button>
-                            <button type="button" onClick={() => {
-                              const tracking = (document.getElementById(`tracking-${ord.id}`) as HTMLInputElement).value
-                              handleUpdateOrderStatus(ord.id, 'shipped', tracking)
-                            }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-[10px] cursor-pointer hover:bg-blue-500/30">Kargola</button>
-                            <button type="button" onClick={() => handleRefundOrder(ord.id)} className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] cursor-pointer hover:bg-red-500/30">İptal</button>
-                            {/* Siparişi Geçmişten Tamamen Silme Butonu */}
-                            <button type="button" onClick={() => handleDeleteOrder(ord.id)} title="Siparişi Sil" className="p-1.5 bg-zinc-800 text-zinc-400 hover:text-red-400 rounded cursor-pointer transition-colors">
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                    orders.map((ord) => {
+                      const isLocked = ord.status === 'shipped' || ord.status === 'delivered' || ord.status === 'refunded'
+                      const isRefundRequested = ord.status === 'refund_requested'
+
+                      return (
+                        <tr key={ord.id} className="hover:bg-zinc-900/40">
+                          <td className="p-4">
+                            <div className="font-bold text-white">{ord.customer_name}</div>
+                            <div className="text-[10px] text-zinc-500">{ord.phone}</div>
+                            <div className="text-[10px] text-zinc-500">{ord.address}</div>
+                          </td>
+                          <td className="p-4 max-w-xs">
+                            {ord.items?.map((i: any, idx: number) => (
+                              <div key={idx} className="text-[11px]">• {i.name} (x{i.quantity})</div>
+                            ))}
+                          </td>
+                          <td className="p-4">
+                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${ord.delivery_type === 'shipping' ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                              {ord.delivery_type === 'shipping' ? 'Kargo' : 'Elden Teslim'}
+                            </span>
+                          </td>
+                          <td className="p-4 font-bold text-primary">₺{ord.total_price}</td>
+                          <td className="p-4 space-y-2">
+                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold inline-block ${
+                              isRefundRequested ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse' :
+                              ord.status === 'refunded' ? 'bg-red-500/20 text-red-400' :
+                              ord.status === 'shipped' ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-800 text-zinc-300'
+                            }`}>
+                              {isRefundRequested ? '⚠️ İADE TALEBİ GELDİ' : ord.status}
+                            </span>
+                            
+                            {/* Müşterinin İade Sebebi Varsa Göster */}
+                            {ord.refund_reason && (
+                              <div className="text-[10px] text-red-400 font-bold bg-red-500/10 p-2 rounded-lg border border-red-500/20">
+                                İade Sebebi: "{ord.refund_reason}"
+                              </div>
+                            )}
+
+                            <input 
+                              type="text" 
+                              placeholder="Kargo Takip No girin" 
+                              defaultValue={ord.tracking_number || ''} 
+                              id={`tracking-${ord.id}`}
+                              className="w-full bg-black border border-white/10 rounded px-2 py-1 text-[10px] text-white"
+                            />
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex justify-end gap-1.5 items-center flex-wrap">
+                              {isRefundRequested ? (
+                                <button type="button" onClick={() => handleApproveRefund(ord.id)} className="px-2.5 py-1 bg-red-500 text-black font-bold rounded text-[10px] cursor-pointer hover:bg-red-400">İadeyi Onayla & Başlat</button>
+                              ) : isLocked ? (
+                                <span className="text-[10px] font-mono text-zinc-500 uppercase px-2 py-1 bg-zinc-900 rounded">İşlem Tamamlandı</span>
+                              ) : (
+                                <>
+                                  <button type="button" onClick={() => handleUpdateOrderStatus(ord.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px] cursor-pointer hover:bg-emerald-500/30">Onayla</button>
+                                  <button type="button" onClick={() => {
+                                    const tracking = (document.getElementById(`tracking-${ord.id}`) as HTMLInputElement).value
+                                    if (!tracking) {
+                                      alert('Lütfen kargo takip numarası girin!')
+                                      return
+                                    }
+                                    handleUpdateOrderStatus(ord.id, 'shipped', tracking)
+                                  }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-[10px] cursor-pointer hover:bg-blue-500/30">Kargola</button>
+                                </>
+                              )}
+
+                              {/* Siparişi Geçmişten Silme */}
+                              <button type="button" onClick={() => handleDeleteOrder(ord.id)} title="Siparişi Sil" className="p-1.5 bg-zinc-800 text-zinc-400 hover:text-red-400 rounded cursor-pointer transition-colors">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })
                   )}
                 </tbody>
               </table>
@@ -679,7 +713,7 @@ export default function AdminPage() {
 
       </div>
 
-      {/* ÜRÜN DÜZENLEME MODALİ (FİYAT, AÇIKLAMA, STOK VE FOTOĞRAFLAR) */}
+      {/* ÜRÜN DÜZENLEME MODALİ */}
       {editingProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
