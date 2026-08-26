@@ -114,6 +114,18 @@ export default function AdminPage() {
     window.location.href = '/'
   }
 
+  // Sipariş Silme Fonksiyonu
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm('Bu siparişi geçmişten tamamen silmek istiyor musunuz?')) return
+    const { error } = await supabase.from('orders').delete().eq('id', orderId)
+    if (!error) {
+      setOrders((prev) => prev.filter((o) => o.id !== orderId))
+      alert('Sipariş silindi.')
+    } else {
+      alert('Silme hatası: ' + error.message)
+    }
+  }
+
   // Çoklu Fotoğraf Yükleme Fonksiyonu (Yeni Ürün & Düzenleme)
   const handleMultipleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'new' | 'edit') => {
     try {
@@ -415,7 +427,7 @@ export default function AdminPage() {
                     <th className="p-4">Teslimat</th>
                     <th className="p-4">Tutar</th>
                     <th className="p-4">Durum / Kargo Takip</th>
-                    <th className="p-4 text-right">İşlemler</th>
+                    <th className="p-4 text-right">İşlemler (Sil / Yönet)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
@@ -450,14 +462,18 @@ export default function AdminPage() {
                             className="w-full bg-black border border-white/10 rounded px-2 py-1 text-[10px] text-white"
                           />
                         </td>
-                        <td className="p-4 text-right space-y-1">
-                          <div className="flex justify-end gap-1 flex-wrap">
-                            <button onClick={() => handleUpdateOrderStatus(ord.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px] cursor-pointer">Onayla</button>
-                            <button onClick={() => {
+                        <td className="p-4 text-right">
+                          <div className="flex justify-end gap-1.5 items-center flex-wrap">
+                            <button type="button" onClick={() => handleUpdateOrderStatus(ord.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px] cursor-pointer hover:bg-emerald-500/30">Onayla</button>
+                            <button type="button" onClick={() => {
                               const tracking = (document.getElementById(`tracking-${ord.id}`) as HTMLInputElement).value
                               handleUpdateOrderStatus(ord.id, 'shipped', tracking)
-                            }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-[10px] cursor-pointer">Kargola</button>
-                            <button onClick={() => handleRefundOrder(ord.id)} className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] cursor-pointer">İptal/İade</button>
+                            }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-[10px] cursor-pointer hover:bg-blue-500/30">Kargola</button>
+                            <button type="button" onClick={() => handleRefundOrder(ord.id)} className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] cursor-pointer hover:bg-red-500/30">İptal</button>
+                            {/* Siparişi Geçmişten Tamamen Silme Butonu */}
+                            <button type="button" onClick={() => handleDeleteOrder(ord.id)} title="Siparişi Sil" className="p-1.5 bg-zinc-800 text-zinc-400 hover:text-red-400 rounded cursor-pointer transition-colors">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
                           </div>
                         </td>
                       </tr>
