@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Mail, Lock, User, Phone, MapPin, Check } from 'lucide-react'
+import { X, Mail, Lock, User, Phone, MapPin, Check, CreditCard } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface AuthModalProps {
@@ -17,6 +17,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
+  const [tcNo, setTcNo] = useState('')
   const [address, setAddress] = useState('')
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [error, setError] = useState('')
@@ -76,6 +77,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             data: {
               full_name: fullName,
               phone: phone,
+              tc_no: tcNo,
             }
           }
         })
@@ -94,10 +96,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             email: email,
             full_name: fullName,
             phone: phone,
+            tc_no: tcNo,
             address: address,
           }, { onConflict: 'id' })
 
-          // Eğer profil tablosunda hata olursa logla ama üyelik engel olmasın
           if (profileError) {
             console.error('Profil oluşturulurken uyarı:', profileError.message)
           }
@@ -119,7 +121,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="relative w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl text-white" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl text-white max-h-[90vh] overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
           onClick={onClose}
@@ -133,7 +135,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             {isForgot ? 'Şifreni Sıfırla' : isLogin ? 'Kulüp Hesabına Giriş Yap' : 'Rise Community Üyesi Ol'}
           </h2>
           <p className="text-xs text-zinc-400 mt-1">
-            {isForgot ? 'E-posta adresine şifre sıfırlama bağlantısı gönderelim.' : isLogin ? 'Etkinliklere hızlıca kaydol ve bilgilerini yönet.' : 'Aramıza katıl, etkinliklerde zaman kazan.'}
+            {isForgot ? 'E-posta adresine şifre sıfırlama bağlantısı gönderelim.' : isLogin ? 'Etkinliklere hızlıca kaydol ve bilgilerini yönet.' : 'Aramıza katıl, alışverişte ve etkinliklerde zaman kazan.'}
           </p>
         </div>
 
@@ -168,18 +170,34 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="05XXXXXXXXX"
-                      className="w-full rounded-xl border border-white/10 bg-black/60 pl-10 pr-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
-                    />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası</label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                      <input
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="05XXXXXXXXX"
+                        className="w-full rounded-xl border border-white/10 bg-black/60 pl-10 pr-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">TC Kimlik No (Fatura İçin)</label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                      <input
+                        type="text"
+                        maxLength={11}
+                        value={tcNo}
+                        onChange={(e) => setTcNo(e.target.value)}
+                        placeholder="11 Haneli TCKN"
+                        className="w-full rounded-xl border border-white/10 bg-black/60 pl-10 pr-4 py-3 text-xs text-white placeholder-zinc-600 focus:border-primary focus:outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
 
