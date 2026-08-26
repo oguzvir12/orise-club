@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-import { ArrowUpRight, Users, ShoppingBag, Sparkles, ShieldCheck, X } from 'lucide-react'
+import { ArrowUpRight, Users, ShoppingBag, Sparkles, ShieldCheck, X, Mail } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
 
@@ -14,12 +14,13 @@ const PANELS = [
     slogan: 'KULÜBE KATIL · RİTMİNİ BUL',
     title: 'TOPLULUK',
     subtitle:
-      'Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğu.',
-    cta: 'Buluşmaları Keşfet',
+      'Şehrin enerjisini birlikte yükselten haftalık koşu, yoga ve açık hava antrenman buluşmaları.',
+    cta: 'Etkinlikleri Keşfet',
     meta: 'KOŞU · VOLEYBOL · TENİS · PİLATES · YELKEN',
     icon: Users,
     bgImage: '/community-hero.jpeg',
     align: 'left',
+    badge: 'Bilgilendirme & Buluşma',
   },
   {
     id: 'store',
@@ -27,12 +28,14 @@ const PANELS = [
     slogan: 'HAREKET KULÜBÜ & STÜDYO',
     title: 'MAĞAZA',
     subtitle:
-      'Kulüp kültüründen ilham alan özel tasarım teknik spor ve sokak parçaları.',
+      'Kulüp kültüründen ilham alan özel tasarım teknik spor ve sokak giyimi e-ticaret koleksiyonu.',
     cta: 'Koleksiyonu İncele',
     meta: 'TEKNİK GİYİM · ATLETİK STİL',
     icon: ShoppingBag,
     bgImage: '/store-hero.jpeg',
     align: 'right',
+    badge: 'Güvenli E-Ticaret & Drop',
+    primary: true, // Mağaza odağını öne çıkaran bayrak
   },
 ]
 
@@ -41,33 +44,32 @@ const LEGAL_DOCS: Record<string, { title: string; content: string[] }> = {
     title: 'KVKK Aydınlatma & Açık Rıza Metni',
     content: [
       '1. Veri Sorumlusunun Kimliği: 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, Orise Club olarak kişisel verileriniz, veri sorumlusu sıfatıyla aşağıda açıklanan kapsamda işlenmektedir.',
-      '2. İşlenen Kişisel Verileriniz: Ad-soyad, e-posta adresi, telefon numarası, teslimat/fatura adresleri, Instagram kullanıcı adı ve etkinlik katılım/sağlık beyanı bilgileriniz.',
-      '3. Kişisel Verilerin İşlenme Amaçları: Topluluk etkinliklerine katılımın sağlanması, mağaza alışverişlerinizin faturalandırma ve teslimat süreçlerinin yürütülmesi, üyelik işlemlerinin gerçekleştirilmesi ve iletişim faaliyetlerinin yürütülmesi.',
-      '4. Haklarınız: KVKK’nın 11. maddesi gereğince verilerinizin silinmesini, güncellenmesini veya işlenme amacını öğrenme haklarına sahipsiniz.'
+      '2. İşlenen Kişisel Verileriniz: Ad-soyad, e-posta adresi, telefon numarası, teslimat/fatura adresleri ve etkinlik katılım/sağlık beyanı bilgileriniz.',
+      '3. Kişisel Verilerin İşlenme Amaçları: Mağaza alışverişlerinizin faturalandırma ve kargo teslimat süreçlerinin yürütülmesi, İyzico güvenli ödeme altyapısının sağlanması ve topluluk etkinliklerine katılım süreçlerinin yönetilmesi.',
+      '4. İletişim: Mağaza işlemleri için store@oriseclub.com, topluluk için community@oriseclub.com adresleri üzerinden bize ulaşabilirsiniz.'
     ],
   },
   privacy: {
     title: 'Gizlilik ve Çerez Politikası',
     content: [
-      '1. Gizlilik İlkemiz: Orise Club, üyelerinin ve kullanıcılarının gizliliğine son derece önem verir. Toplanan tüm kişisel veriler şifrelenmiş güvenli veritabanlarında saklanır.',
-      '2. Çerez (Cookie) Kullanımı: Sitemizdeki kullanıcı deneyimini iyileştirmek, oturum açık tutma ve sepet işlevlerini yerine getirmek amacıyla zorunlu ve analitik çerezler kullanılmaktadır.',
-      '3. Üçüncü Taraflarla Paylaşım: Verileriniz yasal zorunluluklar haricinde hiçbir üçüncü şahıs veya kurumla ticari amaçla paylaşılmaz. Ödeme ve altyapı süreçlerinde global güvenlik standartları uygulanır.'
+      '1. Gizlilik İlkemiz: Orise Club, e-ticaret müşterilerinin ve topluluk üyelerinin gizliliğine son derece önem verir. Tüm ödeme verileri 256-bit SSL ve İyzico güvencesiyle korunur.',
+      '2. Çerez Kullanımı: Sitemizdeki alışveriş sepeti ve oturum işlemlerinin yürütülmesi için zorunlu çerezler kullanılmaktadır.',
+      '3. İletişim Kanalları: Sorularınız için store@oriseclub.com üzerinden destek alabilirsiniz.'
     ],
   },
   terms: {
     title: 'Mesafeli Satış ve Hizmet Sözleşmesi',
     content: [
-      '1. Taraflar: İş bu sözleşme, Orise Club ("Satıcı/Hizmet Sağlayıcı") ile internet sitesi üzerinden alışveriş yapan veya etkinliklere kayıt olan Üye ("Alıcı") arasında elektronik ortamda akdedilmiştir.',
-      '2. Konu: İş bu sözleşme, Alıcı’nın internet sitesi üzerinden siparişini verdiği ürünlerin satışı-teslimi ile kulüp etkinliklerine katılım koşullarını kapsar.',
-      '3. Etkinlik Katılım Şartları: Ücretsiz veya biletli kulüp buluşmalarına katılan üyeler, fiziksel yeterliliklerini beyan etmiş sayılırlar. Yönetim, etkinlik yer ve saatinde hava muhalefeti nedeniyle değişiklik yapma hakkını saklı tutar.'
+      '1. Taraflar: İş bu sözleşme, Orise Club ("Satıcı") ile internet sitesi üzerinden alışveriş yapan Alıcı arasında akdedilmiştir.',
+      '2. Konu: İnternet sitesi üzerinden satışa sunulan teknik tekstil ürünlerinin teslimatı ve satış şartlarını düzenler. Topluluk etkinlikleri ise ücretsiz buluşma niteliğinde olup ticari satış içermez.',
+      '3. İletişim: store@oriseclub.com'
     ],
   },
   refund: {
     title: 'İptal ve İade Koşulları',
     content: [
-      '1. E-Ticaret Ürün İadeleri: Mağazadan satın alınan kullanılmamış ve orijinal ambalajındaki ürünler, teslim tarihinden itibaren 14 (on dört) gün içinde kargo bedeli alıcıya ait olmak üzere iade edilebilir.',
-      '2. Etkinlik Biletleri: Ücretli etkinlik biletlerinde, etkinlik tarihinden 48 saat öncesine kadar kesintisiz iptal ve iade hakkı tanınır. Bu süreden sonra yapılan taleplerde iade yapılmaz.',
-      '3. İade Süreci: İade onaylanan tutarlar, ödemenin yapıldığı banka aracılığıyla 3 ila 10 iş günü içerisinde hesabınıza yansıtılır.'
+      '1. Ürün İadeleri: Mağazamızdan satın alınan kullanılmamış ürünler teslim tarihinden itibaren 14 gün içinde iade edilebilir.',
+      '2. Destek: İade ve değişim talepleriniz için store@oriseclub.com adresine e-posta gönderebilirsiniz.'
     ],
   },
 }
@@ -92,33 +94,28 @@ export function SplitHero() {
               : '-translate-x-1/2',
         )}
       >
-        {/* Arkadaki Glow */}
         <div
           className={cn(
-            'absolute inset-0 -m-6 rounded-full bg-primary/25 blur-2xl transition-all duration-500',
-            hovered ? 'scale-125 opacity-100 bg-primary/45' : 'scale-100 opacity-40',
+            'absolute inset-0 -m-6 rounded-full bg-primary/30 blur-2xl transition-all duration-500',
+            hovered ? 'scale-125 opacity-100 bg-primary/50' : 'scale-100 opacity-50',
           )}
         />
-
-        {/* Dış Pusula Çemberi */}
         <div
           className={cn(
-            'absolute inset-0 -m-2 rounded-full border border-primary/25 transition-all duration-500',
-            hovered ? 'scale-110 border-primary/50 opacity-100' : 'scale-100 opacity-30',
+            'absolute inset-0 -m-2 rounded-full border border-primary/30 transition-all duration-500',
+            hovered ? 'scale-110 border-primary/70 opacity-100' : 'scale-100 opacity-40',
           )}
         />
-
-        {/* Ana Cam Disk */}
         <div
           className={cn(
-            'relative flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-black/85 backdrop-blur-2xl transition-all duration-500 lg:h-24 lg:w-24 shadow-[0_0_50px_rgba(0,0,0,0.9)]',
-            hovered ? 'border-primary/80 scale-105 shadow-[0_0_35px_rgba(249,115,22,0.35)]' : '',
+            'relative flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-black/90 backdrop-blur-2xl transition-all duration-500 lg:h-24 lg:w-24 shadow-[0_0_60px_rgba(0,0,0,0.95)]',
+            hovered ? 'border-primary scale-105 shadow-[0_0_40px_rgba(249,115,22,0.4)]' : '',
           )}
         >
           <OriseMark
             className={cn(
               'h-10 w-10 text-primary transition-transform duration-500 lg:h-11 lg:w-11',
-              hovered ? 'scale-110 drop-shadow-[0_0_12px_rgba(249,115,22,0.7)]' : 'scale-100',
+              hovered ? 'scale-110 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)]' : 'scale-100',
             )}
           />
         </div>
@@ -135,7 +132,10 @@ export function SplitHero() {
             href={panel.href}
             onMouseEnter={() => setHovered(panel.id as 'community' | 'store')}
             onMouseLeave={() => setHovered(null)}
-            className="group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-500 last:border-b-0 md:h-full md:w-1/2 md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16 pb-24 md:pb-24"
+            className={cn(
+              "group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-700 last:border-b-0 md:h-full md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16 pb-24 md:pb-24",
+              panel.primary ? "md:w-[52%]" : "md:w-[48%]" // Mağaza tarafına hafif bir genişlik ağırlığı vererek odak oluşturuyoruz
+            )}
           >
             {/* Arka Plan Görseli */}
             <div className="absolute inset-0 z-0 overflow-hidden">
@@ -147,9 +147,11 @@ export function SplitHero() {
                 className={cn(
                   'object-cover transition-all duration-1000 ease-out',
                   isHovered
-                    ? 'scale-105 opacity-40 grayscale-0 contrast-115'
-                    : 'scale-100 opacity-20 grayscale contrast-125',
-                  isOtherHovered && 'opacity-10 blur-[2px]',
+                    ? 'scale-105 opacity-45 grayscale-0 contrast-115'
+                    : panel.primary
+                      ? 'scale-100 opacity-25 grayscale contrast-125'
+                      : 'scale-100 opacity-20 grayscale contrast-125',
+                  isOtherHovered && 'opacity-10 blur-[3px]',
                 )}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40" />
@@ -158,7 +160,7 @@ export function SplitHero() {
             {/* Yan Kenar Editoryal Damgası */}
             <div
               className={cn(
-                'pointer-events-none absolute top-1/2 -translate-y-1/2 hidden 2xl:block text-[10px] font-mono tracking-[0.35em] text-zinc-600 uppercase [writing-mode:vertical-rl] transition-colors duration-500 group-hover:text-primary/80',
+                'pointer-events-none absolute top-1/2 -translate-y-1/2 hidden 2xl:block text-[10px] font-mono tracking-[0.35em] text-zinc-500 uppercase [writing-mode:vertical-rl] transition-colors duration-500 group-hover:text-primary',
                 panel.align === 'left' ? 'left-8 rotate-180' : 'right-8',
               )}
             >
@@ -167,45 +169,61 @@ export function SplitHero() {
 
             {/* İçerik Bloğu */}
             <div className="relative z-10 flex w-full max-w-md flex-col items-center space-y-4">
-              {/* Üst Manifesto Rozeti */}
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] text-primary backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary/20">
+                <div className={cn(
+                  "inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-bold tracking-[0.2em] backdrop-blur-md transition-all duration-300",
+                  panel.primary 
+                    ? "border border-primary/50 bg-primary/20 text-primary shadow-[0_0_20px_rgba(249,115,22,0.3)]" 
+                    : "border border-white/20 bg-white/5 text-zinc-300 group-hover:border-primary/40 group-hover:text-primary"
+                )}>
                   <Sparkles className="h-3 w-3 text-primary" />
                   <span>{panel.slogan}</span>
                 </div>
               </div>
 
-              {/* Başlık */}
               <h2 className="whitespace-nowrap font-sans text-4xl font-black tracking-tighter text-white sm:text-5xl lg:text-6xl transition-all duration-300 drop-shadow-md">
                 {panel.title}
               </h2>
 
-              {/* Açıklama */}
               <p className="max-w-sm text-sm font-normal leading-relaxed text-zinc-300/90 text-pretty transition-colors duration-300 group-hover:text-white drop-shadow">
                 {panel.subtitle}
               </p>
 
-              {/* Aksiyon Butonu */}
               <div className="pt-2">
-                <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-zinc-900/80 px-7 py-3 text-xs font-bold tracking-wider uppercase text-zinc-100 backdrop-blur-md transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-black group-hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] group-hover:scale-105">
-                  <Icon className="h-4 w-4 text-primary group-hover:text-black transition-colors" />
+                <div className={cn(
+                  "inline-flex items-center gap-2.5 rounded-full px-7 py-3 text-xs font-bold tracking-wider uppercase backdrop-blur-md transition-all duration-300 group-hover:scale-105",
+                  panel.primary
+                    ? "border border-primary bg-primary text-black shadow-[0_0_35px_rgba(249,115,22,0.6)] font-black"
+                    : "border border-white/20 bg-zinc-900/80 text-zinc-100 group-hover:border-primary group-hover:bg-primary group-hover:text-black"
+                )}>
+                  <Icon className={cn("h-4 w-4 transition-colors", panel.primary ? "text-black" : "text-primary group-hover:text-black")} />
                   <span>{panel.cta}</span>
                   <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </div>
+              </div>
+
+              {/* İyzico ve Şeffaflık İpucu */}
+              <div className="pt-1 text-[10px] font-mono text-zinc-400 tracking-wider">
+                {panel.id === 'store' ? (
+                  <span className="text-primary/90">⚡ 256-Bit SSL & İyzico Güvenceli Alışveriş</span>
+                ) : (
+                  <span>📍 Açık Hava Etkinlikleri & Bilgilendirme</span>
+                )}
               </div>
             </div>
           </Link>
         )
       })}
 
-      {/* FOOTER & SOSYAL MEDYA LİNKLERİ */}
-      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-3 px-6 sm:px-10 py-3 bg-black/90 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400">
+      {/* FOOTER & İLETİŞİM / SOSYAL MEDYA LİNKLERİ */}
+      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-3 px-6 sm:px-10 py-3 bg-black/95 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400">
         <div className="flex items-center gap-2.5">
           <span className="font-bold text-white tracking-wider">ORISE CLUB</span>
           <span className="text-zinc-600">/</span>
           <span className="text-[10px] tracking-widest text-primary uppercase">ATHLETICS & STUDIO</span>
         </div>
 
+        {/* Yasal Metin Tetikleyicileri */}
         <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
           {['kvkk', 'privacy', 'terms', 'refund'].map((key) => (
             <button
@@ -219,10 +237,18 @@ export function SplitHero() {
           ))}
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider">
-          <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Instagram</a>
+        {/* Doğru Sosyal Medya ve Mağaza/Topluluk Bilgileri */}
+        <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] font-bold uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-zinc-300">
+            <Mail className="h-3 w-3 text-primary" />
+            <span className="text-[10px] text-zinc-400 lowercase">store@oriseclub.com</span>
+          </div>
+          <span className="text-zinc-700">|</span>
+          <a href="https://www.instagram.com/orisestore/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Mağaza IG</a>
           <span className="text-zinc-600">·</span>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a>
+          <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Topluluk IG</a>
+          <span className="text-zinc-600">·</span>
+          <a href="https://www.linkedin.com/company/orisecommunity" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a>
         </div>
       </footer>
 
@@ -231,7 +257,7 @@ export function SplitHero() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setActiveLegalModal(null)}>
           <div className="relative w-full max-w-xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 space-y-4 text-white max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <span className="text-primary font-bold text-sm uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Yasal Bilgilendirme</span>
+              <span className="text-primary font-bold text-sm uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Yasal Bilgilendirme & İyzico Şeffaflığı</span>
               <button onClick={() => setActiveLegalModal(null)} className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
             <h3 className="text-xl font-black">{LEGAL_DOCS[activeLegalModal].title}</h3>
