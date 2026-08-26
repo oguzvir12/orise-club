@@ -317,7 +317,7 @@ export default function CommunityPage() {
       <section className="bg-gradient-to-b from-black via-zinc-950/60 to-black py-20">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <div className="mb-12 flex items-center justify-between border-b border-white/10 pb-4">
-            <h2 className="font-sans text-2xl font-black text-white tracking-tight">Yaklaşşan Buluşmalar & Antrenmanlar</h2>
+            <h2 className="font-sans text-2xl font-black text-white tracking-tight">Yaklaşan Buluşmalar & Antrenmanlar</h2>
             <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest">
               [{filteredEvents.length} ETKİNLİK]
             </span>
@@ -329,7 +329,6 @@ export default function CommunityPage() {
               const eventDate = new Date(evt.date)
               const dayNum = eventDate.getDate()
               const monthName = eventDate.toLocaleString('tr-TR', { month: 'long' }).toUpperCase()
-              const dayName = eventDate.toLocaleString('tr-TR', { weekday: 'long' })
               const timeStr = eventDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
 
               return (
