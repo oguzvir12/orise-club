@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, ShoppingBag, CheckCircle2, Clock, Mail, Phone, Truck, RotateCcw, PackageCheck } from 'lucide-react'
+import { ArrowLeft, Calendar, ShoppingBag, CheckCircle2, Clock, Mail, Phone, Truck, RotateCcw, PackageCheck, CreditCard, MapPin, User, Save } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function ProfilePage() {
@@ -11,7 +11,15 @@ export default function ProfilePage() {
   const [myRegistrations, setMyRegistrations] = useState<any[]>([])
   const [myOrders, setMyOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [refundReason, setRefundReason] = useState<{ [key: string]: string }>({})
+  
+  // Profil Güncelleme Form State'leri
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [tcNo, setTcNo] = useState('')
+  const [address, setAddress] = useState('')
+
   const router = useRouter()
 
   useEffect(() => {
@@ -38,9 +46,19 @@ export default function ProfilePage() {
         .from('profiles')
         .select('*')
         .ilike('email', email)
-        .single()
+        .maybeSingle()
       
-      setUserData(prof || { email, full_name: session.user.user_metadata?.full_name || 'Kulüp Üyesi' })
+      if (prof) {
+        setUserData(prof)
+        setFullName(prof.full_name || '')
+        setPhone(prof.phone || '')
+        setTcNo(prof.tc_no || '')
+        setAddress(prof.address || '')
+      } else {
+        const defaultProfile = { email, full_name: session.user.user_metadata?.full_name || 'Kulüp Üyesi' }
+        setUserData(defaultProfile)
+        setFullName(defaultProfile.full_name)
+      }
 
       const { data: regs } = await supabase
         .from('event_registrations')
@@ -62,6 +80,31 @@ export default function ProfilePage() {
       console.error(e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Profil Bilgilerini Güncelleme (TCKN ve Adres dahil)
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) return
+
+    setSaving(true)
+    try {
+      const { error } = await supabase.from('profiles').update({
+        full_name: fullName,
+        phone: phone,
+        tc_no: tcNo,
+        address: address,
+      }).eq('id', session.user.id)
+
+      if (error) throw error
+      alert('Profil bilgileriniz başarıyla güncellendi!')
+      loadUserProfileAndData()
+    } catch (err: any) {
+      alert('Güncelleme hatası: ' + err.message)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -88,7 +131,6 @@ export default function ProfilePage() {
       return
     }
 
-    // 7 gün kontrolü
     if (deliveredAt) {
       const deliveryDate = new Date(deliveredAt)
       const now = new Date()
@@ -126,17 +168,93 @@ export default function ProfilePage() {
           <span className="text-xs font-mono text-primary uppercase">ORISE KULLANICI PROFİLİ</span>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center gap-6">
-          <div className="h-20 w-20 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-2xl font-black">
-            {userData?.full_name?.[0] || 'O'}
-          </div>
-          <div className="space-y-1 text-center md:text-left">
-            <h1 className="text-2xl font-black text-white">{userData?.full_name || 'Kulüp Üyesi'}</h1>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs font-mono text-zinc-400 pt-1">
-              <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 text-primary" /> {userData?.email}</span>
-              <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 text-primary" /> {userData?.phone || 'Telefon belirtilmemiş'}</span>
+        {/* KULLANICI BİLGİLERİ VE FATURA / TCKN DÜZENLEME FORMU */}
+        <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6 sm:p-8 shadow-xl space-y-6">
+          <div className="flex items-center gap-4 border-b border-white/10 pb-6">
+            <div className="h-16 w-16 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-xl font-black shrink-0">
+              {userData?.full_name?.[0] || 'O'}
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-white">{userData?.full_name || 'Kulüp Üyesi'}</h1>
+              <p className="text-xs font-mono text-zinc-400">{userData?.email}</p>
             </div>
           </div>
+
+          <form onSubmit={handleUpdateProfile} className="space-y-4">
+            <h3 className="text-xs font-mono uppercase tracking-widest text-primary">Fatura & Teslimat Bilgileri (İyzico Uyumlu)</h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none pl-10"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none pl-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">TC Kimlik No (Fatura İçin)</label>
+                <div className="relative">
+                  <CreditCard className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    maxLength={11}
+                    value={tcNo}
+                    onChange={(e) => setTcNo(e.target.value)}
+                    placeholder="11 Haneli TCKN"
+                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none pl-10"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat Adresi</label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Mahalle, Cadde, No, İlçe/İl"
+                    className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none pl-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="submit"
+                disabled={saving}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-bold uppercase tracking-widest text-black hover:scale-105 transition-transform cursor-pointer disabled:opacity-50"
+              >
+                <Save className="h-4 w-4" />
+                <span>{saving ? 'Kaydediliyor...' : 'Bilgileri Güncelle'}</span>
+              </button>
+            </div>
+          </form>
         </div>
 
         {/* MAĞAZA SİPARİŞLERİ VE TESLİMAT / İADE YÖNETİMİ */}
@@ -196,7 +314,6 @@ export default function ProfilePage() {
                         <span>Kargo Takip No: <strong className="text-white">{ord.tracking_number}</strong></span>
                       </div>
 
-                      {/* Kargodaysa Müşterinin "Teslim Aldım" Butonu */}
                       {ord.status === 'shipped' && (
                         <button
                           type="button"
@@ -210,7 +327,6 @@ export default function ProfilePage() {
                     </div>
                   )}
 
-                  {/* İade Talebi Alanı (Sadece Teslim Edildikten Sonra 7 Gün İçinde) */}
                   {ord.status === 'delivered' && (
                     <div className="pt-3 border-t border-white/5 space-y-2">
                       <span className="text-[10px] font-mono uppercase text-zinc-400 block">7 Günlük İade / Değişim Süresi İçerisindesiniz</span>
