@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 export function SiteFooter() {
   return (
-    <footer className="fixed inset-x-0 bottom-0 z-30 flex h-14 items-center justify-between border-t border-white/10 bg-black/90 px-4 sm:px-8 backdrop-blur-xl text-xs text-zinc-400">
+    <footer className="fixed inset-x-0 bottom-0 z-30 flex h-14 items-center justify-between border-t border-white/10 bg-black/95 px-4 sm:px-8 backdrop-blur-xl text-xs text-zinc-400">
       
       {/* Sol Taraf: Sosyal & İletişim */}
       <div className="flex items-center gap-2 sm:gap-3 text-xs">
@@ -38,16 +38,16 @@ export function SiteFooter() {
         <Link href="/iade-kosullari" className="hover:text-primary transition-colors">İade</Link>
       </div>
 
-      {/* Sağ Taraf: Güvenli Ödeme Rozetleri & Logolar */}
-      <div className="flex items-center gap-2">
-        <span className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-emerald-400">
-          <ShieldCheck className="h-3.5 w-3.5" /> SSL
+      {/* Sağ Taraf: SSL ve İyzico / Kart Rozetleri */}
+      <div className="flex items-center gap-2.5">
+        <span className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-emerald-400 font-bold">
+          <ShieldCheck className="h-3.5 w-3.5" /> 256-BIT SSL
         </span>
-        <div className="flex items-center gap-1 font-black uppercase text-[9px]">
-          <span className="rounded bg-zinc-900 border border-white/15 px-1.5 py-0.5 text-blue-400 tracking-tighter">VISA</span>
-          <span className="rounded bg-zinc-900 border border-white/15 px-1.5 py-0.5 text-amber-400 tracking-tighter">MC</span>
-          <span className="rounded bg-zinc-900 border border-white/15 px-1.5 py-0.5 text-red-400 tracking-tighter">TROY</span>
-          <span className="rounded bg-zinc-900 border border-white/15 px-1.5 py-0.5 text-primary tracking-tighter">İYZİCO</span>
+        <div className="flex items-center gap-1.5 font-bold uppercase text-[9px] bg-zinc-900 border border-white/10 px-2 py-1 rounded-lg">
+          <span className="text-blue-400">VISA</span>
+          <span className="text-amber-400">MC</span>
+          <span className="text-red-400">TROY</span>
+          <span className="text-primary font-black border-l border-white/20 pl-1.5">İYZİCO İLE ÖDE</span>
         </div>
       </div>
 
