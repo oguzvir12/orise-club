@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Settings, X, AtSign, Calendar, Upload, MessageSquare, MessageCircle, Send, Loader2 } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Settings, X, Upload, MessageSquare, MessageCircle, Send, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -87,9 +87,8 @@ export function SiteHeader() {
   const [billingAddress, setBillingAddress] = useState('')
   const [title, setTitle] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
-  const [xp, setXp] = useState(0)
 
-  // Yeni Sağlık & Acil Durum Alanları
+  // Sağlık & Acil Durum Alanları
   const [bloodType, setBloodType] = useState('')
   const [emergencyContact, setEmergencyContact] = useState('')
   const [emergencyPhone, setEmergencyPhone] = useState('')
@@ -116,7 +115,6 @@ export function SiteHeader() {
         setBillingAddress(data.billing_address || '')
         setTitle(data.title || '')
         setAvatarUrl(data.avatar_url || '')
-        setXp(data.xp || 0)
         setBloodType(data.blood_type || '')
         setEmergencyContact(data.emergency_contact || '')
         setEmergencyPhone(data.emergency_phone || '')
@@ -158,7 +156,7 @@ export function SiteHeader() {
       if (session?.user) {
         await fetchProfile(session.user.id, session.user.email)
       } else {
-        setFullName(''); setPhone(''); setInstagram(''); setAddress(''); setBillingAddress(''); setTitle(''); setAvatarUrl(''); setXp(0); setBloodType(''); setEmergencyContact(''); setEmergencyPhone(''); setMedicalNotes(''); setDailyMedication(''); setMyEvents([]); setMyOrders([])
+        setFullName(''); setPhone(''); setInstagram(''); setAddress(''); setBillingAddress(''); setTitle(''); setAvatarUrl(''); setBloodType(''); setEmergencyContact(''); setEmergencyPhone(''); setMedicalNotes(''); setDailyMedication(''); setMyEvents([]); setMyOrders([])
       }
     })
     return () => subscription.unsubscribe()
@@ -231,13 +229,6 @@ export function SiteHeader() {
     }
   }
 
-  const getRank = (score: number) => {
-    if (score >= 500) return '🏆 Efsane Üye'
-    if (score >= 200) return '⭐ Elit Sporcu'
-    if (score >= 50) return '🏃 Aktif Sporcu'
-    return '🌱 Çaylak Üye'
-  }
-
   return (
     <>
       <header className={cn('fixed inset-x-0 top-0 z-50 transition-all duration-300', scrolled ? 'border-b border-border bg-background/80 backdrop-blur-xl' : 'border-b border-transparent bg-transparent')}>
@@ -290,20 +281,9 @@ export function SiteHeader() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-primary" />
-                <h3 className="font-bold text-sm uppercase tracking-wider">Kulüp Profili & Sağlık Kartı</h3>
+                <h3 className="font-bold text-sm uppercase tracking-wider">Kişisel Bilgiler & Sağlık Kartı</h3>
               </div>
               <button type="button" onClick={() => setIsProfileOpen(false)} className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"><X className="h-4 w-4" /></button>
-            </div>
-
-            <div className="flex items-center justify-between rounded-2xl bg-zinc-900/80 p-4 border border-white/10">
-              <div>
-                <span className="text-[10px] font-mono uppercase text-zinc-400 block">Kulüp Statüsü</span>
-                <span className="text-sm font-bold text-primary">{getRank(xp)}</span>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-mono uppercase text-zinc-400 block">Deneyim Puanı</span>
-                <span className="text-lg font-black text-white">{xp} XP</span>
-              </div>
             </div>
 
             <div className="flex gap-2 border-b border-white/10 pb-3 overflow-x-auto">
