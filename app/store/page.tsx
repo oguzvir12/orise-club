@@ -47,7 +47,13 @@ function StoreContent() {
   const [isAdded, setIsAdded] = useState<boolean>(false)
 
   const fetchProducts = async () => {
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false })
+    // Sadece aktif olan (is_active !== false) ürünleri getir
+    const { data } = await supabase
+      .from('products')
+      .select('*')
+      .or('is_active.eq.true,is_active.is.null')
+      .order('created_at', { ascending: false })
+
     if (data) setProducts(data)
   }
 
@@ -72,7 +78,7 @@ function StoreContent() {
 
   const openProductDetail = (product: any) => {
     const totalStock = product.sizes ? Object.values(product.sizes as Record<string, number>).reduce((a: any, b: any) => a + b, 0) : (product.stock ?? 0)
-    if (totalStock <= 0) return // Tükendiyse tıklanamaz
+    if (totalStock <= 0) return 
 
     setSelectedProduct(product)
     const colors = product.colors || []
@@ -93,7 +99,6 @@ function StoreContent() {
     if (!selectedProduct) return
     const image = selectedProduct.image_urls?.[0] || selectedProduct.image_url || '/placeholder.svg'
 
-    // Beden stoğu kontrolü
     const sizes = selectedProduct.sizes || { S: 10, M: 10, L: 10, XL: 10 }
     if (sizes[selectedSize] <= 0) {
       alert(`Üzgünüz, seçtiğiniz ${selectedSize} beden tükenmiştir!`)
@@ -177,7 +182,10 @@ function StoreContent() {
 
                 <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
                   <div>
-                    <span className="text-xs font-mono tracking-widest text-primary uppercase">{selectedProduct.category_label || 'ÖZEL DROP'}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono tracking-widest text-primary uppercase">{selectedProduct.category_label || 'ÖZEL DROP'}</span>
+                    </div>
+
                     <h1 className="mt-2 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl">{selectedProduct.title}</h1>
                     <p className="text-sm font-mono text-zinc-400 mt-1">{selectedProduct.subtitle}</p>
 
@@ -214,7 +222,7 @@ function StoreContent() {
                       <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi & Stok Durumu</div>
                       <div className="grid grid-cols-4 gap-2">
                         {['S', 'M', 'L', 'XL'].map((s) => {
-                          const sizeStock = selectedProduct.sizes?.[s] ?? 10
+                          const sizeStock = selectedProduct.sizes?.[s] ?? 0
                           const isSizeOut = sizeStock <= 0
 
                           return (
@@ -338,7 +346,6 @@ function StoreContent() {
                             </>
                           )}
                           
-                          {/* Hover anında fotoğraflar arası geçiş */}
                           <Image 
                             src={productImages[currentHoverIdx] || productImages[0]} 
                             alt={product.title} 
