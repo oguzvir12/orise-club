@@ -9,13 +9,9 @@ import {
   ArrowUpRight,
   ShoppingBag,
   Check,
-  X,
   Maximize2,
-  ChevronLeft,
-  ChevronRight,
   Flame,
   ArrowUpDown,
-  AlertCircle,
   Zap,
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
@@ -43,8 +39,10 @@ function StoreContent() {
   const [sortOrder, setSortOrder] = useState<'default' | 'asc' | 'desc'>('default')
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
 
+  const [selectedColor, setSelectedColor] = useState<string>('')
   const [selectedSize, setSelectedSize] = useState<string>('M')
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
+  const [hoveredImageIdx, setHoveredImageIdx] = useState<{ [key: string]: number }>({})
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false)
   const [isAdded, setIsAdded] = useState<boolean>(false)
 
@@ -62,6 +60,8 @@ function StoreContent() {
       const match = products.find((p) => p.id === productParam)
       if (match) {
         setSelectedProduct(match)
+        const colors = match.colors || []
+        setSelectedColor(colors[0] || '')
         setSelectedSize('M')
         setActiveImageIdx(0)
       }
@@ -71,8 +71,12 @@ function StoreContent() {
   }, [productParam, products])
 
   const openProductDetail = (product: any) => {
-    if (product.stock <= 0) return // Tükenen ürüne tıklanamaz
+    const totalStock = product.sizes ? Object.values(product.sizes as Record<string, number>).reduce((a: any, b: any) => a + b, 0) : (product.stock ?? 0)
+    if (totalStock <= 0) return // Tükendiyse tıklanamaz
+
     setSelectedProduct(product)
+    const colors = product.colors || []
+    setSelectedColor(colors[0] || '')
     setSelectedSize('M')
     setActiveImageIdx(0)
     setIsAdded(false)
@@ -86,12 +90,19 @@ function StoreContent() {
   }
 
   const handleAddToCart = () => {
-    if (!selectedProduct || selectedProduct.stock <= 0) return
+    if (!selectedProduct) return
     const image = selectedProduct.image_urls?.[0] || selectedProduct.image_url || '/placeholder.svg'
 
+    // Beden stoğu kontrolü
+    const sizes = selectedProduct.sizes || { S: 10, M: 10, L: 10, XL: 10 }
+    if (sizes[selectedSize] <= 0) {
+      alert(`Üzgünüz, seçtiğiniz ${selectedSize} beden tükenmiştir!`)
+      return
+    }
+
     addItem({
-      id: `${selectedProduct.id}-${selectedSize}`,
-      name: `${selectedProduct.title} (${selectedSize})`,
+      id: `${selectedProduct.id}-${selectedColor}-${selectedSize}`,
+      name: `${selectedProduct.title} ${selectedColor ? `(${selectedColor})` : ''} - [${selectedSize}]`,
       price: selectedProduct.price,
       image: image,
       type: 'product',
@@ -166,15 +177,7 @@ function StoreContent() {
 
                 <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono tracking-widest text-primary uppercase">{selectedProduct.category_label || 'ÖZEL DROP'}</span>
-                      {selectedProduct.stock > 0 && selectedProduct.stock <= 3 && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 border border-amber-500/40 px-2.5 py-0.5 text-[10px] font-mono font-bold text-amber-400 animate-pulse">
-                          <Zap className="h-3 w-3" /> SON {selectedProduct.stock} ÜRÜN
-                        </span>
-                      )}
-                    </div>
-
+                    <span className="text-xs font-mono tracking-widest text-primary uppercase">{selectedProduct.category_label || 'ÖZEL DROP'}</span>
                     <h1 className="mt-2 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl">{selectedProduct.title}</h1>
                     <p className="text-sm font-mono text-zinc-400 mt-1">{selectedProduct.subtitle}</p>
 
@@ -192,28 +195,63 @@ function StoreContent() {
 
                     <p className="mt-4 text-sm leading-relaxed text-zinc-300">{selectedProduct.description}</p>
 
+                    {/* Renk Seçenekleri */}
+                    {selectedProduct.colors && selectedProduct.colors.length > 0 && (
+                      <div className="mt-6 space-y-2">
+                        <div className="text-xs font-mono text-zinc-400 uppercase">Renk: <strong className="text-white">{selectedColor}</strong></div>
+                        <div className="flex gap-2">
+                          {selectedProduct.colors.map((col: string) => (
+                            <button key={col} type="button" onClick={() => setSelectedColor(col)} className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${selectedColor === col ? 'border-primary bg-primary/20 text-primary' : 'border-white/10 bg-zinc-900 text-zinc-400'}`}>
+                              {col}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Beden ve Stok Seçimi */}
                     <div className="mt-6 space-y-2">
-                      <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi</div>
+                      <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi & Stok Durumu</div>
                       <div className="grid grid-cols-4 gap-2">
-                        {['S', 'M', 'L', 'XL'].map((s) => (
-                          <button key={s} type="button" onClick={() => setSelectedSize(s)} className={`rounded-xl py-3 text-xs font-bold transition-all cursor-pointer ${selectedSize === s ? 'border border-primary bg-primary text-black font-black' : 'border border-white/10 bg-zinc-900 text-zinc-300'}`}>
-                            {s}
-                          </button>
-                        ))}
+                        {['S', 'M', 'L', 'XL'].map((s) => {
+                          const sizeStock = selectedProduct.sizes?.[s] ?? 10
+                          const isSizeOut = sizeStock <= 0
+
+                          return (
+                            <button 
+                              key={s} 
+                              type="button" 
+                              disabled={isSizeOut}
+                              onClick={() => setSelectedSize(s)} 
+                              className={`relative rounded-xl py-3 text-xs font-bold transition-all ${
+                                isSizeOut ? 'bg-zinc-950 border border-white/5 text-zinc-600 line-through cursor-not-allowed' :
+                                selectedSize === s ? 'border border-primary bg-primary text-black font-black cursor-pointer' : 'border border-white/10 bg-zinc-900 text-zinc-300 hover:border-white/30 cursor-pointer'
+                              }`}
+                            >
+                              {s}
+                              <span className="block text-[9px] font-mono opacity-75">{isSizeOut ? 'Tükendi' : `${sizeStock} adet`}</span>
+                            </button>
+                          )
+                        })}
                       </div>
                     </div>
                   </div>
 
                   <div className="pt-4">
-                    {selectedProduct.stock <= 0 ? (
-                      <div className="w-full rounded-full bg-zinc-900 border border-white/10 py-4 text-center text-xs font-bold uppercase tracking-widest text-zinc-500">
-                        Bu Ürün Tükendi (Sold Out)
-                      </div>
-                    ) : (
-                      <button type="button" onClick={handleAddToCart} className={`flex w-full items-center justify-center gap-3 rounded-full py-4 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${isAdded ? 'bg-emerald-500 text-black font-black' : 'bg-primary text-black hover:scale-[1.02] font-black shadow-[0_0_25px_rgba(249,115,22,0.4)]'}`}>
-                        {isAdded ? <><Check className="h-4 w-4" /><span>Sepete Eklendi</span></> : <><ShoppingBag className="h-4 w-4" /><span>Siparişe Ekle — ₺{selectedProduct.price}</span></>}
-                      </button>
-                    )}
+                    {(() => {
+                      const totalStock = selectedProduct.sizes ? Object.values(selectedProduct.sizes as Record<string, number>).reduce((a: any, b: any) => a + b, 0) : (selectedProduct.stock ?? 0)
+                      const isCompletelySoldOut = totalStock <= 0
+
+                      return isCompletelySoldOut ? (
+                        <div className="w-full rounded-full bg-zinc-900 border border-white/10 py-4 text-center text-xs font-bold uppercase tracking-widest text-zinc-500">
+                          Bu Ürün Tamamen Tükendi (Sold Out)
+                        </div>
+                      ) : (
+                        <button type="button" onClick={handleAddToCart} className={`flex w-full items-center justify-center gap-3 rounded-full py-4 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${isAdded ? 'bg-emerald-500 text-black font-black' : 'bg-primary text-black hover:scale-[1.02] font-black shadow-[0_0_25px_rgba(249,115,22,0.4)]'}`}>
+                          {isAdded ? <><Check className="h-4 w-4" /><span>Sepete Eklendi</span></> : <><ShoppingBag className="h-4 w-4" /><span>Siparişe Ekle — ₺{selectedProduct.price}</span></>}
+                        </button>
+                      )
+                    })()}
                   </div>
                 </div>
 
@@ -236,12 +274,11 @@ function StoreContent() {
                 <h1 className="font-sans text-4xl font-black tracking-tighter text-white sm:text-6xl lg:text-7xl">
                   Kulübe Özel <span className="text-primary">Drop</span> Koleksiyonu.
                 </h1>
-                <p className="text-xs font-mono text-zinc-400">Sınırlı üretim teknik spor giyim parçaları. Kaçırmadan sepete ekleyin.</p>
+                <p className="text-xs font-mono text-zinc-400">Sınırlı üretim teknik spor giyim parçaları.</p>
               </div>
             </div>
           </section>
 
-          {/* KATEGORİLER VE SIRALAMA */}
           <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-40 backdrop-blur-xl">
             <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 w-full sm:w-auto">
@@ -269,18 +306,24 @@ function StoreContent() {
                 {filteredProducts.map((product) => {
                   const productImages = product.image_urls && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '/placeholder.svg']
                   const hasDiscount = product.compare_at_price && product.compare_at_price > product.price
-                  const isSoldOut = product.stock <= 0
+                  
+                  const totalStock = product.sizes ? Object.values(product.sizes as Record<string, number>).reduce((a: any, b: any) => a + b, 0) : (product.stock ?? 0)
+                  const isSoldOut = totalStock <= 0
+
+                  const currentHoverIdx = hoveredImageIdx[product.id] || 0
 
                   return (
                     <div 
                       key={product.id} 
                       onClick={() => openProductDetail(product)} 
-                      className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all ${isSoldOut ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:border-primary/60 cursor-pointer'}`}
+                      onMouseEnter={() => productImages.length > 1 && setHoveredImageIdx({ ...hoveredImageIdx, [product.id]: 1 })}
+                      onMouseLeave={() => setHoveredImageIdx({ ...hoveredImageIdx, [product.id]: 0 })}
+                      className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-primary/60 cursor-pointer'}`}
                     >
                       <div>
                         <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950 flex items-center justify-center">
                           {isSoldOut ? (
-                            <div className="absolute inset-0 z-20 bg-black/70 flex items-center justify-center">
+                            <div className="absolute inset-0 z-20 bg-black/75 flex items-center justify-center">
                               <span className="rounded-xl bg-zinc-900 border border-white/20 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-zinc-300 shadow-2xl">
                                 TÜKENDİ (SOLD OUT)
                               </span>
@@ -289,17 +332,19 @@ function StoreContent() {
                             <>
                               {hasDiscount && (
                                 <span className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-[10px] font-black uppercase text-white shadow-lg">
-                                  <Flame className="h-3 w-3" /> İNDİRİmlİ FIRSAT
-                                </span>
-                              )}
-                              {product.stock <= 3 && (
-                                <span className="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-amber-500/90 px-3 py-1 text-[10px] font-mono font-black uppercase text-black shadow-lg animate-pulse">
-                                  SON {product.stock} ÜRÜN
+                                  <Flame className="h-3 w-3" /> FIRSAT
                                 </span>
                               )}
                             </>
                           )}
-                          <Image src={productImages[0]} alt={product.title} fill className="object-contain p-2 transition-transform duration-700 group-hover:scale-105" />
+                          
+                          {/* Hover anında fotoğraflar arası geçiş */}
+                          <Image 
+                            src={productImages[currentHoverIdx] || productImages[0]} 
+                            alt={product.title} 
+                            fill 
+                            className="object-contain p-2 transition-transform duration-700 group-hover:scale-105" 
+                          />
                         </div>
 
                         <div className="mt-5 space-y-1.5">
