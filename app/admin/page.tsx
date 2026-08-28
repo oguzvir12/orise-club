@@ -77,7 +77,7 @@ export default function AdminPage() {
   const [instructorName, setInstructorName] = useState('')
   const [evtImage, setEvtImage] = useState('')
 
-  // Etkinlik Düzenleme Modal (Tüm alanlar eklendi)
+  // Etkinlik Düzenleme Modal
   const [editingEvent, setEditingEvent] = useState<any | null>(null)
   const [editEvtTitle, setEditEvtTitle] = useState('')
   const [editEvtBranch, setEditEvtBranch] = useState('KOŞU')
@@ -240,6 +240,7 @@ export default function AdminPage() {
   const handleUpdateEvent = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingEvent) return
+
     const { error } = await supabase.from('events').update({
       title: editEvtTitle,
       branch: editEvtBranch,
@@ -251,11 +252,11 @@ export default function AdminPage() {
     }).eq('id', editingEvent.id)
 
     if (!error) {
-      alert('Etkinlik güncellendi!')
+      alert('Etkinlik başarıyla güncellendi!')
       setEditingEvent(null)
       fetchData()
     } else {
-      alert('Hata: ' + error.message)
+      alert('Güncelleme hatası: ' + error.message)
     }
   }
 
@@ -493,7 +494,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* YENİ ETKİNLİK OLUŞTURMA (Tüm Alanlar Ekli) */}
+        {/* YENİ ETKİNLİK OLUŞTURMA */}
         {isCommunityAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Yeni Topluluk Etkinliği Oluştur</span></h2>
@@ -514,7 +515,7 @@ export default function AdminPage() {
                 <Upload className="h-4 w-4 text-primary" />
                 <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'event')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
               </div>
-              <textarea rows={2} placeholder="Açıklama" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-3 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <textarea rows={1} placeholder="Açıklama" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-2 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Etkinliği Yayınla</button>
             </form>
           </div>
