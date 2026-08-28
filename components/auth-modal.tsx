@@ -69,7 +69,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           onClose()
         }, 1500)
       } else {
-        // 1. Sadece auth kaydı yap
         const { data, error: signUpError } = await supabase.auth.signUp({ 
           email, 
           password,
@@ -82,7 +81,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           throw signUpError
         }
 
-        // 2. Kullanıcı oluştuysa profiles tablosuna güvenle satırı yaz
         if (data.user) {
           const { error: profileError } = await supabase.from('profiles').upsert({
             id: data.user.id,
@@ -92,8 +90,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             tc_no: tcNo,
             address: address,
             role: 'member',
-            branch: 'ALL',
-            xp: 0
+            branch: 'ALL'
           }, { onConflict: 'id' })
 
           if (profileError) {
