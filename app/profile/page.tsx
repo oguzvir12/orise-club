@@ -4,17 +4,15 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, ShoppingBag, Phone, Truck, RotateCcw, PackageCheck, CreditCard, MapPin, User, Save, Upload, Trash2 } from 'lucide-react'
+import { ArrowLeft, ShoppingBag, Phone, CreditCard, MapPin, User, Save, Upload, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null)
-  const [myRegistrations, setMyRegistrations] = useState<any[]>([])
   const [myOrders, setMyOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
-  const [refundReason, setRefundReason] = useState<{ [key: string]: string }>({})
   
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -40,29 +38,45 @@ export default function ProfilePage() {
     setLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user?.email) return
+      if (!session?.user) return
 
-      const email = session.user.email
-      
-      const { data: prof } = await supabase
+      const userId = session.user.id
+      const email = session.user.email || ''
+      const userMeta = session.user.user_metadata || {}
+
+      // Profili veritabanından çek
+      let { data: prof } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', session.user.id)
+        .eq('id', userId)
         .maybeSingle()
-      
-      if (prof) {
-        setUserData(prof)
-        setFullName(prof.full_name || '')
-        setPhone(prof.phone || '')
-        setTcNo(prof.tc_no || '')
-        setAddress(prof.address || '')
-        setAvatarUrl(prof.avatar_url || '')
-      } else {
-        const defaultProfile = { email, full_name: session.user.user_metadata?.full_name || 'Kulüp Üyesi' }
-        setUserData(defaultProfile)
-        setFullName(defaultProfile.full_name)
+
+      // Eğer profil yoksa veya temel alanlar boşsa, auth metadata'dan tamamla ve upsert et
+      if (!prof || !prof.full_name) {
+        const initialData = {
+          id: userId,
+          email: email,
+          full_name: prof?.full_name || userMeta.full_name || userMeta.name || 'Kulüp Üyesi',
+          phone: prof?.phone || userMeta.phone || '',
+          tc_no: prof?.tc_no || userMeta.tc_no || '',
+          address: prof?.address || userMeta.address || '',
+          avatar_url: prof?.avatar_url || userMeta.avatar_url || '',
+          role: prof?.role || 'member',
+          branch: prof?.branch || 'ALL'
+        }
+
+        await supabase.from('profiles').upsert(initialData)
+        prof = initialData
       }
 
+      setUserData(prof)
+      setFullName(prof.full_name || '')
+      setPhone(prof.phone || '')
+      setTcNo(prof.tc_no || '')
+      setAddress(prof.address || '')
+      setAvatarUrl(prof.avatar_url || '')
+
+      // Kullanıcının siparişlerini çek
       const { data: ords } = await supabase
         .from('orders')
         .select('*')
@@ -166,11 +180,11 @@ export default function ProfilePage() {
                 {avatarUrl ? (
                   <Image src={avatarUrl} alt="Avatar" fill className="object-cover" />
                 ) : (
-                  <span className="text-primary">{userData?.full_name?.[0]?.toUpperCase() || 'O'}</span>
+                  <span className="text-primary">{fullName?.[0]?.toUpperCase() || 'O'}</span>
                 )}
               </div>
               <div className="space-y-1">
-                <h1 className="text-xl font-black text-white">{userData?.full_name || 'Kulüp Üyesi'}</h1>
+                <h1 className="text-xl font-black text-white">{fullName || 'Kulüp Üyesi'}</h1>
                 <p className="text-xs font-mono text-zinc-400">{userData?.email}</p>
               </div>
             </div>
