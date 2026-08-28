@@ -49,7 +49,7 @@ export function SplitHero() {
   const [hovered, setHovered] = useState<'community' | 'store' | null>(null)
 
   return (
-    <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
+    <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans pb-16 md:pb-12">
       {/* Merkez Dikey Ayrım Lazer Çizgisi */}
       <div className="pointer-events-none absolute inset-y-0 left-1/2 z-20 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/10 to-transparent md:block" />
 
@@ -182,7 +182,7 @@ export function SplitHero() {
       })}
 
       {/* FOOTER & İLETİŞİM / SOSYAL MEDYA / YASAL SAYFA YÖNLENDİRMELERİ */}
-      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col lg:flex-row items-center justify-between gap-4 px-6 sm:px-10 py-3 bg-black/95 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400">
+      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col lg:flex-row items-center justify-between gap-3 px-6 sm:px-10 py-2.5 bg-black/95 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400">
         
         {/* Sol Grup: Marka ve SSL Güvencesi */}
         <div className="flex items-center gap-4 shrink-0">
@@ -196,21 +196,27 @@ export function SplitHero() {
           </span>
         </div>
 
-        {/* Orta Grup: Yasal Bağlantılar ve Departman Mailleri */}
-        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px]">
-          <div className="flex items-center gap-3">
+        {/* Orta Grup: Yasal Bağlantılar, Hakkımızda ve Departman Mailleri */}
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px]">
+          <div className="flex items-center gap-2.5">
+            <Link href="/hakkimizda" className="text-primary font-bold hover:underline uppercase">
+              Hakkımızda
+            </Link>
+            <span className="text-zinc-700">·</span>
             <Link href="/gizlilik" className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4 uppercase">
               Gizlilik
             </Link>
+            <span className="text-zinc-700">·</span>
             <Link href="/mesafeli-satis" className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4 uppercase">
               Mesafeli Satış
             </Link>
+            <span className="text-zinc-700">·</span>
             <Link href="/iade-kosullari" className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4 uppercase">
               İade
             </Link>
           </div>
           <span className="text-zinc-700 hidden md:inline">|</span>
-          <div className="flex items-center gap-4 text-zinc-300">
+          <div className="flex items-center gap-3 text-zinc-300">
             <a href="mailto:community@oriseclub.com" className="hover:text-primary transition-colors inline-flex items-center gap-1.5">
               <Mail className="h-3.5 w-3.5 text-primary" /> community@oriseclub.com
             </a>
