@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   ArrowLeft,
-  Users,
   Trash2,
   RefreshCw,
   Lock,
@@ -15,8 +14,6 @@ import {
   Edit3,
   X,
   Upload,
-  Calendar,
-  Download,
   ShoppingBag,
   Tag,
   ShieldAlert,
@@ -29,9 +26,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
 
-  const [registrations, setRegistrations] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
-  const [events, setEvents] = useState<any[]>([])
   const [profiles, setProfiles] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
   const [coupons, setCoupons] = useState<any[]>([])
@@ -40,7 +35,7 @@ export default function AdminPage() {
   const [discountPct, setDiscountPct] = useState('')
   const [usageLimit, setUsageLimit] = useState('100')
 
-  // Yeni Ürün Formu (Beden ve Renk Destekli)
+  // Yeni Ürün Formu
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
@@ -53,17 +48,18 @@ export default function AdminPage() {
   const [description, setDescription] = useState('')
   const [imageList, setImageList] = useState<string[]>([])
 
-  // Ürün Düzenleme Modal
+  // Ürün Düzenleme Modal (State Bağlantıları Düzeltildi)
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editSubtitle, setEditSubtitle] = useState('')
   const [editPrice, setEditPrice] = useState('')
   const [editComparePrice, setEditComparePrice] = useState('')
   const [editColors, setEditColors] = useState('')
-  const [editSizeS, setEditSizeS] = useState('')
-  const [editSizeM, setEditSizeM] = useState('')
-  const [editSizeL, setEditSizeL] = useState('')
-  const [editSizeXL, setEditSizeXL] = useState('')
+  const [editSizeS, setEditSizeS] = useState(0)
+  const [editSizeM, setEditSizeM] = useState(0)
+  const [editSizeL, setEditSizeL] = useState(0)
+  const [editSizeXL, setEditSizeXL] = useState(0)
+  const [editIsActive, setEditIsActive] = useState(true)
   const [editDescription, setEditDescription] = useState('')
   const [editImages, setEditImages] = useState<string[]>([])
 
@@ -143,7 +139,7 @@ export default function AdminPage() {
       L: Number(sizeL) || 0,
       XL: Number(sizeXL) || 0,
     }
-    const totalStock = Object.values(sizesObj).reduce((a, b) => a + b, 0)
+    const totalStock = Object.values(sizesObj).reduce((a: any, b: any) => a + b, 0)
 
     await supabase.from('products').insert([{
       title,
@@ -153,6 +149,7 @@ export default function AdminPage() {
       stock: totalStock,
       sizes: sizesObj,
       colors: colorArray,
+      is_active: true,
       description: description || 'Kaliteli tekstil.',
       category: 'tank',
       category_label: 'ÖZEL DROP',
@@ -176,10 +173,11 @@ export default function AdminPage() {
     setEditPrice(prod.price || '')
     setEditComparePrice(prod.compare_at_price || '')
     setEditColors(prod.colors ? prod.colors.join(', ') : '')
-    setEditSizeS(prod.sizes?.S ?? 10)
-    setEditSizeM(prod.sizes?.M ?? 15)
-    setEditSizeL(prod.sizes?.L ?? 15)
-    setEditSizeXL(prod.sizes?.XL ?? 10)
+    setEditSizeS(prod.sizes?.S ?? 0)
+    setEditSizeM(prod.sizes?.M ?? 0)
+    setEditSizeL(prod.sizes?.L ?? 0)
+    setEditSizeXL(prod.sizes?.XL ?? 0)
+    setEditIsActive(prod.is_active ?? true)
     setEditDescription(prod.description || '')
     setEditImages(prod.image_urls || (prod.image_url ? [prod.image_url] : []))
   }
@@ -195,7 +193,7 @@ export default function AdminPage() {
       L: Number(editSizeL) || 0,
       XL: Number(editSizeXL) || 0,
     }
-    const totalStock = Object.values(sizesObj).reduce((a, b) => a + b, 0)
+    const totalStock = Object.values(sizesObj).reduce((a: any, b: any) => a + b, 0)
 
     await supabase.from('products').update({
       title: editTitle,
@@ -205,6 +203,7 @@ export default function AdminPage() {
       stock: totalStock,
       sizes: sizesObj,
       colors: colorArray,
+      is_active: editIsActive,
       description: editDescription,
       image_urls: editImages
     }).eq('id', editingProduct.id)
@@ -244,7 +243,7 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* ÜRÜN EKLEME (Beden ve Renk Bazlı Stok) */}
+        {/* ÜRÜN EKLEME */}
         {isStoreAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Beden & Renk Varyantlı Stok)</span></h2>
@@ -253,54 +252,42 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                 <input type="number" placeholder="Güncel Fiyat (₺)" required value={price} onChange={(e) => setPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                <input type="number" placeholder="Eski Fiyat (Üstü Çizili - Opsiyonel)" value={comparePrice} onChange={(e) => setComparePrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <input type="number" placeholder="Eski Fiyat (Opsiyonel)" value={comparePrice} onChange={(e) => setComparePrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input type="text" placeholder="Renk Seçenekleri (Virgülle ayırın: Siyah, Beyaz, Gri)" value={colorsInput} onChange={(e) => setColorsInput(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <input type="text" placeholder="Renk Seçenekleri (Siyah, Beyaz)" value={colorsInput} onChange={(e) => setColorsInput(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                 <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
-                  <span className="text-xs text-zinc-400 truncate">{imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf Yüklendi` : 'Çoklu Fotoğraf Seç (Hover için)'}</span>
+                  <span className="text-xs text-zinc-400 truncate">{imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf Yüklendi` : 'Çoklu Fotoğraf Seç'}</span>
                   <Upload className="h-4 w-4 text-primary" />
                   <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'new')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
                 </div>
               </div>
 
-              {/* Beden Stokları */}
               <div className="space-y-2 pt-2">
                 <label className="text-[10px] font-mono uppercase text-zinc-400 block">Beden Başına Stok Adetleri</label>
                 <div className="grid grid-cols-4 gap-3">
-                  <div>
-                    <span className="text-[10px] text-zinc-500 block mb-1">S Beden</span>
-                    <input type="number" value={sizeS} onChange={(e) => setSizeS(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-zinc-500 block mb-1">M Beden</span>
-                    <input type="number" value={sizeM} onChange={(e) => setSizeM(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-zinc-500 block mb-1">L Beden</span>
-                    <input type="number" value={sizeL} onChange={(e) => setSizeL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-zinc-500 block mb-1">XL Beden</span>
-                    <input type="number" value={sizeXL} onChange={(e) => setSizeXL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" />
-                  </div>
+                  <div><span className="text-[10px] text-zinc-500 block mb-1">S Beden</span><input type="number" value={sizeS} onChange={(e) => setSizeS(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" /></div>
+                  <div><span className="text-[10px] text-zinc-500 block mb-1">M Beden</span><input type="number" value={sizeM} onChange={(e) => setSizeM(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" /></div>
+                  <div><span className="text-[10px] text-zinc-500 block mb-1">L Beden</span><input type="number" value={sizeL} onChange={(e) => setSizeL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" /></div>
+                  <div><span className="text-[10px] text-zinc-500 block mb-1">XL Beden</span><input type="number" value={sizeXL} onChange={(e) => setSizeXL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" /></div>
                 </div>
               </div>
 
-              <textarea rows={2} placeholder="Ürün Açıklaması" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <textarea rows={2} placeholder="Açıklama" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">Ürünü Yayınla</button>
             </form>
           </div>
         )}
 
-        {/* YÜKLÜ ÜRÜNLER LİSTESİ */}
+        {/* YÜKLÜ ÜRÜNLER */}
         {isStoreAdmin && (
           <div className="space-y-4">
             <h2 className="text-base font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /><span>Yüklü Ürünler ve Beden Stokları ({products.length})</span></h2>
             <div className="space-y-3">
               {products.map((prod) => {
                 const totalStock = prod.sizes ? Object.values(prod.sizes as Record<string, number>).reduce((a: any, b: any) => a + b, 0) : (prod.stock ?? 0)
+                const isInactive = prod.is_active === false
 
                 return (
                   <div key={prod.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
@@ -309,10 +296,11 @@ export default function AdminPage() {
                       <div>
                         <h4 className="font-bold text-xs text-white flex items-center gap-2">
                           {prod.title} 
-                          {totalStock <= 0 && <span className="bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-[9px] uppercase font-bold">TÜKENDİ</span>}
+                          {isInactive ? <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-[9px] uppercase font-bold">SATIŞA KAPALI</span> :
+                           totalStock <= 0 ? <span className="bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-[9px] uppercase font-bold">TÜKENDİ</span> : null}
                         </h4>
                         <div className="text-[10px] text-zinc-400 font-mono">
-                          ₺{prod.price} | Renkler: {prod.colors?.join(', ') || 'Standart'} | Stoklar: S({prod.sizes?.S ?? 0}) M({prod.sizes?.M ?? 0}) L({prod.sizes?.L ?? 0}) XL({prod.sizes?.XL ?? 0})
+                          ₺{prod.price} | Stoklar: S({prod.sizes?.S ?? 0}) M({prod.sizes?.M ?? 0}) L({prod.sizes?.L ?? 0}) XL({prod.sizes?.XL ?? 0})
                         </div>
                       </div>
                     </div>
@@ -329,7 +317,7 @@ export default function AdminPage() {
 
       </div>
 
-      {/* ÜRÜN DÜZENLEME MODALİ */}
+      {/* ÜRÜN DÜZENLEME MODALİ (State Bağlantıları ve Satışa Kapat Eklendi) */}
       {editingProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -344,20 +332,37 @@ export default function AdminPage() {
                 <input type="number" required value={editPrice} onChange={(e) => setEditPrice(e.target.value)} placeholder="Güncel Fiyat" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                 <input type="number" value={editComparePrice} onChange={(e) => setEditComparePrice(e.target.value)} placeholder="Eski Fiyat" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               </div>
-              <input type="text" value={editColors} onChange={(e) => setEditColors(e.target.value)} placeholder="Renkler (Siyah, Beyaz)" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <input type="text" value={editColors} onChange={(e) => setEditColors(e.target.value)} placeholder="Renkler" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase text-zinc-400">Beden Stokları</label>
+                <label className="text-[10px] font-mono uppercase text-zinc-400">Beden Stokları (0 yaparsanız o beden tükenir)</label>
                 <div className="grid grid-cols-4 gap-2">
-                  <input type="number" value={editSizeS} onChange={(e) => setEditSizeS(e.target.value)} placeholder="S" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
-                  <input type="number" value={editSizeM} onChange={(e) => setEditSizeM(e.target.value)} placeholder="M" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
-                  <input type="number" value={editSizeL} onChange={(e) => setEditSizeL(e.target.value)} placeholder="L" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
-                  <input type="number" value={editSizeXL} onChange={(e) => setEditSizeXL(e.target.value)} placeholder="XL" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
+                  <input type="number" value={editSizeS} onChange={(e) => setEditSizeS(Number(e.target.value))} placeholder="S" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
+                  <input type="number" value={editSizeM} onChange={(e) => setEditSizeM(Number(e.target.value))} placeholder="M" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
+                  <input type="number" value={editSizeL} onChange={(e) => setEditSizeL(Number(e.target.value))} placeholder="L" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
+                  <input type="number" value={editSizeXL} onChange={(e) => setEditSizeXL(Number(e.target.value))} placeholder="XL" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
                 </div>
               </div>
 
+              {/* Satışa Kapat / Aç Butonu */}
+              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black px-4 py-3">
+                <div>
+                  <span className="text-xs font-bold text-white block">Ürün Satış Durumu</span>
+                  <span className="text-[10px] text-zinc-400">Kapalı yaparsanız mağazada görünmez/satılmaz.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditIsActive(!editIsActive)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold uppercase transition-colors cursor-pointer ${
+                    editIsActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  }`}
+                >
+                  {editIsActive ? 'Satışta (Aktif)' : 'Satışa Kapalı'}
+                </button>
+              </div>
+
               <textarea rows={3} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
-              <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase text-black cursor-pointer">Değişiklikleri Kaydet</button>
+              <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase text-black cursor-pointer shadow-lg">Değişiklikleri Kaydet</button>
             </form>
           </div>
         </div>
