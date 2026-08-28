@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Minus, Plus, ShoppingBag, Trash2, X, Tag, Check } from 'lucide-react'
+import { Minus, Plus, ShoppingBag, Trash2, X, Tag, Check, AlertCircle } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -17,6 +17,7 @@ const formatTL = (n: number) =>
 export function CartDrawer() {
   const { items, isOpen, closeCart, subtotal, removeItem, updateQuantity } = useCart()
   const [loading, setLoading] = useState(false)
+  const [validationError, setValidationError] = useState('')
 
   const [couponInput, setCouponInput] = useState('')
   const [appliedDiscount, setAppliedDiscount] = useState(0)
@@ -47,17 +48,83 @@ export function CartDrawer() {
   const discountAmount = (subtotal * appliedDiscount) / 100
   const finalTotal = subtotal - discountAmount
 
+  // İyzico ve Paraşüt için katı veri doğrulama (Spam/Asd engelleme)
+  const validateCustomerProfile = (profile: any) => {
+    if (!profile) return 'Kullanıcı profili bulunamadı.'
+
+    const fullName = (profile.full_name || '').trim()
+    const phone = (profile.phone || '').trim()
+    const tcNo = (profile.tc_no || '').trim()
+    const address = (profile.address || '').trim()
+
+    // Ad Soyad Kontrolü (En az 2 kelime ve spam engeli)
+    const nameParts = fullName.split(' ')
+    if (nameParts.length < 2 || fullName.toLowerCase().includes('asd') || fullName.toLowerCase().includes('qwe')) {
+      return 'Lütfen geçerli bir Ad ve Soyad giriniz (Örn: Ahmet Yılmaz).'
+    }
+
+    // Telefon Kontrolü (05 ile başlamalı ve en az 10 hane olmalı)
+    const cleanPhone = phone.replace(/\D/g, '')
+    if (!cleanPhone.startsWith('05') || cleanPhone.length < 10) {
+      return 'Lütfen geçerli bir cep telefonu numarası giriniz (05XXXXXXXXX).'
+    }
+
+    // TCKN Kontrolü (Paraşüt ve İyzico e-Fatura için 11 haneli zorunlu)
+    if (!/^\d{11}$/.test(tcNo)) {
+      return 'Fatura ve yasal süreçler için 11 haneli geçerli bir TCKN girmelisiniz.'
+    }
+
+    // Adres Kontrolü (Spam engeli - en az 10 karakter ve asd içermemeli)
+    if (address.length < 10 || address.toLowerCase().includes('asd') || address.toLowerCase().includes('qwe')) {
+      return 'Lütfen geçerli ve açık bir teslimat adresi belirtiniz.'
+    }
+
+    return null
+  }
+
   const handleCheckout = async () => {
+    setValidationError('')
     const { data: { session } } = await supabase.auth.getSession()
+    
     if (!session?.user) {
       alert('Sipariş vermek için lütfen giriş yapın.')
       return
     }
+
     setLoading(true)
-    setTimeout(() => {
+
+    try {
+      // Kullanıcının profil bilgilerini çekip eksiksiz mi diye denetliyoruz
+      const { data: profile, error: profError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle()
+
+      if (profError || !profile) {
+        setValidationError('Profil bilgileriniz okunamadı. Lütfen profilinizi güncelleyin.')
+        setLoading(false)
+        return
+      }
+
+      // Spam ve eksik veri denetimi (Paraşüt / İyzico validasyonu)
+      const errorMsg = validateCustomerProfile(profile)
+      if (errorMsg) {
+        setValidationError(errorMsg)
+        setLoading(false)
+        return
+      }
+
+      // Her şey yolundaysa İyzico entegrasyon akışı ve sipariş kaydı tetiklenir
+      setTimeout(() => {
+        setLoading(false)
+        alert('Fatura ve İyzico verileriniz doğrulandı. Canlı API anahtarlarınız aktifleştiğinde ödeme sayfasına yönlendirileceksiniz.')
+      }, 800)
+
+    } catch (err: any) {
+      setValidationError('Bir hata oluştu: ' + err.message)
       setLoading(false)
-      alert('İyzico ödeme altyapısı entegrasyon aşamasındadır. API anahtarlarınız tanımlandıktan sonra canlı ödemeler aktifleşecektir.')
-    }, 800)
+    }
   }
 
   return (
@@ -164,6 +231,16 @@ export function CartDrawer() {
               </div>
             </div>
 
+            {validationError && (
+              <div className="flex items-start gap-2 rounded-xl bg-red-500/10 border border-red-500/30 p-3 text-[11px] text-red-400">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold block uppercase">Eksik / Geçersiz Bilgi:</span>
+                  <span>{validationError} <a href="/profile" className="underline font-bold text-white">Profilini Düzenle →</a></span>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2 pt-2">
               <button 
                 type="button" 
@@ -171,7 +248,7 @@ export function CartDrawer() {
                 onClick={handleCheckout} 
                 className="w-full rounded-full bg-primary py-4 text-xs font-black uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-50"
               >
-                {loading ? 'İşleniyor...' : 'İyzico ile Güvenli Ödeme Yap'}
+                {loading ? 'Bilgiler Kontrol Ediliyor...' : 'İyzico ile Güvenli Ödeme Yap'}
               </button>
               
               <div className="flex items-center justify-center pt-1">
