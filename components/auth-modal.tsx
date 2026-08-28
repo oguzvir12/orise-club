@@ -69,18 +69,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           onClose()
         }, 1500)
       } else {
-        // Kullanıcıyı metadata ile kayıt et
+        // 1. Sadece auth kaydı yap
         const { data, error: signUpError } = await supabase.auth.signUp({ 
           email, 
           password,
-          options: {
-            data: {
-              full_name: fullName,
-              phone: phone,
-              tc_no: tcNo,
-              address: address,
-            }
-          }
         })
         
         if (signUpError) {
@@ -90,16 +82,23 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           throw signUpError
         }
 
-        // Ekstra güvenlik için profiles tablosuna da elle kayıt atalım (çakışma önleyici)
+        // 2. Kullanıcı oluştuysa profiles tablosuna güvenle satırı yaz
         if (data.user) {
-          await supabase.from('profiles').upsert({
+          const { error: profileError } = await supabase.from('profiles').upsert({
             id: data.user.id,
             email: email,
             full_name: fullName,
             phone: phone,
             tc_no: tcNo,
             address: address,
+            role: 'member',
+            branch: 'ALL',
+            xp: 0
           }, { onConflict: 'id' })
+
+          if (profileError) {
+            console.error('Profil tablosuna yazılamadı:', profileError.message)
+          }
         }
 
         setSuccessMsg(true)
@@ -129,7 +128,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
         <div className="text-center mb-6">
           <h2 className="text-xl font-black">
-            {isForgot ? 'Şifreni Sıfırla' : isLogin ? 'Kulüp Hesabına Giriş Yap' : 'Rise Community Üyesi Ol'}
+            {isForgot ? 'Şifreni Sıfırla' : isLogin ? 'Kulüp Hesabına Giriş Yap' : 'Orise Club Üyesi Ol'}
           </h2>
           <p className="text-xs text-zinc-400 mt-1">
             {isForgot ? 'E-posta adresine şifre sıfırlama bağlantısı gönderelim.' : isLogin ? 'Etkinliklere hızlıca kaydol ve bilgilerini yönet.' : 'Aramıza katıl, alışverişte ve etkinliklerde zaman kazan.'}
