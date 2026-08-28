@@ -1,56 +1,74 @@
 'use client'
 
-import { InstagramIcon } from '@/components/icons/instagram-icon'
-import { Mail, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
+import { Instagram, Linkedin, Mail } from 'lucide-react'
 
 export function SiteFooter() {
   return (
-    <footer className="fixed inset-x-0 bottom-0 z-30 flex h-14 items-center justify-between border-t border-white/10 bg-black/95 px-4 sm:px-8 backdrop-blur-xl text-xs text-zinc-400">
-      
-      {/* Sol Taraf: Sosyal & İletişim */}
-      <div className="flex items-center gap-2 sm:gap-3 text-xs">
-        <a
-          href="https://www.instagram.com/orisecommunity/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 font-medium text-white hover:text-primary transition-colors"
-        >
-          <InstagramIcon className="h-3.5 w-3.5 text-primary" />
-          <span className="hidden sm:inline">@orisecommunity</span>
-        </a>
-        <span className="opacity-30">·</span>
-        <a
-          href="mailto:community@oriseclub.com"
-          className="inline-flex items-center gap-1 hover:text-primary transition-colors"
-        >
-          <Mail className="h-3.5 w-3.5" />
-          <span className="hidden xl:inline">community@oriseclub.com</span>
-        </a>
-      </div>
-
-      {/* Orta: Yasal Linkler (Gizlilik, Mesafeli Satış, İade) */}
-      <div className="hidden md:flex items-center gap-2.5 text-[10px] font-mono tracking-wider uppercase">
-        <Link href="/gizlilik" className="hover:text-primary transition-colors cursor-pointer">Gizlilik</Link>
-        <span>·</span>
-        <Link href="/mesafeli-satis" className="hover:text-primary transition-colors cursor-pointer">Mesafeli Satış</Link>
-        <span>·</span>
-        <Link href="/iade-kosullari" className="hover:text-primary transition-colors cursor-pointer">İade</Link>
-      </div>
-
-      {/* Sağ Taraf: SSL ve İyzico / Ödeme Rozetleri */}
-      <div className="flex items-center gap-2.5">
-        <span className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-emerald-400 font-bold">
-          <ShieldCheck className="h-3.5 w-3.5" /> 256-BIT SSL
-        </span>
-        <div className="flex items-center gap-1.5 font-bold uppercase text-[9px] bg-zinc-900 border border-white/10 px-2.5 py-1 rounded-lg">
-          <span className="text-blue-400">VISA</span>
-          <span className="text-amber-400">MC</span>
-          <span className="text-red-400">TROY</span>
-          <span className="text-primary font-black border-l border-white/20 pl-1.5">İYZİCO İLE ÖDE</span>
+    <footer className="w-full bg-black border-t border-white/10 text-zinc-400 font-sans text-xs py-10 px-6 sm:px-10 lg:px-14">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-8 items-center justify-between">
+        
+        {/* Sol: Marka & Künye */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2.5">
+            <span className="font-black text-white text-sm tracking-wider">ORISE CLUB</span>
+            <span className="text-zinc-600">/</span>
+            <span className="text-[10px] tracking-widest text-primary uppercase font-mono">ATHLETICS & STUDIO</span>
+          </div>
+          <p className="text-[11px] text-zinc-500">Yeni nesil spor topluluğu ve kulüp kültürü.</p>
         </div>
-      </div>
 
+        {/* Orta: Departman Mailleri & Yasal Sayfalar */}
+        <div className="flex flex-col md:items-center space-y-3">
+          <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono">
+            <Link href="/gizlilik" className="hover:text-primary transition-colors uppercase">Gizlilik Politikası</Link>
+            <Link href="/mesafeli-satis" className="hover:text-primary transition-colors uppercase">Mesafeli Satış</Link>
+            <Link href="/iade-kosullari" className="hover:text-primary transition-colors uppercase">İptal & İade</Link>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3 text-[11px] font-mono text-zinc-300">
+            <a href="mailto:community@oriseclub.com" className="hover:text-primary transition-colors inline-flex items-center gap-1.5">
+              <Mail className="h-3.5 w-3.5 text-primary" /> community@oriseclub.com
+            </a>
+            <span className="hidden sm:inline text-zinc-700">·</span>
+            <a href="mailto:store@oriseclub.com" className="hover:text-primary transition-colors inline-flex items-center gap-1.5">
+              <Mail className="h-3.5 w-3.5 text-primary" /> store@oriseclub.com
+            </a>
+          </div>
+        </div>
+
+        {/* Sağ: Doğru Sosyal Medya Hesapları ve Güvenlik Rozetleri */}
+        <div className="flex items-center justify-start md:justify-end gap-3">
+          <a
+            href="https://www.instagram.com/orisecommunity"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-full border border-white/15 bg-zinc-900 px-3 py-1.5 text-[11px] text-zinc-300 hover:border-primary hover:text-primary transition-all"
+            title="Topluluk Instagram"
+          >
+            <Instagram className="h-3.5 w-3.5" /> @orisecommunity
+          </a>
+          <a
+            href="https://www.instagram.com/orisestore"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-full border border-white/15 bg-zinc-900 px-3 py-1.5 text-[11px] text-zinc-300 hover:border-primary hover:text-primary transition-all"
+            title="Mağaza Instagram"
+          >
+            <Instagram className="h-3.5 w-3.5" /> @orisestore
+          </a>
+          <a
+            href="https://www.linkedin.com/company/orisecommunity/?viewAsMember=true"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-zinc-900 text-zinc-300 hover:border-primary hover:text-primary transition-all"
+            title="LinkedIn"
+          >
+            <Linkedin className="h-3.5 w-3.5" />
+          </a>
+        </div>
+
+      </div>
     </footer>
   )
 }
