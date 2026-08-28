@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, Calendar, ShoppingBag, CheckCircle2, Clock, Mail, Phone, Truck, RotateCcw, PackageCheck, CreditCard, MapPin, User, Save, Upload, Trash2, Zap } from 'lucide-react'
+import { ArrowLeft, ShoppingBag, Phone, Truck, RotateCcw, PackageCheck, CreditCard, MapPin, User, Save, Upload, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function ProfilePage() {
@@ -62,14 +62,6 @@ export default function ProfilePage() {
         setUserData(defaultProfile)
         setFullName(defaultProfile.full_name)
       }
-
-      const { data: regs } = await supabase
-        .from('event_registrations')
-        .select('id, status, is_paid, created_at, events (id, title, date, location, price, branch, image_url)')
-        .ilike('email', email.trim())
-        .order('created_at', { ascending: false })
-
-      if (regs) setMyRegistrations(regs)
 
       const { data: ords } = await supabase
         .from('orders')
@@ -152,32 +144,6 @@ export default function ProfilePage() {
     }
   }
 
-  const handleConfirmDelivery = async (orderId: string) => {
-    const { error } = await supabase.from('orders').update({ status: 'delivered' }).eq('id', orderId)
-    if (!error) {
-      alert('Teslimat onaylandı! 7 günlük iade süreniz başladı.')
-      loadUserProfileAndData()
-    } else {
-      alert('Hata: ' + error.message)
-    }
-  }
-
-  const handleRequestRefund = async (orderId: string, deliveredAt: string) => {
-    const reason = refundReason[orderId]
-    if (!reason || reason.trim() === '') {
-      alert('Lütfen iade talebi için bir sebep belirtin.')
-      return
-    }
-
-    const { error } = await supabase.from('orders').update({ status: 'refund_requested', refund_reason: reason }).eq('id', orderId)
-    if (!error) {
-      alert('İade talebiniz başarıyla oluşturuldu.')
-      loadUserProfileAndData()
-    } else {
-      alert('Hata: ' + error.message)
-    }
-  }
-
   if (loading) return <div className="min-h-screen bg-black text-white flex items-center justify-center font-mono text-xs">Yükleniyor...</div>
 
   return (
@@ -189,10 +155,10 @@ export default function ProfilePage() {
             <ArrowLeft className="h-4 w-4" />
             <span>Ana Sayfaya Dön</span>
           </Link>
-          <span className="text-xs font-mono text-primary uppercase">ORISE KULLANICI PROFİLİ</span>
+          <span className="text-xs font-mono text-primary uppercase">ORISE CLUB KULLANICI PROFİLİ</span>
         </div>
 
-        {/* KULLANICI BİLGİLERİ VE AVATAR / XP YÖNETİMİ */}
+        {/* KULLANICI BİLGİLERİ VE AVATAR YÖNETİMİ */}
         <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6 sm:p-8 shadow-xl space-y-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-white/10 pb-6">
             <div className="flex items-center gap-4">
@@ -206,9 +172,6 @@ export default function ProfilePage() {
               <div className="space-y-1">
                 <h1 className="text-xl font-black text-white">{userData?.full_name || 'Kulüp Üyesi'}</h1>
                 <p className="text-xs font-mono text-zinc-400">{userData?.email}</p>
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/30 px-3 py-1 text-[11px] font-bold text-primary">
-                  <Zap className="h-3 w-3 fill-primary" /> <span>{userData?.xp || 0} Kulüp XP</span>
-                </div>
               </div>
             </div>
 
