@@ -31,7 +31,7 @@ export default function HubPage() {
   }
 
   const fetchPosts = async () => {
-    const { data } = await supabase.from('posts').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase.from('hub_posts').select('*').order('created_at', { ascending: false })
     if (data) setPosts(data)
   }
 
@@ -41,8 +41,7 @@ export default function HubPage() {
       if (!file) return
 
       setUploading(true)
-      const fileExt = file.name.split('.').pop()
-      const fileName = `hub-${Date.now()}.${fileExt}`
+      const fileName = `hub-${Date.now()}.${file.name.split('.').pop()}`
 
       const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
       if (uploadError) { alert('Yükleme hatası: ' + uploadError.message); return }
@@ -66,7 +65,7 @@ export default function HubPage() {
 
     setLoading(true)
     try {
-      const { error } = await supabase.from('posts').insert([{
+      const { error } = await supabase.from('hub_posts').insert([{
         user_id: user.id,
         author_name: profile?.full_name || user.email,
         author_avatar: profile?.avatar_url || '',
@@ -80,6 +79,7 @@ export default function HubPage() {
       await supabase.from('profiles').update({ xp: currentXp + 10 }).eq('id', user.id)
 
       setContent('')
+      setImageList('')
       setImageUrl('')
       fetchPosts()
       checkUser()
@@ -92,13 +92,13 @@ export default function HubPage() {
   }
 
   const handleLike = async (postId: string, currentLikes: number) => {
-    const { error } = await supabase.from('posts').update({ likes_count: (currentLikes || 0) + 1 }).eq('id', postId)
+    const { error } = await supabase.from('hub_posts').update({ likes_count: (currentLikes || 0) + 1 }).eq('id', postId)
     if (!error) fetchPosts()
   }
 
   const handleDelete = async (postId: string) => {
     if (!confirm('Bu gönderiyi silmek istiyor musunuz?')) return
-    const { error } = await supabase.from('posts').delete().eq('id', postId)
+    const { error } = await supabase.from('hub_posts').delete().eq('id', postId)
     if (!error) fetchPosts()
   }
 
