@@ -164,14 +164,26 @@ export function CartDrawer() {
               </div>
             </div>
 
-            <button 
-              type="button" 
-              disabled={loading} 
-              onClick={handleCheckout} 
-              className="w-full rounded-full bg-primary py-4 text-xs font-black uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-50"
-            >
-              {loading ? 'İşleniyor...' : 'İyzico ile Güvenli Ödeme Yap'}
-            </button>
+            <div className="space-y-2 pt-2">
+              <button 
+                type="button" 
+                disabled={loading} 
+                onClick={handleCheckout} 
+                className="w-full rounded-full bg-primary py-4 text-xs font-black uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-50"
+              >
+                {loading ? 'İşleniyor...' : 'İyzico ile Güvenli Ödeme Yap'}
+              </button>
+              
+              <div className="flex items-center justify-center pt-1">
+                <Image 
+                  src="/images/iyzico_ile_ode_horizontal_white.svg" 
+                  alt="iyzico ile Öde" 
+                  width={110} 
+                  height={22} 
+                  className="object-contain h-4 w-auto opacity-80" 
+                />
+              </div>
+            </div>
           </div>
         )}
       </aside>
