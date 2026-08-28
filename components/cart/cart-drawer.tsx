@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Minus, Plus, ShoppingBag, Trash2, X, Truck, Store, Tag, Check } from 'lucide-react'
+import { Minus, Plus, ShoppingBag, Trash2, X, Tag, Check } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -16,12 +16,10 @@ const formatTL = (n: number) =>
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, subtotal, removeItem, updateQuantity } = useCart()
-  const [deliveryType, setDeliveryType] = useState<'shipping' | 'pickup'>('shipping')
   const [loading, setLoading] = useState(false)
 
-  // Kupon state'leri
   const [couponInput, setCouponInput] = useState('')
-  const [appliedDiscount, setAppliedDiscount] = useState(0) // Yüzde örn: 15
+  const [appliedDiscount, setAppliedDiscount] = useState(0)
   const [couponCodeName, setCouponCodeName] = useState('')
   const [couponError, setCouponError] = useState('')
 
@@ -71,7 +69,7 @@ export function CartDrawer() {
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 bg-black/80">
           <h2 className="flex items-center gap-2.5 text-sm font-black uppercase tracking-widest text-white">
             <ShoppingBag className="h-4 w-4 text-primary" />
-            <span>Ortak Sepet & Biletler</span>
+            <span>Sepetim</span>
           </h2>
           <button type="button" onClick={closeCart} className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-zinc-300 hover:bg-primary hover:text-black cursor-pointer transition-colors">
             <X className="h-4 w-4" />
@@ -119,7 +117,6 @@ export function CartDrawer() {
         {items.length > 0 && (
           <div className="space-y-4 border-t border-white/10 bg-zinc-950 px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
             
-            {/* Kupon Kodu Alanı */}
             <div className="space-y-1.5">
               <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 block">İndirim Kuponu</span>
               <div className="flex gap-2">
