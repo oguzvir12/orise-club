@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Image as ImageIcon, Send, Trash2, Lock, Sparkles, MessageSquare, Heart, Flame, ThumbsUp, Dumbbell } from 'lucide-react'
+import { ArrowLeft, Image as ImageIcon, Send, Trash2, Lock, Sparkles, MessageSquare, Flame, ThumbsUp, Dumbbell, Heart } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SiteHeader } from '@/components/site-header'
 import AuthModal from '@/components/auth-modal'
@@ -91,16 +91,10 @@ export default function HubPage() {
 
       if (error) throw error
 
-      // XP Artışı ve State Güncellemesi
-      const currentXp = profile?.xp || 0
-      const newXp = currentXp + 10
-      await supabase.from('profiles').update({ xp: newXp }).eq('id', user.id)
-      setProfile({ ...profile, xp: newXp })
-
       setContent('')
       setImageUrl('')
       fetchPosts()
-      alert('Paylaşım yapıldı! +10 XP kazandın 🎉')
+      alert('Paylaşım yapıldı!')
     } catch (err: any) {
       alert('Hata: ' + err.message)
     } finally {
@@ -209,7 +203,7 @@ export default function HubPage() {
                 disabled={loading}
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer hover:scale-105 transition-transform disabled:opacity-50"
               >
-                <Send className="h-3.5 w-3.5" /> Paylaş (+10 XP)
+                <Send className="h-3.5 w-3.5" /> Paylaş
               </button>
             </div>
           </form>
