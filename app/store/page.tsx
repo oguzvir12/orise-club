@@ -15,13 +15,15 @@ import {
   ChevronRight,
   Flame,
   ArrowUpDown,
+  AlertCircle,
+  Zap,
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
 
 const CATEGORIES = [
   { id: 'all', label: 'TÜMÜ' },
-  { id: 'sale', label: '🔥 FIRSAT ÜRÜNLERİ' },
+  { id: 'sale', label: '🔥 FIRSAT & İNDİRİM' },
   { id: 'tank', label: 'KOŞU ATLETİ' },
   { id: 'sweatshirt', label: 'SWEATSHIRT' },
   { id: 'socks', label: 'PERFORMANS ÇORAP' },
@@ -69,6 +71,7 @@ function StoreContent() {
   }, [productParam, products])
 
   const openProductDetail = (product: any) => {
+    if (product.stock <= 0) return // Tükenen ürüne tıklanamaz
     setSelectedProduct(product)
     setSelectedSize('M')
     setActiveImageIdx(0)
@@ -83,7 +86,7 @@ function StoreContent() {
   }
 
   const handleAddToCart = () => {
-    if (!selectedProduct) return
+    if (!selectedProduct || selectedProduct.stock <= 0) return
     const image = selectedProduct.image_urls?.[0] || selectedProduct.image_url || '/placeholder.svg'
 
     addItem({
@@ -98,7 +101,6 @@ function StoreContent() {
     setTimeout(() => setIsAdded(false), 2000)
   }
 
-  // Filtreleme ve Sıralama Mantığı
   let filteredProducts = products.filter((p) => {
     if (activeCategory === 'sale') {
       return p.compare_at_price && p.compare_at_price > p.price
@@ -164,13 +166,21 @@ function StoreContent() {
 
                 <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
                   <div>
-                    <span className="text-xs font-mono tracking-widest text-primary uppercase">{selectedProduct.category_label || 'ÖZEL DROP'}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono tracking-widest text-primary uppercase">{selectedProduct.category_label || 'ÖZEL DROP'}</span>
+                      {selectedProduct.stock > 0 && selectedProduct.stock <= 3 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 border border-amber-500/40 px-2.5 py-0.5 text-[10px] font-mono font-bold text-amber-400 animate-pulse">
+                          <Zap className="h-3 w-3" /> SON {selectedProduct.stock} ÜRÜN
+                        </span>
+                      )}
+                    </div>
+
                     <h1 className="mt-2 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl">{selectedProduct.title}</h1>
                     <p className="text-sm font-mono text-zinc-400 mt-1">{selectedProduct.subtitle}</p>
 
                     <div className="mt-6 flex items-end gap-4">
                       <div>
-                        <span className="text-xs font-mono text-zinc-500 uppercase block">Fiyat</span>
+                        <span className="text-xs font-mono text-zinc-500 uppercase block">Kulüp Fiyatı</span>
                         <div className="text-3xl font-black text-white flex items-center gap-3">
                           <span>₺{Number(selectedProduct.price).toLocaleString('tr-TR')}</span>
                           {selectedProduct.compare_at_price && selectedProduct.compare_at_price > selectedProduct.price && (
@@ -195,9 +205,15 @@ function StoreContent() {
                   </div>
 
                   <div className="pt-4">
-                    <button type="button" onClick={handleAddToCart} className={`flex w-full items-center justify-center gap-3 rounded-full py-4 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${isAdded ? 'bg-emerald-500 text-black font-black' : 'bg-primary text-black hover:scale-[1.02] font-black shadow-[0_0_25px_rgba(249,115,22,0.4)]'}`}>
-                      {isAdded ? <><Check className="h-4 w-4" /><span>Sepete Eklendi</span></> : <><ShoppingBag className="h-4 w-4" /><span>Siparişe Ekle — ₺{selectedProduct.price}</span></>}
-                    </button>
+                    {selectedProduct.stock <= 0 ? (
+                      <div className="w-full rounded-full bg-zinc-900 border border-white/10 py-4 text-center text-xs font-bold uppercase tracking-widest text-zinc-500">
+                        Bu Ürün Tükendi (Sold Out)
+                      </div>
+                    ) : (
+                      <button type="button" onClick={handleAddToCart} className={`flex w-full items-center justify-center gap-3 rounded-full py-4 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${isAdded ? 'bg-emerald-500 text-black font-black' : 'bg-primary text-black hover:scale-[1.02] font-black shadow-[0_0_25px_rgba(249,115,22,0.4)]'}`}>
+                        {isAdded ? <><Check className="h-4 w-4" /><span>Sepete Eklendi</span></> : <><ShoppingBag className="h-4 w-4" /><span>Siparişe Ekle — ₺{selectedProduct.price}</span></>}
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -220,14 +236,14 @@ function StoreContent() {
                 <h1 className="font-sans text-4xl font-black tracking-tighter text-white sm:text-6xl lg:text-7xl">
                   Kulübe Özel <span className="text-primary">Drop</span> Koleksiyonu.
                 </h1>
+                <p className="text-xs font-mono text-zinc-400">Sınırlı üretim teknik spor giyim parçaları. Kaçırmadan sepete ekleyin.</p>
               </div>
             </div>
           </section>
 
-          {/* KATEGORİLER VE SIRALAMA SEÇENEKLERİ */}
+          {/* KATEGORİLER VE SIRALAMA */}
           <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-40 backdrop-blur-xl">
             <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-              
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 w-full sm:w-auto">
                 {CATEGORIES.map((cat) => (
                   <button key={cat.id} onClick={() => setActiveCategory(cat.id)} className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${activeCategory === cat.id ? 'bg-primary text-black font-black shadow-[0_0_15px_rgba(249,115,22,0.4)]' : 'border border-white/10 bg-black/60 text-zinc-400 hover:text-white'}`}>
@@ -236,7 +252,6 @@ function StoreContent() {
                 ))}
               </div>
 
-              {/* Fiyata Göre Sıralama */}
               <div className="flex items-center gap-2 shrink-0">
                 <ArrowUpDown className="h-4 w-4 text-zinc-400" />
                 <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-black border border-white/10 rounded-full px-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-primary cursor-pointer">
@@ -245,7 +260,6 @@ function StoreContent() {
                   <option value="desc">Fiyat: Pahalıdan Ucuza</option>
                 </select>
               </div>
-
             </div>
           </section>
 
@@ -255,15 +269,35 @@ function StoreContent() {
                 {filteredProducts.map((product) => {
                   const productImages = product.image_urls && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '/placeholder.svg']
                   const hasDiscount = product.compare_at_price && product.compare_at_price > product.price
+                  const isSoldOut = product.stock <= 0
 
                   return (
-                    <div key={product.id} onClick={() => openProductDetail(product)} className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all hover:border-primary/60 cursor-pointer">
+                    <div 
+                      key={product.id} 
+                      onClick={() => openProductDetail(product)} 
+                      className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all ${isSoldOut ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:border-primary/60 cursor-pointer'}`}
+                    >
                       <div>
                         <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950 flex items-center justify-center">
-                          {hasDiscount && (
-                            <span className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-[10px] font-black uppercase text-white shadow-lg">
-                              <Flame className="h-3 w-3" /> İNDİRİmlİ FIRSAT
-                            </span>
+                          {isSoldOut ? (
+                            <div className="absolute inset-0 z-20 bg-black/70 flex items-center justify-center">
+                              <span className="rounded-xl bg-zinc-900 border border-white/20 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-zinc-300 shadow-2xl">
+                                TÜKENDİ (SOLD OUT)
+                              </span>
+                            </div>
+                          ) : (
+                            <>
+                              {hasDiscount && (
+                                <span className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-[10px] font-black uppercase text-white shadow-lg">
+                                  <Flame className="h-3 w-3" /> İNDİRİmlİ FIRSAT
+                                </span>
+                              )}
+                              {product.stock <= 3 && (
+                                <span className="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-amber-500/90 px-3 py-1 text-[10px] font-mono font-black uppercase text-black shadow-lg animate-pulse">
+                                  SON {product.stock} ÜRÜN
+                                </span>
+                              )}
+                            </>
                           )}
                           <Image src={productImages[0]} alt={product.title} fill className="object-contain p-2 transition-transform duration-700 group-hover:scale-105" />
                         </div>
@@ -282,9 +316,9 @@ function StoreContent() {
                             <div className="text-xs text-zinc-500 line-through font-mono">₺{Number(product.compare_at_price).toLocaleString('tr-TR')}</div>
                           )}
                         </div>
-                        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-zinc-800/80 px-4 py-2 text-xs font-bold uppercase text-zinc-200 group-hover:bg-primary group-hover:text-black transition-all">
-                          <span>İncele</span>
-                          <ArrowUpRight className="h-3.5 w-3.5" />
+                        <div className={`inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase transition-all ${isSoldOut ? 'bg-zinc-900 text-zinc-600' : 'bg-zinc-800/80 text-zinc-200 group-hover:bg-primary group-hover:text-black'}`}>
+                          <span>{isSoldOut ? 'Tükendi' : 'İncele'}</span>
+                          {!isSoldOut && <ArrowUpRight className="h-3.5 w-3.5" />}
                         </div>
                       </div>
                     </div>
