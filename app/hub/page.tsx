@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Flame, Image as ImageIcon, Send, Trash2, Lock, Sparkles } from 'lucide-react'
+import { ArrowLeft, Image as ImageIcon, Send, Trash2, Lock, Sparkles, MessageSquare, Heart, Flame, ThumbsUp, Dumbbell } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SiteHeader } from '@/components/site-header'
 import AuthModal from '@/components/auth-modal'
@@ -12,6 +12,9 @@ export default function HubPage() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [posts, setPosts] = useState<any[]>([])
+  const [commentsMap, setCommentsMap] = useState<{ [postId: string]: any[] }>({})
+  const [commentInputs, setCommentInputs] = useState<{ [postId: string]: string }>({})
+  
   const [content, setContent] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -34,7 +37,17 @@ export default function HubPage() {
 
   const fetchPosts = async () => {
     const { data } = await supabase.from('hub_posts').select('*').order('created_at', { ascending: false })
-    if (data) setPosts(data)
+    if (data) {
+      setPosts(data)
+      data.forEach(p => fetchComments(p.id))
+    }
+  }
+
+  const fetchComments = async (postId: string) => {
+    const { data } = await supabase.from('hub_comments').select('*').eq('post_id', postId).order('created_at', { ascending: true })
+    if (data) {
+      setCommentsMap(prev => ({ ...prev, [postId]: data }))
+    }
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +59,7 @@ export default function HubPage() {
       const fileName = `hub-${Date.now()}.${file.name.split('.').pop()}`
 
       const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
-      if (uploadError) { alert('Yükleme hatası: ' + uploadError.message); return }
+      if (uploadError) { alert('Hata: ' + uploadError.message); return }
 
       const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
       if (data?.publicUrl) {
@@ -70,19 +83,23 @@ export default function HubPage() {
       const { error } = await supabase.from('hub_posts').insert([{
         user_id: user.id,
         author_name: profile?.full_name || user.email,
+        author_avatar: profile?.avatar_url || '',
         content: content.trim(),
         image_url: imageUrl,
+        reactions: { fire: 0, clap: 0, muscle: 0, heart: 0 }
       }])
 
       if (error) throw error
 
+      // XP Artışı ve State Güncellemesi
       const currentXp = profile?.xp || 0
-      await supabase.from('profiles').update({ xp: currentXp + 10 }).eq('id', user.id)
+      const newXp = currentXp + 10
+      await supabase.from('profiles').update({ xp: newXp }).eq('id', user.id)
+      setProfile({ ...profile, xp: newXp })
 
       setContent('')
       setImageUrl('')
       fetchPosts()
-      checkUser()
       alert('Paylaşım yapıldı! +10 XP kazandın 🎉')
     } catch (err: any) {
       alert('Hata: ' + err.message)
@@ -91,13 +108,35 @@ export default function HubPage() {
     }
   }
 
-  const handleLike = async (postId: string, currentLikes: number) => {
+  const handleReaction = async (postId: string, currentReactions: any, emojiKey: string) => {
     if (!user) { setIsAuthModalOpen(true); return }
-    const { error } = await supabase.from('hub_posts').update({ likes_count: (currentLikes || 0) + 1 }).eq('id', postId)
+    const reactions = currentReactions || { fire: 0, clap: 0, muscle: 0, heart: 0 }
+    reactions[emojiKey] = (reactions[emojiKey] || 0) + 1
+
+    const { error } = await supabase.from('hub_posts').update({ reactions }).eq('id', postId)
     if (!error) fetchPosts()
   }
 
-  const handleDelete = async (postId: string) => {
+  const handleAddComment = async (postId: string) => {
+    if (!user) { setIsAuthModalOpen(true); return }
+    const text = commentInputs[postId]
+    if (!text || !text.trim()) return
+
+    const { error } = await supabase.from('hub_comments').insert([{
+      post_id: postId,
+      user_id: user.id,
+      author_name: profile?.full_name || user.email,
+      author_avatar: profile?.avatar_url || '',
+      content: text.trim()
+    }])
+
+    if (!error) {
+      setCommentInputs(prev => ({ ...prev, [postId]: '' }))
+      fetchComments(postId)
+    }
+  }
+
+  const handleDeletePost = async (postId: string) => {
     if (!confirm('Bu gönderiyi silmek istiyor musunuz?')) return
     const { error } = await supabase.from('hub_posts').delete().eq('id', postId)
     if (!error) fetchPosts()
@@ -118,7 +157,6 @@ export default function HubPage() {
           </div>
         </div>
 
-        {/* Üye Olmayanlar İçin Şık Uyarı Kartı */}
         {!user && (
           <div className="relative overflow-hidden rounded-3xl border border-primary/40 bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 p-8 text-center space-y-4 shadow-[0_0_30px_rgba(249,115,22,0.15)]">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40">
@@ -171,13 +209,12 @@ export default function HubPage() {
                 disabled={loading}
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer hover:scale-105 transition-transform disabled:opacity-50"
               >
-                <Send className="h-3.5 w-3.5" /> Paylaş
+                <Send className="h-3.5 w-3.5" /> Paylaş (+10 XP)
               </button>
             </div>
           </form>
         )}
 
-        {/* Akış Alanı (Sadece üyeler görebilir veya üye değilse bulanıklaştırılır/kilitlenir) */}
         {user ? (
           <div className="space-y-6">
             {posts.length === 0 ? (
@@ -185,13 +222,19 @@ export default function HubPage() {
             ) : (
               posts.map((post) => {
                 const isOwner = user?.id === post.user_id
+                const reactions = post.reactions || { fire: 0, clap: 0, muscle: 0, heart: 0 }
+                const comments = commentsMap[post.id] || []
 
                 return (
                   <div key={post.id} className="rounded-3xl border border-white/10 bg-zinc-950 p-6 space-y-4 shadow-xl">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-xs font-bold">
-                          {post.author_name?.[0]?.toUpperCase() || 'O'}
+                        <div className="relative h-10 w-10 rounded-full overflow-hidden border border-white/15 bg-zinc-900 flex items-center justify-center">
+                          {post.author_avatar ? (
+                            <Image src={post.author_avatar} alt="" fill className="object-cover" />
+                          ) : (
+                            <span className="text-xs font-bold text-primary">{post.author_name?.[0]?.toUpperCase() || 'O'}</span>
+                          )}
                         </div>
                         <div>
                           <h4 className="font-bold text-xs text-white">{post.author_name}</h4>
@@ -199,7 +242,7 @@ export default function HubPage() {
                         </div>
                       </div>
                       {isOwner && (
-                        <button onClick={() => handleDelete(post.id)} className="p-2 text-zinc-500 hover:text-red-400 transition-colors cursor-pointer">
+                        <button onClick={() => handleDeletePost(post.id)} className="p-2 text-zinc-500 hover:text-red-400 transition-colors cursor-pointer">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       )}
@@ -213,14 +256,61 @@ export default function HubPage() {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-4 pt-2 border-t border-white/5">
-                      <button
-                        onClick={() => handleLike(post.id, post.likes_count)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-zinc-900 px-3 py-1.5 text-xs font-bold text-zinc-300 hover:border-primary hover:text-primary transition-all cursor-pointer"
-                      >
-                        <Flame className="h-4 w-4 text-orange-500 fill-orange-500" />
-                        <span>{post.likes_count || 0} Fire</span>
+                    {/* ÇOKLU EMOJİ REAKSİYONLARI */}
+                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-white/5">
+                      <button onClick={() => handleReaction(post.id, reactions, 'fire')} className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-300 hover:border-primary hover:text-primary transition-all cursor-pointer">
+                        <Flame className="h-3.5 w-3.5 text-orange-500 fill-orange-500" /> <span>{reactions.fire || 0}</span>
                       </button>
+                      <button onClick={() => handleReaction(post.id, reactions, 'clap')} className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-300 hover:border-primary hover:text-primary transition-all cursor-pointer">
+                        <ThumbsUp className="h-3.5 w-3.5 text-amber-400" /> <span>{reactions.clap || 0}</span>
+                      </button>
+                      <button onClick={() => handleReaction(post.id, reactions, 'muscle')} className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-300 hover:border-primary hover:text-primary transition-all cursor-pointer">
+                        <Dumbbell className="h-3.5 w-3.5 text-blue-400" /> <span>{reactions.muscle || 0}</span>
+                      </button>
+                      <button onClick={() => handleReaction(post.id, reactions, 'heart')} className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-300 hover:border-primary hover:text-primary transition-all cursor-pointer">
+                        <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500" /> <span>{reactions.heart || 0}</span>
+                      </button>
+                    </div>
+
+                    {/* YORUMLAR BÖLÜMÜ */}
+                    <div className="space-y-3 pt-3 border-t border-white/5">
+                      <div className="text-[10px] font-mono text-zinc-500 uppercase flex items-center gap-1.5">
+                        <MessageSquare size={12} /> Yorumlar ({comments.length})
+                      </div>
+
+                      <div className="space-y-2">
+                        {comments.map((c) => (
+                          <div key={c.id} className="flex items-start gap-2.5 bg-black/40 border border-white/5 rounded-2xl p-3 text-xs">
+                            <div className="relative h-7 w-7 rounded-full overflow-hidden border border-white/10 bg-zinc-900 flex-none flex items-center justify-center">
+                              {c.author_avatar ? (
+                                <Image src={c.author_avatar} alt="" fill className="object-cover" />
+                              ) : (
+                                <span className="text-[10px] font-bold text-primary">{c.author_name?.[0] || 'O'}</span>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-white text-[11px]">{c.author_name}</span>
+                                <span className="text-[9px] font-mono text-zinc-500">{new Date(c.created_at).toLocaleDateString('tr-TR')}</span>
+                              </div>
+                              <p className="text-zinc-300 mt-0.5">{c.content}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-2 pt-1">
+                        <input
+                          type="text"
+                          placeholder="Yorum yaz..."
+                          value={commentInputs[post.id] || ''}
+                          onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                          className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary focus:outline-none"
+                        />
+                        <button type="button" onClick={() => handleAddComment(post.id)} className="px-4 py-2 bg-zinc-800 text-white rounded-xl text-xs font-bold hover:bg-primary hover:text-black transition-colors cursor-pointer">
+                          Gönder
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )
@@ -232,15 +322,10 @@ export default function HubPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent z-10 flex flex-col items-center justify-center space-y-3">
               <Lock className="h-6 w-6 text-primary animate-pulse" />
               <p className="text-xs font-mono text-zinc-300">Paylaşım akışını görmek için giriş yapmalısınız.</p>
-              <button
-                type="button"
-                onClick={() => setIsAuthModalOpen(true)}
-                className="rounded-full bg-white/10 border border-white/20 px-6 py-2 text-xs font-bold uppercase text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"
-              >
+              <button type="button" onClick={() => setIsAuthModalOpen(true)} className="rounded-full bg-white/10 border border-white/20 px-6 py-2 text-xs font-bold uppercase text-white hover:bg-primary hover:text-black transition-colors cursor-pointer">
                 Giriş Yap
               </button>
             </div>
-            {/* Arka planda kilitli/bulanık örnek akış hissi */}
             <div className="opacity-20 filter blur-sm space-y-4 pointer-events-none">
               <div className="h-32 rounded-3xl bg-zinc-900 border border-white/10"></div>
               <div className="h-32 rounded-3xl bg-zinc-900 border border-white/10"></div>
