@@ -69,7 +69,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           onClose()
         }, 1500)
       } else {
-        // 1. Kullanıcıyı Kayıt Et ve metadata ile profil verisini gönder
+        // Kullanıcıyı metadata ile kayıt et
         const { data, error: signUpError } = await supabase.auth.signUp({ 
           email, 
           password,
@@ -88,6 +88,18 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             throw new Error('Bu e-posta zaten sistemde kayıtlı! Lütfen "Giriş Yap" seçeneğini kullanın.')
           }
           throw signUpError
+        }
+
+        // Ekstra güvenlik için profiles tablosuna da elle kayıt atalım (çakışma önleyici)
+        if (data.user) {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            email: email,
+            full_name: fullName,
+            phone: phone,
+            tc_no: tcNo,
+            address: address,
+          }, { onConflict: 'id' })
         }
 
         setSuccessMsg(true)
