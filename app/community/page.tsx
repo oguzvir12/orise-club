@@ -66,7 +66,6 @@ export default function CommunityPage() {
     fetchEvents()
     checkUserSession()
 
-    // Sayfa aktifleştiğinde (admin panelinden dönüldüğünde) etkinlikleri otomatik güncelle
     const handleFocus = () => fetchEvents()
     window.addEventListener('focus', handleFocus)
 
@@ -213,12 +212,6 @@ export default function CommunityPage() {
 
       if (error) throw error
 
-      if (userId) {
-        const { data: profileData } = await supabase.from('profiles').select('xp').eq('id', userId).maybeSingle()
-        const currentXp = profileData?.xp || 0
-        await supabase.from('profiles').update({ xp: currentXp + 50 }).eq('id', userId)
-      }
-
       setSuccess(true)
       setHealthAccepted(false)
       setKvkkAccepted(false)
@@ -245,12 +238,11 @@ export default function CommunityPage() {
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
       <SiteHeader />
 
-      {/* LÜKS HERO BÖLÜMÜ */}
       <section className="relative overflow-hidden border-b border-white/10 pt-36 pb-20 lg:pt-44 lg:pb-24">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image
             src="/community-hero.jpeg"
-            alt="ORISE Community"
+            alt="Orise Club"
             fill
             priority
             className="object-cover opacity-30 grayscale contrast-125 scale-105"
@@ -287,7 +279,6 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* FİLTRELEME ÇUBUĞU */}
       <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-40 backdrop-blur-2xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -320,7 +311,6 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* ETKİNLİK LİSTESİ */}
       <section className="bg-gradient-to-b from-black via-zinc-950/60 to-black py-20">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <div className="mb-12 flex items-center justify-between border-b border-white/10 pb-4">
@@ -421,7 +411,6 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* KATILIM TALEP MODALİ */}
       {isModalOpen && selectedEvent && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn"
@@ -454,7 +443,7 @@ export default function CommunityPage() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   <Check className="h-7 w-7" />
                 </div>
-                <h4 className="font-sans text-xl font-bold text-white">Katılım Talebiniz Alındı! (+50 XP)</h4>
+                <h4 className="font-sans text-xl font-bold text-white">Katılım Talebiniz Alındı!</h4>
                 <p className="text-xs text-zinc-400 max-w-xs mx-auto">
                   Yönetici onayından sonra durum profilinize yansıyacaktır. Tüm detaylar için <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="text-primary underline">@orisecommunity</a> hesabını takip edebilirsiniz!
                 </p>
@@ -530,7 +519,6 @@ export default function CommunityPage() {
         </div>
       )}
 
-      {/* SAĞLIK BEYANI MODALİ */}
       {isHealthModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl" onClick={() => setIsHealthModalOpen(false)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
@@ -546,7 +534,6 @@ export default function CommunityPage() {
         </div>
       )}
 
-      {/* KVKK MODALİ */}
       {isKvkkModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl" onClick={() => setIsKvkkModalOpen(false)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 space-y-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
