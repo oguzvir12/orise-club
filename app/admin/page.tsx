@@ -364,8 +364,8 @@ export default function AdminPage() {
 
   const role = adminProfile?.role
   const isSuperAdmin = role === 'super_admin' || role === 'admin'
-  const isStoreAdmin = isSuperAdmin || role === 'store_admin'
-  const isCommunityAdmin = isSuperAdmin || role === 'community_admin'
+  const isStoreAdmin = role === 'store_admin'
+  const isCommunityAdmin = role === 'community_admin'
   const isCaptain = role === 'captain'
   const adminBranch = adminProfile?.branch?.toUpperCase()
 
@@ -400,8 +400,8 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* MAĞAZA İŞLEMLERİ (Sadece Mağaza Admini / Süper Admin) */}
-        {isStoreAdmin && (
+        {/* SÜPER ADMIN VEYA MAĞAZA ADMİNİ: MAĞAZA BÖLÜMÜ */}
+        {(isSuperAdmin || isStoreAdmin) && (
           <div className="space-y-12">
             <div className="space-y-6">
               <h2 className="text-base font-bold flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><span>Mağaza Siparişleri ({orders.length})</span></h2>
@@ -495,10 +495,10 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* TOPLULUK / ETKİNLİK İŞLEMLERİ (Sadece Topluluk Admini / Kaptan / Süper Admin) */}
-        {!isStoreAdmin && (isCommunityAdmin || isCaptain || isSuperAdmin) && (
+        {/* SÜPER ADMIN VEYA TOPLULUK ADMİNİ VEYA KAPTAN: TOPLULUK BÖLÜMÜ */}
+        {(isSuperAdmin || isCommunityAdmin || isCaptain) && (
           <div className="space-y-12">
-            {(isCommunityAdmin || isCaptain || isSuperAdmin) && (
+            {(isSuperAdmin || isCommunityAdmin || isCaptain) && (
               <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
                 <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Yeni Topluluk Etkinliği Oluştur</span></h2>
                 <form onSubmit={handleAddEvent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
