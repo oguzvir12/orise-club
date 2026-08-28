@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, ShoppingBag, CheckCircle2, Clock, Mail, Phone, Truck, RotateCcw, PackageCheck, CreditCard, MapPin, User, Save } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, Calendar, ShoppingBag, CheckCircle2, Clock, Mail, Phone, Truck, RotateCcw, PackageCheck, CreditCard, MapPin, User, Save, Upload, Trash2, Zap } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function ProfilePage() {
@@ -12,13 +13,14 @@ export default function ProfilePage() {
   const [myOrders, setMyOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [refundReason, setRefundReason] = useState<{ [key: string]: string }>({})
   
-  // Profil Güncelleme Form State'leri
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [tcNo, setTcNo] = useState('')
   const [address, setAddress] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
 
   const router = useRouter()
 
@@ -45,7 +47,7 @@ export default function ProfilePage() {
       const { data: prof } = await supabase
         .from('profiles')
         .select('*')
-        .ilike('email', email)
+        .eq('id', session.user.id)
         .maybeSingle()
       
       if (prof) {
@@ -54,6 +56,7 @@ export default function ProfilePage() {
         setPhone(prof.phone || '')
         setTcNo(prof.tc_no || '')
         setAddress(prof.address || '')
+        setAvatarUrl(prof.avatar_url || '')
       } else {
         const defaultProfile = { email, full_name: session.user.user_metadata?.full_name || 'Kulüp Üyesi' }
         setUserData(defaultProfile)
@@ -83,7 +86,48 @@ export default function ProfilePage() {
     }
   }
 
-  // Profil Bilgilerini Güncelleme (TCKN ve Adres dahil)
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      setUploadingAvatar(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) return
+
+      const fileName = `avatar-${session.user.id}-${Date.now()}.${file.name.split('.').pop()}`
+      const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
+      if (data?.publicUrl) {
+        await supabase.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', session.user.id)
+        setAvatarUrl(data.publicUrl)
+        alert('Profil fotoğrafınız güncellendi!')
+        loadUserProfileAndData()
+      }
+    } catch (err: any) {
+      alert('Fotoğraf yüklenemedi: ' + err.message)
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
+  const handleRemoveAvatar = async () => {
+    if (!confirm('Profil fotoğrafınızı kaldırmak istiyor musunuz?')) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) return
+
+      await supabase.from('profiles').update({ avatar_url: null }).eq('id', session.user.id)
+      setAvatarUrl('')
+      alert('Profil fotoğrafı kaldırıldı.')
+      loadUserProfileAndData()
+    } catch (err: any) {
+      alert('Hata: ' + err.message)
+    }
+  }
+
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     const { data: { session } } = await supabase.auth.getSession()
@@ -108,13 +152,8 @@ export default function ProfilePage() {
     }
   }
 
-  // Müşterinin "Paketi Teslim Aldım" Onayı
   const handleConfirmDelivery = async (orderId: string) => {
-    const { error } = await supabase
-      .from('orders')
-      .update({ status: 'delivered' })
-      .eq('id', orderId)
-
+    const { error } = await supabase.from('orders').update({ status: 'delivered' }).eq('id', orderId)
     if (!error) {
       alert('Teslimat onaylandı! 7 günlük iade süreniz başladı.')
       loadUserProfileAndData()
@@ -123,7 +162,6 @@ export default function ProfilePage() {
     }
   }
 
-  // Müşterinin İade Talebi Oluşturması (Teslim Edildikten Sonra 7 Gün İçinde)
   const handleRequestRefund = async (orderId: string, deliveredAt: string) => {
     const reason = refundReason[orderId]
     if (!reason || reason.trim() === '') {
@@ -131,23 +169,9 @@ export default function ProfilePage() {
       return
     }
 
-    if (deliveredAt) {
-      const deliveryDate = new Date(deliveredAt)
-      const now = new Date()
-      const diffDays = (now.getTime() - deliveryDate.getTime()) / (1000 * 3600 * 24)
-      if (diffDays > 7) {
-        alert('Ürünün teslim tarihinden itibaren 7 günlük iade süresi dolmuştur.')
-        return
-      }
-    }
-
-    const { error } = await supabase
-      .from('orders')
-      .update({ status: 'refund_requested', refund_reason: reason })
-      .eq('id', orderId)
-
+    const { error } = await supabase.from('orders').update({ status: 'refund_requested', refund_reason: reason }).eq('id', orderId)
     if (!error) {
-      alert('İade talebiniz başarıyla oluşturuldu. En kısa sürede incelenecektir.')
+      alert('İade talebiniz başarıyla oluşturuldu.')
       loadUserProfileAndData()
     } else {
       alert('Hata: ' + error.message)
@@ -168,15 +192,37 @@ export default function ProfilePage() {
           <span className="text-xs font-mono text-primary uppercase">ORISE KULLANICI PROFİLİ</span>
         </div>
 
-        {/* KULLANICI BİLGİLERİ VE FATURA / TCKN DÜZENLEME FORMU */}
+        {/* KULLANICI BİLGİLERİ VE AVATAR / XP YÖNETİMİ */}
         <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6 sm:p-8 shadow-xl space-y-6">
-          <div className="flex items-center gap-4 border-b border-white/10 pb-6">
-            <div className="h-16 w-16 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-xl font-black shrink-0">
-              {userData?.full_name?.[0] || 'O'}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-white/10 pb-6">
+            <div className="flex items-center gap-4">
+              <div className="relative h-20 w-20 rounded-full overflow-hidden border-2 border-primary/50 bg-zinc-900 flex items-center justify-center text-xl font-black shrink-0">
+                {avatarUrl ? (
+                  <Image src={avatarUrl} alt="Avatar" fill className="object-cover" />
+                ) : (
+                  <span className="text-primary">{userData?.full_name?.[0]?.toUpperCase() || 'O'}</span>
+                )}
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-xl font-black text-white">{userData?.full_name || 'Kulüp Üyesi'}</h1>
+                <p className="text-xs font-mono text-zinc-400">{userData?.email}</p>
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/30 px-3 py-1 text-[11px] font-bold text-primary">
+                  <Zap className="h-3 w-3 fill-primary" /> <span>{userData?.xp || 0} Kulüp XP</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-black text-white">{userData?.full_name || 'Kulüp Üyesi'}</h1>
-              <p className="text-xs font-mono text-zinc-400">{userData?.email}</p>
+
+            <div className="flex items-center gap-2">
+              <label className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 border border-white/15 px-4 py-2 text-xs font-bold text-zinc-200 hover:border-primary cursor-pointer transition-all">
+                <Upload className="h-3.5 w-3.5 text-primary" />
+                <span>{uploadingAvatar ? 'Yükleniyor...' : 'Fotoğraf Değiştir'}</span>
+                <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+              </label>
+              {avatarUrl && (
+                <button type="button" onClick={handleRemoveAvatar} className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 cursor-pointer" title="Fotoğrafı Kaldır">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -257,7 +303,7 @@ export default function ProfilePage() {
           </form>
         </div>
 
-        {/* MAĞAZA SİPARİŞLERİ VE TESLİMAT / İADE YÖNETİMİ */}
+        {/* MAĞAZA SİPARİŞLERİ */}
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <h2 className="text-lg font-bold flex items-center gap-2">
@@ -280,24 +326,10 @@ export default function ProfilePage() {
                       <span className="text-[10px] font-mono text-zinc-500 uppercase">Sipariş ID: {ord.id.slice(0, 8)}...</span>
                       <div className="text-xs font-mono text-zinc-400">{new Date(ord.created_at).toLocaleDateString('tr-TR')}</div>
                     </div>
-                    <div>
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase font-bold ${
-                        ord.status === 'shipped' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                        ord.status === 'delivered' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                        ord.status === 'approved' || ord.status === 'paid' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                        ord.status === 'refund_requested' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
-                        ord.status === 'refunded' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                        'bg-zinc-800 text-zinc-400'
-                      }`}>
-                        {ord.status === 'shipped' ? 'Kargoda' :
-                         ord.status === 'delivered' ? 'Teslim Edildi' :
-                         ord.status === 'approved' || ord.status === 'paid' ? 'Hazırlanıyor' :
-                         ord.status === 'refund_requested' ? 'İade Talebi İnceleniyor' :
-                         ord.status === 'refunded' ? 'İade Edildi' : 'Ödeme Bekliyor'}
-                      </span>
-                    </div>
+                    <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      {ord.status}
+                    </span>
                   </div>
-
                   <div className="space-y-2">
                     {ord.items?.map((item: any, idx: number) => (
                       <div key={idx} className="flex justify-between text-xs text-zinc-300 font-mono">
@@ -305,54 +337,6 @@ export default function ProfilePage() {
                         <span className="text-primary font-bold">₺{item.price * item.quantity}</span>
                       </div>
                     ))}
-                  </div>
-
-                  {ord.tracking_number && (
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-blue-500/10 border border-blue-500/20 p-3.5 text-xs font-mono text-blue-300">
-                      <div className="flex items-center gap-2">
-                        <Truck className="h-4 w-4 shrink-0 text-primary" />
-                        <span>Kargo Takip No: <strong className="text-white">{ord.tracking_number}</strong></span>
-                      </div>
-
-                      {ord.status === 'shipped' && (
-                        <button
-                          type="button"
-                          onClick={() => handleConfirmDelivery(ord.id)}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-black cursor-pointer hover:bg-orange-500 transition-colors"
-                        >
-                          <PackageCheck className="h-3.5 w-3.5" />
-                          <span>Paketi Teslim Aldım</span>
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {ord.status === 'delivered' && (
-                    <div className="pt-3 border-t border-white/5 space-y-2">
-                      <span className="text-[10px] font-mono uppercase text-zinc-400 block">7 Günlük İade / Değişim Süresi İçerisindesiniz</span>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="İade sebebi (Örn: Beden uymadı)"
-                          value={refundReason[ord.id] || ''}
-                          onChange={(e) => setRefundReason({ ...refundReason, [ord.id]: e.target.value })}
-                          className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary focus:outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRequestRefund(ord.id, ord.updated_at)}
-                          className="flex items-center gap-1.5 rounded-xl bg-red-500/20 border border-red-500/30 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/30 transition-colors cursor-pointer"
-                        >
-                          <RotateCcw className="h-3.5 w-3.5" />
-                          <span>İade Talep Et</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between items-center pt-2 border-t border-white/5 text-xs font-mono">
-                    <span className="text-zinc-400 uppercase">Teslimat: {ord.delivery_type === 'shipping' ? 'Kargo' : 'Elden Teslim'}</span>
-                    <span className="text-sm font-black text-primary">Toplam: ₺{ord.total_price}</span>
                   </div>
                 </div>
               ))}
