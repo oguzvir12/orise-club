@@ -68,7 +68,6 @@ export default function HubPage() {
       const { error } = await supabase.from('hub_posts').insert([{
         user_id: user.id,
         author_name: profile?.full_name || user.email,
-        author_avatar: profile?.avatar_url || '',
         content: content.trim(),
         image_url: imageUrl,
       }])
@@ -79,7 +78,6 @@ export default function HubPage() {
       await supabase.from('profiles').update({ xp: currentXp + 10 }).eq('id', user.id)
 
       setContent('')
-      setImageList('')
       setImageUrl('')
       fetchPosts()
       checkUser()
@@ -167,8 +165,8 @@ export default function HubPage() {
                 <div key={post.id} className="rounded-3xl border border-white/10 bg-zinc-950 p-6 space-y-4 shadow-xl">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="relative h-10 w-10 rounded-full overflow-hidden border border-white/15 bg-zinc-900">
-                        <Image src={post.author_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop'} alt="Avatar" fill className="object-cover" />
+                      <div className="h-10 w-10 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-xs font-bold">
+                        {post.author_name?.[0]?.toUpperCase() || 'O'}
                       </div>
                       <div>
                         <h4 className="font-bold text-xs text-white">{post.author_name}</h4>
