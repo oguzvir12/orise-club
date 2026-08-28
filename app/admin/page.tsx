@@ -375,7 +375,6 @@ export default function AdminPage() {
   const isCaptain = role === 'captain'
   const adminBranch = adminProfile?.branch?.toUpperCase()
 
-  // Kaptan sadece kendi branşındaki etkinlikleri ve başvuruları görür
   const filteredEvents = isSuperAdmin || isCommunityAdmin || adminBranch === 'ALL' ? events : events.filter(e => e.branch?.toUpperCase() === adminBranch)
   const allowedEventIds = filteredEvents.map(e => e.id)
   const filteredRegistrations = isSuperAdmin || isCommunityAdmin || adminBranch === 'ALL' ? registrations : registrations.filter(r => allowedEventIds.includes(r.event_id))
@@ -447,10 +446,48 @@ export default function AdminPage() {
               <input type="number" placeholder="Kullanım Sınırı" value={usageLimit} onChange={(e) => setUsageLimit(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <button type="submit" className="rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">Kuponu Aktif Et</button>
             </form>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              {coupons.map((cp) => (
+                <div key={cp.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-black/60 p-3 text-xs">
+                  <div><strong className="text-primary font-mono">{cp.code}</strong> (%{cp.discount_percentage})</div>
+                  <button type="button" onClick={() => handleDeleteCoupon(cp.id)} className="text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* YENİ ETKİNLİK OLUŞTURMA (Admin veya Kaptan) */}
+        {/* ÜRÜN EKLEME (Mağaza Admini / Süper Admin) */}
+        {isStoreAdmin && (
+          <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
+            <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle</span></h2>
+            <form onSubmit={handleAddProduct} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <input type="number" placeholder="Güncel Fiyat (₺)" required value={price} onChange={(e) => setPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <input type="number" placeholder="Eski Fiyat" value={comparePrice} onChange={(e) => setComparePrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input type="text" placeholder="Renkler (Siyah, Beyaz)" value={colorsInput} onChange={(e) => setColorsInput(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
+                  <span className="text-xs text-zinc-400 truncate">{imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf` : 'Fotoğraf Seç'}</span>
+                  <Upload className="h-4 w-4 text-primary" />
+                  <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'new')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-3">
+                <div><span className="text-[10px] text-zinc-500">S Beden</span><input type="number" value={sizeS} onChange={(e) => setSizeS(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" /></div>
+                <div><span className="text-[10px] text-zinc-500">M Beden</span><input type="number" value={sizeM} onChange={(e) => setSizeM(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" /></div>
+                <div><span className="text-[10px] text-zinc-500">L Beden</span><input type="number" value={sizeL} onChange={(e) => setSizeL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" /></div>
+                <div><span className="text-[10px] text-zinc-500">XL Beden</span><input type="number" value={sizeXL} onChange={(e) => setSizeXL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white" /></div>
+              </div>
+              <textarea rows={2} placeholder="Ürün Açıklaması" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
+              <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Ürünü Yayınla</button>
+            </form>
+          </div>
+        )}
+
+        {/* YENİ ETKİNLİK OLUŞTURMA */}
         {(isCommunityAdmin || isCaptain) && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Yeni Topluluk Etkinliği Oluştur</span></h2>
@@ -477,232 +514,47 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* AKTİF ETKİNLİKLER */}
-        <div className="space-y-4">
-          <h2 className="text-base font-bold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ({filteredEvents.length})</span></h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {filteredEvents.map((evt) => (
-              <div key={evt.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
-                <div>
-                  <span className="text-[10px] font-mono text-primary uppercase">{evt.branch} {evt.instructor_name ? `• ${evt.instructor_name}` : ''}</span>
-                  <h4 className="font-bold text-xs text-white">{evt.title}</h4>
-                </div>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => openEditEventModal(evt)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 cursor-pointer"><Edit3 size={14} /></button>
-                  {isSuperAdmin && <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl cursor-pointer"><Trash2 size={14} /></button>}
-                </div>
+        {/* ÜRÜNLER VE ETKİNLİKLER LİSTESİ */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {isStoreAdmin && (
+            <div className="space-y-4">
+              <h2 className="text-base font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /><span>Yüklü Ürünler ({products.length})</span></h2>
+              <div className="space-y-3">
+                {products.map((prod) => (
+                  <div key={prod.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
+                    <div>
+                      <h4 className="font-bold text-xs text-white">{prod.title}</h4>
+                      <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | S({prod.sizes?.S ?? 0}) M({prod.sizes?.M ?? 0}) L({prod.sizes?.L ?? 0}) XL({prod.sizes?.XL ?? 0})</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => openEditModal(prod)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 cursor-pointer"><Edit3 size={14} /></button>
+                      <button type="button" onClick={() => handleDeleteProduct(prod.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl cursor-pointer"><Trash2 size={14} /></button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          )}
+
+          <div className="space-y-4 lg:col-span-2">
+            <h2 className="text-base font-bold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ({filteredEvents.length})</span></h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {filteredEvents.map((evt) => (
+                <div key={evt.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
+                  <div>
+                    <span className="text-[10px] font-mono text-primary uppercase">{evt.branch} {evt.instructor_name ? `• ${evt.instructor_name}` : ''}</span>
+                    <h4 className="font-bold text-xs text-white">{evt.title}</h4>
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => openEditEventModal(evt)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 cursor-pointer"><Edit3 size={14} /></button>
+                    {isSuperAdmin && <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl cursor-pointer"><Trash2 size={14} /></button>}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* SÜPER ADMIN: TÜM ÜYELER, DETAYLAR, ROL VE BRANŞ ATAMA */}
+        {/* SÜPER ADMIN: TÜM ÜYELER & YETKİ MATRİSİ */}
         {isSuperAdmin && (
-          <div className="space-y-6">
-            <h2 className="text-base font-bold flex items-center gap-2 text-red-400"><ShieldAlert className="h-5 w-5" /><span>Süper Admin: Tüm Üyeler ve Yetki Matrisi ({profiles.length})</span></h2>
-            <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
-                    <tr><th className="p-4">Üye</th><th className="p-4">Rol / Branş</th><th className="p-4">İşlemler (Rol & Branş Ata)</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-zinc-300">
-                    {profiles.map((prof) => (
-                      <tr key={prof.id} className="hover:bg-zinc-900/40">
-                        <td className="p-4">
-                          <div className="font-bold text-white flex items-center gap-2">
-                            {prof.full_name || 'İsimsiz'}
-                            {prof.ban_reason && <span className="bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-[9px]">Uzaklaştırıldı</span>}
-                          </div>
-                          <div className="text-[10px] text-zinc-500">{prof.email}</div>
-                        </td>
-                        <td className="p-4">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-primary uppercase">{prof.role || 'member'}</span>
-                          <div className="text-[10px] text-zinc-400 mt-1 uppercase">Branş: {prof.branch || 'ALL'}</div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex flex-wrap gap-2 items-center">
-                            {/* Rol Seçimi */}
-                            <select defaultValue={prof.role || 'member'} id={`role-${prof.id}`} className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white">
-                              <option value="member">Üye</option>
-                              <option value="captain">Kaptan</option>
-                              <option value="store_admin">Mağaza Admini</option>
-                              <option value="community_admin">Topluluk Admini</option>
-                              <option value="super_admin">Süper Admin</option>
-                            </select>
-
-                            {/* Branş Seçimi (Kaptanlar için) */}
-                            <select defaultValue={prof.branch || 'ALL'} id={`branch-${prof.id}`} className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white">
-                              <option value="ALL">Tüm Branşlar (ALL)</option>
-                              <option value="KOŞU">KOŞU</option>
-                              <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
-                              <option value="TENİS">TENİS</option>
-                              <option value="VOLEYBOL">VOLEYBOL</option>
-                              <option value="YELKEN">YELKEN</option>
-                            </select>
-
-                            <button type="button" onClick={async () => {
-                              const newRole = (document.getElementById(`role-${prof.id}`) as HTMLSelectElement).value
-                              const newBranch = (document.getElementById(`branch-${prof.id}`) as HTMLSelectElement).value
-                              await supabase.from('profiles').update({ role: newRole, branch: newBranch }).eq('id', prof.id)
-                              alert('Yetki ve branş güncellendi!')
-                              fetchData()
-                            }} className="px-3 py-1.5 bg-primary text-black rounded-lg text-[11px] font-bold cursor-pointer">Kaydet</button>
-
-                            {/* Detayları Gör Butonu */}
-                            <button type="button" onClick={() => setSelectedMember(prof)} className="px-3 py-1.5 bg-zinc-800 text-zinc-200 hover:text-white rounded-lg text-[11px] font-bold cursor-pointer inline-flex items-center gap-1">
-                              <Eye size={12} /> Detay
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ETKİNLİK KATILIMCILARI & BAŞVURULAR (Kaptan kendi branşını görür) */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Etkinlik Katılımcıları & Başvurular ({filteredRegistrations.length})</span></h2>
-            <button type="button" onClick={exportToCSV} className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary/20 cursor-pointer"><Download className="h-3.5 w-3.5" /> Excel'e Aktar</button>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
-                  <tr><th className="p-4">Katılımcı</th><th className="p-4">İletişim</th><th className="p-4">Etkinlik</th><th className="p-4">Durum</th><th className="p-4 text-right">İşlemler</th></tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-zinc-300">
-                  {filteredRegistrations.map((reg) => (
-                    <tr key={reg.id} className="hover:bg-zinc-900/40">
-                      <td className="p-4 font-bold text-white">{reg.full_name}</td>
-                      <td className="p-4">{reg.phone} / {reg.email}</td>
-                      <td className="p-4 text-primary">{reg.events?.title || 'Etkinlik'}</td>
-                      <td className="p-4"><span className="px-2 py-0.5 rounded text-[10px] uppercase bg-zinc-800 text-zinc-300">{reg.status}</span></td>
-                      <td className="p-4 text-right space-x-1">
-                        {reg.status !== 'approved' && <button type="button" onClick={() => handleUpdateRegistrationStatus(reg.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px]">Onayla</button>}
-                        <button type="button" onClick={() => handleDeleteRegistration(reg.id)} className="p-1 text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* ÜYE DETAY VE UZAKLAŞTIRMA (BAN) MODALİ */}
-      {selectedMember && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setSelectedMember(null)}>
-          <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Üye Bilgileri & Yönetimi</h3>
-              <button type="button" onClick={() => setSelectedMember(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
-            </div>
-
-            <div className="space-y-4 text-xs font-mono">
-              <div className="bg-black/60 p-4 rounded-2xl border border-white/10 space-y-2">
-                <div><strong className="text-zinc-500">Ad Soyad:</strong> <span className="text-white font-bold">{selectedMember.full_name || 'Belirtilmemiş'}</span></div>
-                <div><strong className="text-zinc-500">E-posta:</strong> <span className="text-white">{selectedMember.email}</span></div>
-                <div><strong className="text-zinc-500">Telefon:</strong> <span className="text-white">{selectedMember.phone || 'Belirtilmemiş'}</span></div>
-                <div><strong className="text-zinc-500">TCKN:</strong> <span className="text-white">{selectedMember.tc_no || 'Belirtilmemiş'}</span></div>
-                <div><strong className="text-zinc-500">Adres:</strong> <span className="text-white">{selectedMember.address || 'Belirtilmemiş'}</span></div>
-                <div><strong className="text-zinc-500">XP Puanı:</strong> <span className="text-primary font-bold">{selectedMember.xp || 0} XP</span></div>
-                <div><strong className="text-zinc-500">Kayıt Tarihi:</strong> <span className="text-white">{new Date(selectedMember.created_at).toLocaleDateString('tr-TR')}</span></div>
-              </div>
-
-              {/* Uzaklaştırma (Ban) Alanı */}
-              <div className="border border-red-500/30 bg-red-500/10 p-4 rounded-2xl space-y-3">
-                <h4 className="font-bold text-red-400 flex items-center gap-2"><UserX size={16} /> Üyeyi Uzaklaştır / Banla</h4>
-                {selectedMember.ban_reason ? (
-                  <div className="space-y-2">
-                    <p className="text-red-300 text-[11px]">Bu üye şu sebeple uzaklaştırıldı: <strong className="text-white">{selectedMember.ban_reason}</strong></p>
-                    <button type="button" onClick={async () => {
-                      await supabase.from('profiles').update({ ban_reason: null }).eq('id', selectedMember.id)
-                      alert('Üyenin yasağı kaldırıldı!')
-                      setSelectedMember(null)
-                      fetchData()
-                    }} className="px-4 py-2 bg-zinc-800 text-white rounded-xl text-xs font-bold cursor-pointer">Yasağı Kaldır</button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      placeholder="Uzaklaştırma sebebi (Örn: Kurallara uymama)"
-                      value={banReasonInput}
-                      onChange={(e) => setBanReasonInput(e.target.value)}
-                      className="w-full bg-black border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                    />
-                    <button type="button" onClick={async () => {
-                      if (!banReasonInput) { alert('Lütfen bir sebep yazın.'); return }
-                      await supabase.from('profiles').update({ ban_reason: banReasonInput }).eq('id', selectedMember.id)
-                      alert('Üye sisteme erişimden uzaklaştırıldı!')
-                      setSelectedMember(null); setBanReasonInput('')
-                      fetchData()
-                    }} className="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold cursor-pointer">Üyeyi Uzaklaştır</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ETKİNLİK DÜZENLEME MODALİ */}
-      {editingEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm" onClick={() => setEditingEvent(null)}>
-          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Etkinliği Düzenle</h3>
-              <button type="button" onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
-            </div>
-            <form onSubmit={handleUpdateEvent} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Etkinlik Adı</label>
-                <input type="text" required value={editEvtTitle} onChange={(e) => setEditEvtTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Eğitmen</label>
-                  <input type="text" value={editEvtInstructor} onChange={(e) => setEditEvtInstructor(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Branş</label>
-                  <select value={editEvtBranch} onChange={(e) => setEditEvtBranch(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
-                    <option value="KOŞU">KOŞU</option>
-                    <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
-                    <option value="TENİS">TENİS</option>
-                    <option value="VOLEYBOL">VOLEYBOL</option>
-                    <option value="YELKEN">YELKEN</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Konum</label>
-                  <input type="text" value={editEvtLocation} onChange={(e) => setEditEvtLocation(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Tarih</label>
-                  <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-              </div>
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Açıklama</label>
-                <textarea rows={2} value={editEvtDesc} onChange={(e) => setEditEvtDesc(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
-              </div>
-              <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase text-black cursor-pointer shadow-lg">Değişiklikleri Kaydet</button>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+          <div className="space-
