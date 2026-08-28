@@ -135,7 +135,6 @@ export default function AdminPage() {
     window.location.href = '/'
   }
 
-  // Kupon İşlemleri
   const handleAddCoupon = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!couponCode || !discountPct) return
@@ -181,7 +180,7 @@ export default function AdminPage() {
     setUploading(false)
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'event' | 'editev') => {
     const file = e.target.files?.[0]
     if (!file) return
     setUploading(true)
@@ -189,7 +188,10 @@ export default function AdminPage() {
     const { error } = await supabase.storage.from('product-images').upload(fileName, file)
     if (!error) {
       const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
-      if (data?.publicUrl) setEvtImage(data.publicUrl)
+      if (data?.publicUrl) {
+        if (type === 'event') setEvtImage(data.publicUrl)
+        else setEditEvtImage(data.publicUrl)
+      }
     }
     setUploading(false)
   }
@@ -229,16 +231,28 @@ export default function AdminPage() {
     setEditEvtLocation(evt.location || '')
     setEditEvtDate(evt.date ? evt.date.slice(0, 16) : '')
     setEditEvtInstructor(evt.instructor_name || '')
+    setEditEvtImage(evt.image_url || '')
   }
 
   const handleUpdateEvent = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingEvent) return
-    await supabase.from('events').update({
-      title: editEvtTitle, branch: editEvtBranch, location: editEvtLocation, date: editEvtDate, instructor_name: editEvtInstructor
+    const { error } = await supabase.from('events').update({
+      title: editEvtTitle,
+      branch: editEvtBranch,
+      location: editEvtLocation,
+      date: editEvtDate,
+      instructor_name: editEvtInstructor,
+      image_url: editEvtImage || editingEvent.image_url
     }).eq('id', editingEvent.id)
-    setEditingEvent(null)
-    fetchData()
+
+    if (!error) {
+      alert('Etkinlik güncellendi!')
+      setEditingEvent(null)
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
   }
 
   const handleUpdateRegistrationStatus = async (regId: string, newStatus: string) => {
@@ -475,7 +489,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* YENİ ETKİNLİK OLUŞTURMA (Topluluk Yönetimi) */}
+        {/* YENİ ETKİNLİK OLUŞTURMA */}
         {isCommunityAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Yeni Topluluk Etkinliği Oluştur</span></h2>
@@ -617,13 +631,13 @@ export default function AdminPage() {
 
       </div>
 
-      {/* ÜRÜN DÜZENLEME MODALİ */}
+      {/* ÜRÜN DÜZENLEME MODALİ (Fotoğraf Ekleme / Kaldırma Özellikli) */}
       {editingProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Ürünü ve Beden Stoklarını Düzenle</h3>
-              <button type="button" onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary"><X className="h-4 w-4" /></button>
+              <h3 className="font-bold text-base text-white">Ürünü ve Fotoğrafları Düzenle</h3>
+              <button type="button" onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
             </div>
 
             <form onSubmit={handleUpdateProduct} className="space-y-4">
@@ -644,6 +658,26 @@ export default function AdminPage() {
                 </div>
               </div>
 
+              {/* Ürün Fotoğrafları Yönetimi (Ekle/Çıkar) */}
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-2">Ürün Fotoğrafları</label>
+                <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
+                  <span className="text-xs text-zinc-400 truncate pointer-events-none">Yeni Fotoğraf Ekle (Çoklu)</span>
+                  <Upload className="h-4 w-4 text-primary" />
+                  <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'edit')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                </div>
+                {editImages.length > 0 && (
+                  <div className="flex items-center gap-3 pt-3 overflow-x-auto">
+                    {editImages.map((imgUrl, imgIdx) => (
+                      <div key={imgIdx} className="relative h-16 w-16 rounded-xl overflow-hidden border border-white/20 flex-none group">
+                        <Image src={imgUrl} alt="" fill className="object-cover" />
+                        <button type="button" onClick={() => setEditImages(editImages.filter((_, i) => i !== imgIdx))} className="absolute inset-0 bg-red-600/80 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-xs font-bold cursor-pointer">Kaldır</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <textarea rows={3} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
               <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase text-black cursor-pointer shadow-lg">Değişiklikleri Kaydet</button>
             </form>
@@ -651,18 +685,29 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* ETKİNLİK DÜZENLEME MODALİ */}
+      {/* ETKİNLİK DÜZENLEME MODALİ (Afiş Değiştirme Özellikli) */}
       {editingEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm" onClick={() => setEditingEvent(null)}>
+          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Etkinliği Düzenle</h3>
-              <button type="button" onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary"><X className="h-4 w-4" /></button>
+              <h3 className="font-bold text-base text-white">Etkinliği ve Afişi Düzenle</h3>
+              <button type="button" onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleUpdateEvent} className="space-y-4">
               <input type="text" required value={editEvtTitle} onChange={(e) => setEditEvtTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <button type="submit" className="w-full rounded-full bg-primary py-3 text-xs font-bold uppercase text-black cursor-pointer">Kaydet</button>
+              
+              {/* Etkinlik Afişi Değiştirme */}
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-2">Etkinlik Afişi</label>
+                <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
+                  <span className="text-xs text-zinc-400 truncate">{editEvtImage ? '✓ Yeni Afiş Seçildi' : 'Afiş Değiştir'}</span>
+                  <Upload className="h-4 w-4 text-primary" />
+                  <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'editev')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                </div>
+              </div>
+
+              <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase text-black cursor-pointer shadow-lg">Değişiklikleri Kaydet</button>
             </form>
           </div>
         </div>
