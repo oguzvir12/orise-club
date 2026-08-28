@@ -69,7 +69,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           onClose()
         }, 1500)
       } else {
-        // 1. Kullanıcıyı Kayıt Et
+        // 1. Kullanıcıyı Kayıt Et ve metadata ile profil verisini gönder
         const { data, error: signUpError } = await supabase.auth.signUp({ 
           email, 
           password,
@@ -78,6 +78,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               full_name: fullName,
               phone: phone,
               tc_no: tcNo,
+              address: address,
             }
           }
         })
@@ -87,22 +88,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             throw new Error('Bu e-posta zaten sistemde kayıtlı! Lütfen "Giriş Yap" seçeneğini kullanın.')
           }
           throw signUpError
-        }
-
-        // 2. Eğer kullanıcı oluştuysa profiles tablosuna güvenli şekilde yaz
-        if (data.user) {
-          const { error: profileError } = await supabase.from('profiles').upsert({
-            id: data.user.id,
-            email: email,
-            full_name: fullName,
-            phone: phone,
-            tc_no: tcNo,
-            address: address,
-          }, { onConflict: 'id' })
-
-          if (profileError) {
-            console.error('Profil oluşturulurken uyarı:', profileError.message)
-          }
         }
 
         setSuccessMsg(true)
