@@ -4,12 +4,10 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  ArrowLeft,
   ArrowUpRight,
   ShieldCheck,
   Sparkles,
   ShoppingBag,
-  X,
 } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
@@ -205,16 +203,19 @@ export function SplitHero() {
           </Link>
         </div>
 
-        {/* Güvenlik Rozetleri ve İyzico Ödeme Logoları */}
+        {/* Güvenlik Rozetleri ve Resmi İyzico Logosu */}
         <div className="flex items-center gap-3">
           <span className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-emerald-400 font-bold">
             <ShieldCheck className="h-3.5 w-3.5" /> 256-BIT SSL
           </span>
-          <div className="flex items-center gap-1.5 font-bold uppercase text-[9px] bg-zinc-900 border border-white/10 px-2.5 py-1 rounded-lg">
-            <span className="text-blue-400">VISA</span>
-            <span className="text-amber-400">MC</span>
-            <span className="text-red-400">TROY</span>
-            <span className="text-primary font-black border-l border-white/20 pl-1.5">İYZİCO İLE ÖDE</span>
+          <div className="flex items-center bg-zinc-900 border border-white/10 px-2.5 py-1 rounded-lg">
+            <Image 
+              src="/images/logo_band_white.svg" 
+              alt="İyzico ve Güvenli Ödeme Logoları" 
+              width={90} 
+              height={18} 
+              className="object-contain h-4 w-auto"
+            />
           </div>
         </div>
       </footer>
