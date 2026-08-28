@@ -22,6 +22,7 @@ export function SiteFooter() {
         {/* Orta: Departman Mailleri & Yasal Sayfalar */}
         <div className="flex flex-col md:items-center space-y-3">
           <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono">
+            <Link href="/hakkimizda" className="hover:text-primary transition-colors uppercase">Hakkımızda</Link>
             <Link href="/gizlilik" className="hover:text-primary transition-colors uppercase">Gizlilik Politikası</Link>
             <Link href="/mesafeli-satis" className="hover:text-primary transition-colors uppercase">Mesafeli Satış</Link>
             <Link href="/iade-kosullari" className="hover:text-primary transition-colors uppercase">İptal & İade</Link>
