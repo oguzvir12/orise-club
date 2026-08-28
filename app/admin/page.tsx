@@ -37,16 +37,13 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [coupons, setCoupons] = useState<any[]>([])
 
-  // Üye Detay Modal State
   const [selectedMember, setSelectedMember] = useState<any | null>(null)
   const [banReasonInput, setBanReasonInput] = useState('')
 
-  // Kupon Formu
   const [couponCode, setCouponCode] = useState('')
   const [discountPct, setDiscountPct] = useState('')
   const [usageLimit, setUsageLimit] = useState('100')
 
-  // Yeni Ürün Formu
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
@@ -59,7 +56,6 @@ export default function AdminPage() {
   const [description, setDescription] = useState('')
   const [imageList, setImageList] = useState<string[]>([])
 
-  // Ürün Düzenleme Modal
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editSubtitle, setEditSubtitle] = useState('')
@@ -73,7 +69,6 @@ export default function AdminPage() {
   const [editDescription, setEditDescription] = useState('')
   const [editImages, setEditImages] = useState<string[]>([])
 
-  // Yeni Etkinlik Formu
   const [evtTitle, setEvtTitle] = useState('')
   const [evtDesc, setEvtDesc] = useState('')
   const [evtDate, setEvtDate] = useState('')
@@ -82,7 +77,6 @@ export default function AdminPage() {
   const [instructorName, setInstructorName] = useState('')
   const [evtImage, setEvtImage] = useState('')
 
-  // Etkinlik Düzenleme Modal
   const [editingEvent, setEditingEvent] = useState<any | null>(null)
   const [editEvtTitle, setEditEvtTitle] = useState('')
   const [editEvtBranch, setEditEvtBranch] = useState('KOŞU')
@@ -406,7 +400,6 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* MAĞAZA SİPARİŞLERİ */}
         {isStoreAdmin && (
           <div className="space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><span>Mağaza Siparişleri ({orders.length})</span></h2>
@@ -436,7 +429,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* KUPON YÖNETİMİ */}
         {isStoreAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Tag className="h-5 w-5" /><span>İndirim Kuponu Yönetimi</span></h2>
@@ -457,7 +449,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ÜRÜN EKLEME (Mağaza Admini / Süper Admin) */}
         {isStoreAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle</span></h2>
@@ -487,7 +478,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* YENİ ETKİNLİK OLUŞTURMA */}
         {(isCommunityAdmin || isCaptain) && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Yeni Topluluk Etkinliği Oluştur</span></h2>
@@ -514,7 +504,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ÜRÜNLER VE ETKİNLİKLER LİSTESİ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {isStoreAdmin && (
             <div className="space-y-4">
@@ -558,7 +547,10 @@ export default function AdminPage() {
         {/* SÜPER ADMIN: TÜM ÜYELER & YETKİ MATRİSİ */}
         {isSuperAdmin && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold flex items-center gap-2 text-red-400"><ShieldAlert className="h-5 w-5" /><span>Süper Admin: Tüm Üyeler ve Yetki Matrisi ({profiles.length})</span></h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold flex items-center gap-2 text-red-400"><ShieldAlert className="h-5 w-5" /><span>Süper Admin: Tüm Üyeler ve Yetki Matrisi ({profiles.length})</span></h2>
+              <button type="button" onClick={fetchData} className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-mono cursor-pointer">Listeyi Yenile</button>
+            </div>
             <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-mono">
@@ -620,7 +612,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ETKİNLİK KATILIMCILARI & BAŞVURULAR */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Etkinlik Katılımcıları & Başvurular ({filteredRegistrations.length})</span></h2>
@@ -653,7 +644,6 @@ export default function AdminPage() {
 
       </div>
 
-      {/* ÜRÜN DÜZENLEME MODALİ */}
       {editingProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -705,7 +695,6 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* ÜYE DETAY MODALİ */}
       {selectedMember && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setSelectedMember(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -720,7 +709,6 @@ export default function AdminPage() {
                 <div><strong className="text-zinc-500">Telefon:</strong> <span className="text-white">{selectedMember.phone || 'Belirtilmemiş'}</span></div>
                 <div><strong className="text-zinc-500">TCKN:</strong> <span className="text-white">{selectedMember.tc_no || 'Belirtilmemiş'}</span></div>
                 <div><strong className="text-zinc-500">Adres:</strong> <span className="text-white">{selectedMember.address || 'Belirtilmemiş'}</span></div>
-                <div><strong className="text-zinc-500">XP Puanı:</strong> <span className="text-primary font-bold">{selectedMember.xp || 0} XP</span></div>
               </div>
               <div className="border border-red-500/30 bg-red-500/10 p-4 rounded-2xl space-y-3">
                 <h4 className="font-bold text-red-400 flex items-center gap-2"><UserX size={16} /> Üyeyi Uzaklaştır / Banla</h4>
@@ -750,7 +738,6 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* ETKİNLİK DÜZENLEME MODALİ */}
       {editingEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm" onClick={() => setEditingEvent(null)}>
           <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
