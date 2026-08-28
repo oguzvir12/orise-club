@@ -8,6 +8,9 @@ import {
   ShieldCheck,
   Sparkles,
   ShoppingBag,
+  Instagram,
+  Linkedin,
+  Mail,
 } from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
@@ -180,16 +183,16 @@ export function SplitHero() {
         )
       })}
 
-      {/* FOOTER & İLETİŞİM / YASAL SAYFA YÖNLENDİRMELERİ */}
-      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col md:flex-row items-center justify-between gap-3 px-6 sm:px-10 py-3 bg-black/95 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400">
-        <div className="flex items-center gap-2.5">
+      {/* FOOTER & İLETİŞİM / SOSYAL MEDYA / YASAL SAYFA YÖNLENDİRMELERİ */}
+      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col xl:flex-row items-center justify-between gap-3 px-6 sm:px-10 py-2.5 bg-black/95 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400">
+        <div className="flex items-center gap-2.5 shrink-0">
           <span className="font-bold text-white tracking-wider">ORISE CLUB</span>
           <span className="text-zinc-600">/</span>
           <span className="text-[10px] tracking-widest text-primary uppercase">ATHLETICS & STUDIO</span>
         </div>
 
-        {/* Yasal Sayfa Bağlantıları */}
-        <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
+        {/* Yasal Sayfa Bağlantıları ve E-postalar */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 text-[11px]">
           <Link href="/gizlilik" className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4 uppercase">
             Gizlilik Politikası
           </Link>
@@ -201,20 +204,37 @@ export function SplitHero() {
           <Link href="/iade-kosullari" className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4 uppercase">
             İptal & İade
           </Link>
+          <span className="text-zinc-700">·</span>
+          <a href="mailto:community@oriseclub.com" className="hover:text-primary transition-colors inline-flex items-center gap-1 text-zinc-300">
+            <Mail className="h-3 w-3 text-primary" /> community@oriseclub.com
+          </a>
+          <span className="text-zinc-700">·</span>
+          <a href="mailto:store@oriseclub.com" className="hover:text-primary transition-colors inline-flex items-center gap-1 text-zinc-300">
+            <Mail className="h-3 w-3 text-primary" /> store@oriseclub.com
+          </a>
         </div>
 
-        {/* Güvenlik Rozetleri ve Resmi İyzico Logosu */}
-        <div className="flex items-center gap-3">
-          <span className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-emerald-400 font-bold">
-            <ShieldCheck className="h-3.5 w-3.5" /> 256-BIT SSL
-          </span>
-          <div className="flex items-center bg-zinc-900 border border-white/10 px-2.5 py-1 rounded-lg">
+        {/* Sosyal Medya Hesapları & Güvenlik Rozetleri */}
+        <div className="flex items-center gap-3 shrink-0">
+          <a href="https://www.instagram.com/orisecommunity" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors inline-flex items-center gap-1 text-[11px]">
+            <Instagram className="h-3.5 w-3.5 text-primary" /> @orisecommunity
+          </a>
+          <span className="text-zinc-700">·</span>
+          <a href="https://www.instagram.com/orisestore" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors inline-flex items-center gap-1 text-[11px]">
+            <Instagram className="h-3.5 w-3.5 text-primary" /> @orisestore
+          </a>
+          <span className="text-zinc-700">·</span>
+          <a href="https://www.linkedin.com/company/orisecommunity/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors inline-flex items-center gap-1 text-[11px]">
+            <Linkedin className="h-3.5 w-3.5 text-primary" /> LinkedIn
+          </a>
+
+          <div className="hidden sm:flex items-center bg-zinc-900 border border-white/10 px-2 py-0.5 rounded ml-1">
             <Image 
               src="/images/logo_band_white.svg" 
               alt="İyzico ve Güvenli Ödeme Logoları" 
-              width={90} 
-              height={18} 
-              className="object-contain h-4 w-auto"
+              width={75} 
+              height={15} 
+              className="object-contain h-3.5 w-auto"
             />
           </div>
         </div>
