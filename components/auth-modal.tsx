@@ -69,9 +69,18 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           onClose()
         }, 1500)
       } else {
+        // Kayıt olurken tüm bilgileri user_metadata içine de gönderiyoruz
         const { data, error: signUpError } = await supabase.auth.signUp({ 
           email, 
           password,
+          options: {
+            data: {
+              full_name: fullName,
+              phone: phone,
+              tc_no: tcNo,
+              address: address,
+            }
+          }
         })
         
         if (signUpError) {
