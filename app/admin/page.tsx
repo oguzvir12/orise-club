@@ -18,7 +18,8 @@ import {
   Calendar,
   Download,
   ShoppingBag,
-  RotateCcw,
+  Tag,
+  ShieldAlert,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -33,6 +34,12 @@ export default function AdminPage() {
   const [events, setEvents] = useState<any[]>([])
   const [profiles, setProfiles] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
+  const [coupons, setCoupons] = useState<any[]>([])
+
+  // Kupon Form State
+  const [couponCode, setCouponCode] = useState('')
+  const [discountPct, setDiscountPct] = useState('')
+  const [usageLimit, setUsageLimit] = useState('50')
 
   // Yeni Ürün Form State'leri
   const [title, setTitle] = useState('')
@@ -51,7 +58,7 @@ export default function AdminPage() {
   const [instructorName, setInstructorName] = useState('')
   const [evtImage, setEvtImage] = useState('')
 
-  // Ürün Düzenleme Modal State'leri
+  // Ürün Düzenleme Modal
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editSubtitle, setEditSubtitle] = useState('')
@@ -60,7 +67,7 @@ export default function AdminPage() {
   const [editDescription, setEditDescription] = useState('')
   const [editImages, setEditImages] = useState<string[]>([])
 
-  // Etkinlik Düzenleme Modal State'leri
+  // Etkinlik Düzenleme Modal
   const [editingEvent, setEditingEvent] = useState<any | null>(null)
   const [editEvtTitle, setEditEvtTitle] = useState('')
   const [editEvtBranch, setEditEvtBranch] = useState('KOŞU')
@@ -77,7 +84,7 @@ export default function AdminPage() {
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
-      if (profile && (profile.role === 'admin' || profile.role === 'captain')) {
+      if (profile && ['admin', 'super_admin', 'store_admin', 'community_admin', 'captain'].includes(profile.role)) {
         setIsLoggedIn(true)
         setAdminProfile(profile)
         fetchData()
@@ -102,6 +109,9 @@ export default function AdminPage() {
 
       const { data: ordData } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
       if (ordData) setOrders(ordData)
+
+      const { data: cpData } = await supabase.from('coupons').select('*').order('created_at', { ascending: false })
+      if (cpData) setCoupons(cpData)
     } catch (e) {
       console.error(e)
     } finally {
@@ -115,85 +125,100 @@ export default function AdminPage() {
     window.location.href = '/'
   }
 
-  // Sipariş Silme Fonksiyonu
+  // Kupon Ekleme
+  const handleAddCoupon = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!couponCode || !discountPct) return
+
+    const { error } = await supabase.from('coupons').insert([{
+      code: couponCode.trim().toUpperCase(),
+      discount_percentage: Number(discountPct),
+      usage_limit: Number(usageLimit) || 50
+    }])
+
+    if (!error) {
+      alert('İndirim kuponu oluşturuldu!')
+      setCouponCode(''); setDiscountPct(''); setUsageLimit('50')
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
+
+  const handleDeleteCoupon = async (id: string) => {
+    if (!confirm('Bu kuponu silmek istiyor musunuz?')) return
+    await supabase.from('coupons').delete().eq('id', id)
+    setCoupons((prev) => prev.filter((c) => c.id !== id))
+  }
+
+  // Süper Admin Aksiyonları (Banlama / Uyarı / Hesap Silme)
+  const handleBanUser = async (userId: string, email: string) => {
+    const reason = prompt(`"${email}" adresli kullanıcıya gönderilecek ihtar / ban sebebini yazın:`)
+    if (!reason) return
+
+    const { error } = await supabase.from('profiles').update({ role: 'banned', ban_reason: reason }).eq('id', userId)
+    if (!error) {
+      alert('Kullanıcı banlandı / askıya alındı.')
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
+
+  const handleDeleteUserAccount = async (userId: string) => {
+    if (!confirm('DİKKAT: Bu kullanıcının profil kaydını tamamen silmek istediğinize emin misiniz?')) return
+    const { error } = await supabase.from('profiles').delete().eq('id', userId)
+    if (!error) {
+      alert('Kullanıcı hesabı silindi.')
+      setProfiles((prev) => prev.filter(p => p.id !== userId))
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
+
+  // Sipariş Silme
   const handleDeleteOrder = async (orderId: string) => {
-    if (!confirm('Bu siparişi geçmişten tamamen silmek istiyor musunuz?')) return
+    if (!confirm('Bu siparişi silmek istiyor musunuz?')) return
     const { error } = await supabase.from('orders').delete().eq('id', orderId)
     if (!error) {
       setOrders((prev) => prev.filter((o) => o.id !== orderId))
       alert('Sipariş silindi.')
-    } else {
-      alert('Silme hatası: ' + error.message)
     }
   }
 
-  // Çoklu Fotoğraf Yükleme Fonksiyonu
   const handleMultipleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'new' | 'edit') => {
-    try {
-      const files = e.target.files
-      if (!files || files.length === 0) return
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    setUploading(true)
+    const uploadedUrls: string[] = []
 
-      setUploading(true)
-      const uploadedUrls: string[] = []
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${Date.now()}-${i}.${fileExt}`
-
-        const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
-        if (uploadError) {
-          alert('Yükleme hatası: ' + uploadError.message)
-          continue
-        }
-
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${i}.${fileExt}`
+      const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
+      if (!uploadError) {
         const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
-        if (data?.publicUrl) {
-          uploadedUrls.push(data.publicUrl)
-        }
+        if (data?.publicUrl) uploadedUrls.push(data.publicUrl)
       }
-
-      if (target === 'new') {
-        setImageList((prev) => [...prev, ...uploadedUrls])
-      } else {
-        setEditImages((prev) => [...prev, ...uploadedUrls])
-      }
-
-      alert('Fotoğraflar yüklendi!')
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setUploading(false)
     }
+
+    if (target === 'new') setImageList((prev) => [...prev, ...uploadedUrls])
+    else setEditImages((prev) => [...prev, ...uploadedUrls])
+    setUploading(false)
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'event' | 'editev') => {
-    try {
-      const file = e.target.files?.[0]
-      if (!file) return
-
-      setUploading(true)
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}.${fileExt}`
-
-      const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
-      if (uploadError) {
-        alert('Yükleme hatası: ' + uploadError.message)
-        setUploading(false)
-        return
-      }
-
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    const fileName = `${Date.now()}.${file.name.split('.').pop()}`
+    const { error } = await supabase.storage.from('product-images').upload(fileName, file)
+    if (!error) {
       const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
-      if (data?.publicUrl) {
-        if (type === 'event') setEvtImage(data.publicUrl)
-        else if (type === 'editev') setEditEvtImage(data.publicUrl)
-        alert('Fotoğraf yüklendi!')
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setUploading(false)
+      if (data?.publicUrl) setEvtImage(data.publicUrl)
     }
+    setUploading(false)
   }
 
   const handleAddEvent = async (e: React.FormEvent) => {
@@ -202,25 +227,23 @@ export default function AdminPage() {
 
     const { error } = await supabase.from('events').insert([{
       title: evtTitle,
-      description: evtDesc || 'Kulüp buluşması. Detaylar Instagram hesabımızda.',
+      description: evtDesc || 'Kulüp buluşması.',
       date: evtDate,
       location: evtLocation || 'İstanbul',
       branch: evtBranch,
-      instructor_name: instructorName || 'Kulüp Eğitmeni',
+      instructor_name: instructorName || 'Eğitmen',
       image_url: evtImage || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop'
     }])
 
     if (!error) {
-      alert('Etkinlik başarıyla oluşturuldu!')
+      alert('Etkinlik oluşturuldu!')
       setEvtTitle(''); setEvtDesc(''); setEvtDate(''); setEvtLocation(''); setInstructorName(''); setEvtImage('')
       fetchData()
-    } else {
-      alert('Hata: ' + error.message)
     }
   }
 
   const handleDeleteEvent = async (id: string) => {
-    if (!confirm('Bu etkinliği silmek istiyor musunuz?')) return
+    if (!confirm('Silinsin mi?')) return
     await supabase.from('events').delete().eq('id', id)
     setEvents((prev) => prev.filter((e) => e.id !== id))
   }
@@ -232,101 +255,41 @@ export default function AdminPage() {
     setEditEvtLocation(evt.location || '')
     setEditEvtDate(evt.date ? evt.date.slice(0, 16) : '')
     setEditEvtInstructor(evt.instructor_name || '')
-    setEditEvtImage(evt.image_url || '')
   }
 
   const handleUpdateEvent = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingEvent) return
-
-    const { error } = await supabase.from('events').update({
-      title: editEvtTitle,
-      branch: editEvtBranch,
-      location: editEvtLocation,
-      date: editEvtDate,
-      instructor_name: editEvtInstructor,
-      image_url: editEvtImage || editingEvent.image_url
+    await supabase.from('events').update({
+      title: editEvtTitle, branch: editEvtBranch, location: editEvtLocation, date: editEvtDate, instructor_name: editEvtInstructor
     }).eq('id', editingEvent.id)
-
-    if (!error) {
-      alert('Etkinlik güncellendi!')
-      setEditingEvent(null)
-      fetchData()
-    } else {
-      alert('Hata: ' + error.message)
-    }
+    setEditingEvent(null)
+    fetchData()
   }
 
-  const handleUpdateRegistrationStatus = async (regId: string, newStatus: 'approved' | 'rejected') => {
-    const { error } = await supabase.from('event_registrations').update({ status: newStatus }).eq('id', regId)
-    if (!error) { 
-      alert('Başvuru durumu güncellendi!'); 
-      fetchData(); 
-    } else {
-      alert('Hata: ' + error.message);
-    }
-  }
-
-  // Sipariş Durumu Güncelleme (İleriye dönük kilitli akış)
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string, trackingNum?: string) => {
     const payload: any = { status: newStatus }
     if (trackingNum !== undefined) payload.tracking_number = trackingNum
-
-    const { error } = await supabase.from('orders').update(payload).eq('id', orderId)
-    if (!error) { 
-      alert('Sipariş durumu güncellendi ve kilitlendi!'); 
-      fetchData(); 
-    } else {
-      alert('Hata: ' + error.message);
-    }
+    await supabase.from('orders').update(payload).eq('id', orderId)
+    fetchData()
   }
 
-  // İade Onaylama / Gerçekleştirme
   const handleApproveRefund = async (orderId: string) => {
-    if (!confirm('İade onaylansın ve müşteriye iade süreci başlatılsın mı?')) return
-    const { error } = await supabase.from('orders').update({ status: 'refunded' }).eq('id', orderId)
-    if (!error) {
-      alert('İade onaylandı ve sipariş statüsü güncellendi.')
-      fetchData()
-    } else {
-      alert('Hata: ' + error.message)
-    }
-  }
-
-  const handleDeleteRegistration = async (id: string) => {
-    if (!confirm('Silinsin mi?')) return
-    await supabase.from('event_registrations').delete().eq('id', id)
-    setRegistrations((prev) => prev.filter((r) => r.id !== id))
-  }
-
-  const handleDeleteProfile = async (id: string) => {
-    if (!confirm('Silinsin mi?')) return
-    await supabase.from('profiles').delete().eq('id', id)
-    setProfiles((prev) => prev.filter((p) => p.id !== id))
+    if (!confirm('İade onaylansın mı?')) return
+    await supabase.from('orders').update({ status: 'refunded' }).eq('id', orderId)
+    fetchData()
   }
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !price) return
-    
-    const { error } = await supabase.from('products').insert([{
-      title, 
-      subtitle: subtitle || 'Özel Parça', 
-      price: Number(price), 
-      stock: Number(stock) || 50,
-      description: description || 'Kaliteli teknik tekstil.', 
-      category: 'tank', 
-      category_label: 'ÖZEL DROP',
+    await supabase.from('products').insert([{
+      title, subtitle: subtitle || 'Özel Parça', price: Number(price), stock: Number(stock) || 50,
+      description: description || 'Kaliteli tekstil.', category: 'tank', category_label: 'ÖZEL DROP',
       image_urls: imageList.length > 0 ? imageList : ['https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop']
     }])
-
-    if (!error) {
-      alert('Ürün başarıyla eklendi!')
-      setTitle(''); setSubtitle(''); setPrice(''); setStock(''); setDescription(''); setImageList([])
-      fetchData()
-    } else {
-      alert('Hata: ' + error.message)
-    }
+    setTitle(''); setSubtitle(''); setPrice(''); setStock(''); setDescription(''); setImageList([])
+    fetchData()
   }
 
   const handleDeleteProduct = async (id: string) => {
@@ -348,44 +311,34 @@ export default function AdminPage() {
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingProduct) return
-    
-    const { error } = await supabase.from('products').update({
-      title: editTitle,
-      subtitle: editSubtitle,
-      price: Number(editPrice),
-      stock: Number(editStock),
-      description: editDescription,
-      image_urls: editImages
+    await supabase.from('products').update({
+      title: editTitle, subtitle: editSubtitle, price: Number(editPrice), stock: Number(editStock), description: editDescription, image_urls: editImages
     }).eq('id', editingProduct.id)
-
-    if (!error) {
-      alert('Ürün başarıyla güncellendi!')
-      setEditingProduct(null)
-      fetchData()
-    } else {
-      alert('Güncelleme hatası: ' + error.message)
-    }
+    setEditingProduct(null)
+    fetchData()
   }
 
   const exportToCSV = () => {
     const headers = ['Katılımcı Adı', 'Telefon', 'E-posta', 'Etkinlik', 'Durum']
     const rows = filteredRegistrations.map(r => [`"${r.full_name || ''}"`, `"${r.phone || ''}"`, `"${r.email || ''}"`, `"${r.events?.title || ''}"`, `"${r.status || ''}"`])
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
-    const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
-    link.setAttribute('href', encodedUri)
+    link.setAttribute('href', encodeURI(csvContent))
     link.setAttribute('download', 'orise_etkinlik_katilimcilari.csv')
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
   }
 
-  const isSuperAdmin = adminProfile?.role === 'admin'
+  const role = adminProfile?.role
+  const isSuperAdmin = role === 'super_admin' || role === 'admin'
+  const isStoreAdmin = isSuperAdmin || role === 'store_admin'
+  const isCommunityAdmin = isSuperAdmin || role === 'community_admin'
   const adminBranch = adminProfile?.branch?.toUpperCase()
 
-  const filteredEvents = isSuperAdmin ? events : events.filter(e => e.branch?.toUpperCase() === adminBranch)
+  const filteredEvents = (isSuperAdmin || isCommunityAdmin) && adminBranch === 'ALL' ? events : events.filter(e => isSuperAdmin || isCommunityAdmin || e.branch?.toUpperCase() === adminBranch)
   const allowedEventIds = filteredEvents.map(e => e.id)
-  const filteredRegistrations = isSuperAdmin ? registrations : registrations.filter(r => allowedEventIds.includes(r.event_id))
+  const filteredRegistrations = (isSuperAdmin || isCommunityAdmin) && adminBranch === 'ALL' ? registrations : registrations.filter(r => allowedEventIds.includes(r.event_id))
 
   if (!isLoggedIn) {
     return (
@@ -406,7 +359,7 @@ export default function AdminPage() {
           <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-300 hover:text-white"><ArrowLeft className="h-4 w-4" /></Link>
           <div>
             <h1 className="text-xl font-black text-white">ORISE Kontrol Paneli</h1>
-            <p className="text-xs font-mono text-primary uppercase">{adminProfile?.title || adminProfile?.role} {adminBranch ? `(${adminBranch})` : ''}</p>
+            <p className="text-xs font-mono text-primary uppercase">Rol: {role} {adminBranch ? `(${adminBranch})` : ''}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -417,110 +370,91 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* MAĞAZA SİPARİŞLERİ YÖNETİMİ (KİLİTLİ AKIŞ & İADE TALEPLERİ) */}
-        <div className="space-y-6">
-          <h2 className="text-base font-bold flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><span>Mağaza Siparişleri ({orders.length})</span></h2>
-          <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
-                  <tr>
-                    <th className="p-4">Müşteri</th>
-                    <th className="p-4">Ürünler</th>
-                    <th className="p-4">Teslimat</th>
-                    <th className="p-4">Tutar</th>
-                    <th className="p-4">Durum / Kargo Takip / İade Nedeni</th>
-                    <th className="p-4 text-right">İşlemler</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-zinc-300">
-                  {orders.length === 0 ? (
-                    <tr><td colSpan={6} className="p-6 text-center text-zinc-500">Henüz sipariş bulunmuyor.</td></tr>
-                  ) : (
-                    orders.map((ord) => {
-                      const isLocked = ord.status === 'shipped' || ord.status === 'delivered' || ord.status === 'refunded'
-                      const isRefundRequested = ord.status === 'refund_requested'
-
-                      return (
-                        <tr key={ord.id} className="hover:bg-zinc-900/40">
-                          <td className="p-4">
-                            <div className="font-bold text-white">{ord.customer_name}</div>
-                            <div className="text-[10px] text-zinc-500">{ord.phone}</div>
-                            <div className="text-[10px] text-zinc-500">{ord.address}</div>
-                          </td>
-                          <td className="p-4 max-w-xs">
-                            {ord.items?.map((i: any, idx: number) => (
-                              <div key={idx} className="text-[11px]">• {i.name} (x{i.quantity})</div>
-                            ))}
-                          </td>
-                          <td className="p-4">
-                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${ord.delivery_type === 'shipping' ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                              {ord.delivery_type === 'shipping' ? 'Kargo' : 'Elden Teslim'}
-                            </span>
-                          </td>
-                          <td className="p-4 font-bold text-primary">₺{ord.total_price}</td>
-                          <td className="p-4 space-y-2">
-                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold inline-block ${
-                              isRefundRequested ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse' :
-                              ord.status === 'refunded' ? 'bg-red-500/20 text-red-400' :
-                              ord.status === 'shipped' ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-800 text-zinc-300'
-                            }`}>
-                              {isRefundRequested ? '⚠️ İADE TALEBİ GELDİ' : ord.status}
-                            </span>
-                            
-                            {/* Müşterinin İade Sebebi Varsa Göster */}
-                            {ord.refund_reason && (
-                              <div className="text-[10px] text-red-400 font-bold bg-red-500/10 p-2 rounded-lg border border-red-500/20">
-                                İade Sebebi: "{ord.refund_reason}"
+        {/* MAĞAZA YÖNETİMİ & SİPARİŞLER (Sadece Süper Admin veya Mağaza Admini) */}
+        {isStoreAdmin && (
+          <div className="space-y-6">
+            <h2 className="text-base font-bold flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><span>Mağaza Siparişleri ({orders.length})</span></h2>
+            <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
+                    <tr><th className="p-4">Müşteri</th><th className="p-4">Ürünler</th><th className="p-4">Teslimat</th><th className="p-4">Tutar</th><th className="p-4">Durum / Kargo Takip</th><th className="p-4 text-right">İşlemler</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-zinc-300">
+                    {orders.length === 0 ? (
+                      <tr><td colSpan={6} className="p-6 text-center text-zinc-500">Sipariş bulunmuyor.</td></tr>
+                    ) : (
+                      orders.map((ord) => {
+                        const isLocked = ['shipped', 'delivered', 'refunded'].includes(ord.status)
+                        const isRefundRequested = ord.status === 'refund_requested'
+                        return (
+                          <tr key={ord.id} className="hover:bg-zinc-900/40">
+                            <td className="p-4"><div className="font-bold text-white">{ord.customer_name}</div><div className="text-[10px] text-zinc-500">{ord.phone}</div></td>
+                            <td className="p-4 max-w-xs">{ord.items?.map((i: any, idx: number) => <div key={idx} className="text-[11px]">• {i.name} (x{i.quantity})</div>)}</td>
+                            <td className="p-4"><span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-blue-500/20 text-blue-400">{ord.delivery_type}</span></td>
+                            <td className="p-4 font-bold text-primary">₺{ord.total_price}</td>
+                            <td className="p-4 space-y-2">
+                              <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold inline-block ${isRefundRequested ? 'bg-amber-500/20 text-amber-400 animate-pulse' : 'bg-zinc-800 text-zinc-300'}`}>
+                                {isRefundRequested ? '⚠️ İADE TALEBİ' : ord.status}
+                              </span>
+                              {ord.refund_reason && <div className="text-[10px] text-red-400">Sebep: {ord.refund_reason}</div>}
+                              <input type="text" placeholder="Kargo Takip No" defaultValue={ord.tracking_number || ''} id={`tracking-${ord.id}`} className="w-full bg-black border border-white/10 rounded px-2 py-1 text-[10px] text-white" />
+                            </td>
+                            <td className="p-4 text-right">
+                              <div className="flex justify-end gap-1.5 items-center flex-wrap">
+                                {isRefundRequested ? (
+                                  <button type="button" onClick={() => handleApproveRefund(ord.id)} className="px-2.5 py-1 bg-red-500 text-black font-bold rounded text-[10px] cursor-pointer">İadeyi Onayla</button>
+                                ) : isLocked ? (
+                                  <span className="text-[10px] text-zinc-500">Tamamlandı</span>
+                                ) : (
+                                  <>
+                                    <button type="button" onClick={() => handleUpdateOrderStatus(ord.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px]">Onayla</button>
+                                    <button type="button" onClick={() => {
+                                      const tracking = (document.getElementById(`tracking-${ord.id}`) as HTMLInputElement).value
+                                      if (!tracking) { alert('Kargo takip no girin!'); return }
+                                      handleUpdateOrderStatus(ord.id, 'shipped', tracking)
+                                    }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-[10px]">Kargola</button>
+                                  </>
+                                )}
+                                <button type="button" onClick={() => handleDeleteOrder(ord.id)} className="p-1.5 bg-zinc-800 text-zinc-400 hover:text-red-400 rounded"><Trash2 className="h-3.5 w-3.5" /></button>
                               </div>
-                            )}
-
-                            <input 
-                              type="text" 
-                              placeholder="Kargo Takip No girin" 
-                              defaultValue={ord.tracking_number || ''} 
-                              id={`tracking-${ord.id}`}
-                              className="w-full bg-black border border-white/10 rounded px-2 py-1 text-[10px] text-white"
-                            />
-                          </td>
-                          <td className="p-4 text-right">
-                            <div className="flex justify-end gap-1.5 items-center flex-wrap">
-                              {isRefundRequested ? (
-                                <button type="button" onClick={() => handleApproveRefund(ord.id)} className="px-2.5 py-1 bg-red-500 text-black font-bold rounded text-[10px] cursor-pointer hover:bg-red-400">İadeyi Onayla & Başlat</button>
-                              ) : isLocked ? (
-                                <span className="text-[10px] font-mono text-zinc-500 uppercase px-2 py-1 bg-zinc-900 rounded">İşlem Tamamlandı</span>
-                              ) : (
-                                <>
-                                  <button type="button" onClick={() => handleUpdateOrderStatus(ord.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px] cursor-pointer hover:bg-emerald-500/30">Onayla</button>
-                                  <button type="button" onClick={() => {
-                                    const tracking = (document.getElementById(`tracking-${ord.id}`) as HTMLInputElement).value
-                                    if (!tracking) {
-                                      alert('Lütfen kargo takip numarası girin!')
-                                      return
-                                    }
-                                    handleUpdateOrderStatus(ord.id, 'shipped', tracking)
-                                  }} className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-[10px] cursor-pointer hover:bg-blue-500/30">Kargola</button>
-                                </>
-                              )}
-
-                              {/* Siparişi Geçmişten Silme */}
-                              <button type="button" onClick={() => handleDeleteOrder(ord.id)} title="Siparişi Sil" className="p-1.5 bg-zinc-800 text-zinc-400 hover:text-red-400 rounded cursor-pointer transition-colors">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* YENİ ETKİNLİK OLUŞTURMA */}
-        {isSuperAdmin && (
+        {/* İNDİRİM KUPONU OLUŞTURMA & LİSTELEME */}
+        {isStoreAdmin && (
+          <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
+            <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Tag className="h-5 w-5" /><span>İndirim Kuponu Yönetimi</span></h2>
+            <form onSubmit={handleAddCoupon} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <input type="text" placeholder="Kupon Kodu (Örn: RICE10)" required value={couponCode} onChange={(e) => setCouponCode(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white uppercase" />
+              <input type="number" placeholder="İndirim Yüzdesi (Örn: 15)" required value={discountPct} onChange={(e) => setDiscountPct(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <button type="submit" className="rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">Kuponu Aktif Et</button>
+            </form>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              {coupons.map((cp) => (
+                <div key={cp.id} className="flex items-center justify-between rounded-xl border border-white/10 bg-black/60 p-3 text-xs">
+                  <div>
+                    <strong className="text-primary font-mono">{cp.code}</strong> (%{cp.discount_percentage} İndirim)
+                  </div>
+                  <button type="button" onClick={() => handleDeleteCoupon(cp.id)} className="text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ETKİNLİK OLUŞTURMA (Topluluk Admini veya Süper Admin) */}
+        {isCommunityAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Yeni Topluluk Etkinliği Oluştur</span></h2>
             <form onSubmit={handleAddEvent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -533,71 +467,57 @@ export default function AdminPage() {
                 <option value="VOLEYBOL">VOLEYBOL</option>
                 <option value="YELKEN">YELKEN</option>
               </select>
-              <input type="text" placeholder="Konum / Google Maps Linki" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <input type="text" placeholder="Konum / Harita Linki" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="datetime-local" required value={evtDate} onChange={(e) => setEvtDate(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              
-              <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
-                <span className="text-xs text-zinc-400 truncate pointer-events-none">{uploading ? 'Yükleniyor...' : evtImage ? '✓ Afiş Yüklendi' : 'Etkinlik Afişi Seç'}</span>
-                <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
-                <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'event')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+              <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
+                <span className="text-xs text-zinc-400 truncate">{uploading ? 'Yükleniyor...' : evtImage ? '✓ Afiş Yüklendi' : 'Afiş Seç'}</span>
+                <Upload className="h-4 w-4 text-primary" />
+                <input type="file" accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
               </div>
               <textarea rows={1} placeholder="Açıklama" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-2 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">Etkinliği Yayınla</button>
+              <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Etkinliği Yayınla</button>
             </form>
           </div>
         )}
 
-        {/* ÜRÜN EKLEME */}
-        {isSuperAdmin && (
+        {/* ÜRÜN EKLEME (Mağaza Admini veya Süper Admin) */}
+        {isStoreAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-            <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Yeni Ürün / Drop Ekle (Çoklu Fotoğraf)</span></h2>
+            <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Yeni Ürün / Drop Ekle</span></h2>
             <form onSubmit={handleAddProduct} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="text" placeholder="Alt Başlık" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="number" placeholder="Fiyat (₺)" required value={price} onChange={(e) => setPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <input type="number" placeholder="Stok Adedi" required value={stock} onChange={(e) => setStock(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              
-              <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
-                <span className="text-xs text-zinc-400 truncate pointer-events-none">
-                  {uploading ? 'Yükleniyor...' : imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf Yüklendi` : 'Birden Fazla Fotoğraf Seç'}
-                </span>
-                <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
+              <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
+                <span className="text-xs text-zinc-400 truncate">{imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf` : 'Fotoğraf Seç'}</span>
+                <Upload className="h-4 w-4 text-primary" />
                 <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'new')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
               </div>
-
               <textarea rows={1} placeholder="Açıklama" value={description} onChange={(e) => setDescription(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">Ürünü Mağazada Yayınla</button>
+              <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Ürünü Yayınla</button>
             </form>
-
-            {imageList.length > 0 && (
-              <div className="flex items-center gap-3 pt-2 overflow-x-auto">
-                {imageList.map((url, idx) => (
-                  <div key={idx} className="relative h-16 w-16 rounded-xl overflow-hidden border border-primary flex-none">
-                    <Image src={url} alt="Önizleme" fill className="object-cover" />
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
 
+        {/* ÜRÜN VE ETKİNLİK LİSTELERİ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {isSuperAdmin && (
+          {isStoreAdmin && (
             <div className="space-y-4">
               <h2 className="text-base font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /><span>Yüklü Ürünler ({products.length})</span></h2>
               <div className="space-y-3">
                 {products.map((prod) => (
                   <div key={prod.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none"><Image src={prod.image_urls?.[0] || prod.image_url || '/placeholder.svg'} alt={prod.title} fill className="object-cover" /></div>
+                      <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none"><Image src={prod.image_urls?.[0] || '/placeholder.svg'} alt={prod.title} fill className="object-cover" /></div>
                       <div>
                         <h4 className="font-bold text-xs text-white">{prod.title}</h4>
-                        <div className="text-[10px] text-zinc-400">₺{prod.price} · Stok: {prod.stock} · {prod.image_urls?.length || 1} Fotoğraf</div>
+                        <div className="text-[10px] text-zinc-400">₺{prod.price} · Stok: {prod.stock}</div>
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button type="button" onClick={() => openEditModal(prod)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
-                      <button type="button" onClick={() => handleDeleteProduct(prod.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>
+                      <button type="button" onClick={() => openEditModal(prod)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 cursor-pointer"><Edit3 size={14} /></button>
+                      <button type="button" onClick={() => handleDeleteProduct(prod.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl cursor-pointer"><Trash2 size={14} /></button>
                     </div>
                   </div>
                 ))}
@@ -606,20 +526,20 @@ export default function AdminPage() {
           )}
 
           <div className="space-y-4 lg:col-span-2">
-            <h2 className="text-base font-bold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ({filteredEvents.length})</span></h2>
+            <h2 className="text-base font-bold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /><span>Etkinlikler ({filteredEvents.length})</span></h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {filteredEvents.map((evt) => (
                 <div key={evt.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
                   <div className="flex items-center gap-3">
                     <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex-none"><Image src={evt.image_url || '/placeholder.svg'} alt={evt.title} fill className="object-cover" /></div>
                     <div>
-                      <span className="text-[10px] font-mono text-primary uppercase">{evt.branch} {evt.instructor_name ? `• ${evt.instructor_name}` : ''}</span>
+                      <span className="text-[10px] font-mono text-primary uppercase">{evt.branch}</span>
                       <h4 className="font-bold text-xs text-white">{evt.title}</h4>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => openEditEventModal(evt)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 hover:bg-zinc-700 cursor-pointer"><Edit3 size={14} /></button>
-                    {isSuperAdmin && <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 cursor-pointer"><Trash2 size={14} /></button>}
+                    <button type="button" onClick={() => openEditEventModal(evt)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 cursor-pointer"><Edit3 size={14} /></button>
+                    <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl cursor-pointer"><Trash2 size={14} /></button>
                   </div>
                 </div>
               ))}
@@ -627,49 +547,41 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* KAYITLI SİSTEM ÜYELERİ & YETKİ YÖNETİMİ */}
+        {/* SÜPER ADMIN KULLANICI & YETKİ YÖNETİMİ */}
         {isSuperAdmin && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Kayıtlı Sistem Üyeleri & Yetki Yönetimi ({profiles.length})</span></h2>
+            <h2 className="text-base font-bold flex items-center gap-2 text-red-400"><ShieldAlert className="h-5 w-5" /><span>Süper Admin: Üye & Yetki Yönetimi ({profiles.length})</span></h2>
             <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-mono">
                   <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
-                    <tr><th className="p-4">Ad Soyad / E-posta</th><th className="p-4">Rolü</th><th className="p-4">Branşı</th><th className="p-4">Yetkiyi Güncelle</th><th className="p-4 text-right">İşlem</th></tr>
+                    <tr><th className="p-4">Üye</th><th className="p-4">Rolü</th><th className="p-4">Yetki Değiştir</th><th className="p-4 text-right">Süper Admin İşlemleri</th></tr>
                   </thead>
                   <tbody className="divide-y divide-white/5 text-zinc-300">
                     {profiles.map((prof) => (
                       <tr key={prof.id} className="hover:bg-zinc-900/40">
-                        <td className="p-4">
-                          <div className="font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</div>
-                          <div className="text-[10px] text-zinc-500">{prof.email}</div>
-                        </td>
-                        <td className="p-4"><span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${prof.role === 'admin' ? 'bg-primary/20 text-primary' : prof.role === 'captain' ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-800 text-zinc-400'}`}>{prof.role || 'member'}</span></td>
-                        <td className="p-4 text-primary font-bold">{prof.branch || 'ALL'}</td>
+                        <td className="p-4"><div className="font-bold text-white">{prof.full_name || 'İsimsiz'}</div><div className="text-[10px] text-zinc-500">{prof.email}</div></td>
+                        <td className="p-4"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-primary">{prof.role || 'member'}</span></td>
                         <td className="p-4">
                           <div className="flex gap-2 items-center">
                             <select defaultValue={prof.role || 'member'} id={`role-${prof.id}`} className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white">
                               <option value="member">Üye</option>
                               <option value="captain">Kaptan</option>
-                              <option value="admin">Admin</option>
-                            </select>
-                            <select defaultValue={prof.branch || 'ALL'} id={`branch-${prof.id}`} className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white">
-                              <option value="ALL">ALL (Tümü)</option>
-                              <option value="KOŞU">KOŞU</option>
-                              <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
-                              <option value="TENİS">TENİS</option>
-                              <option value="VOLEYBOL">VOLEYBOL</option>
-                              <option value="YELKEN">YELKEN</option>
+                              <option value="store_admin">Mağaza Admini</option>
+                              <option value="community_admin">Topluluk Admini</option>
+                              <option value="super_admin">Süper Admin</option>
                             </select>
                             <button type="button" onClick={async () => {
                               const newRole = (document.getElementById(`role-${prof.id}`) as HTMLSelectElement).value
-                              const newBranch = (document.getElementById(`branch-${prof.id}`) as HTMLSelectElement).value
-                              const { error } = await supabase.from('profiles').update({ role: newRole, branch: newBranch }).eq('id', prof.id)
-                              if (!error) { alert('Yetkiler güncellendi!'); fetchData() }
-                            }} className="px-3 py-1.5 bg-primary text-black rounded-lg text-[11px] font-bold cursor-pointer">Kaydet</button>
+                              await supabase.from('profiles').update({ role: newRole }).eq('id', prof.id)
+                              alert('Rol güncellendi!'); fetchData()
+                            }} className="px-3 py-1.5 bg-primary text-black rounded-lg text-[11px] font-bold cursor-pointer">Ata</button>
                           </div>
                         </td>
-                        <td className="p-4 text-right"><button type="button" onClick={() => handleDeleteProfile(prof.id)} className="p-2 text-zinc-500 hover:text-red-400 rounded-xl"><Trash2 className="h-4 w-4" /></button></td>
+                        <td className="p-4 text-right space-x-2">
+                          <button type="button" onClick={() => handleBanUser(prof.id, prof.email)} className="px-2.5 py-1 bg-amber-500/20 text-amber-400 rounded text-[10px] cursor-pointer">İhtar / Banla</button>
+                          <button type="button" onClick={() => handleDeleteUserAccount(prof.id)} className="px-2.5 py-1 bg-red-500/20 text-red-400 rounded text-[10px] cursor-pointer">Hesabı Sil</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -679,126 +591,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ETKİNLİK BAŞVURULARI */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Etkinlik Katılımcıları & Başvurular ({filteredRegistrations.length})</span></h2>
-            <button type="button" onClick={exportToCSV} className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary/20 cursor-pointer"><Download className="h-3.5 w-3.5" /> Excel'e Aktar</button>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
-                  <tr><th className="p-4">Katılımcı</th><th className="p-4">İletişim</th><th className="p-4">Etkinlik</th><th className="p-4">Durum</th><th className="p-4 text-right">İşlemler</th></tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-zinc-300">
-                  {filteredRegistrations.map((reg) => (
-                    <tr key={reg.id} className="hover:bg-zinc-900/40">
-                      <td className="p-4 font-bold text-white">{reg.full_name}</td>
-                      <td className="p-4">{reg.phone} / {reg.email}</td>
-                      <td className="p-4 text-primary">{reg.events?.title || 'Etkinlik'}</td>
-                      <td className="p-4"><span className="px-2 py-0.5 rounded text-[10px] uppercase bg-zinc-800 text-zinc-300">{reg.status}</span></td>
-                      <td className="p-4 text-right space-x-1">
-                        {reg.status !== 'approved' && <button type="button" onClick={() => handleUpdateRegistrationStatus(reg.id, 'approved')} className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-[10px]">Onayla</button>}
-                        <button type="button" onClick={() => handleDeleteRegistration(reg.id)} className="p-1 text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
       </div>
-
-      {/* ÜRÜN DÜZENLEME MODALİ */}
-      {editingProduct && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
-          <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Ürünü Düzenle</h3>
-              <button type="button" onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
-            </div>
-
-            <form onSubmit={handleUpdateProduct} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ürün Başlığı</label>
-                <input type="text" required value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Alt Başlık</label>
-                <input type="text" value={editSubtitle} onChange={(e) => setEditSubtitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Fiyat (₺)</label>
-                  <input type="number" required value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Stok Adedi</label>
-                  <input type="number" required value={editStock} onChange={(e) => setEditStock(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Açıklama</label>
-                <textarea rows={3} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-2">Ürün Fotoğrafları</label>
-                <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
-                  <span className="text-xs text-zinc-400 truncate pointer-events-none">
-                    {uploading ? 'Yükleniyor...' : 'Yeni Fotoğraf Ekle (Çoklu)'}
-                  </span>
-                  <Upload className="h-4 w-4 text-primary flex-none pointer-events-none" />
-                  <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'edit')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-                </div>
-
-                {editImages.length > 0 && (
-                  <div className="flex items-center gap-3 pt-3 overflow-x-auto">
-                    {editImages.map((imgUrl, imgIdx) => (
-                      <div key={imgIdx} className="relative h-16 w-16 rounded-xl overflow-hidden border border-white/20 flex-none group">
-                        <Image src={imgUrl} alt="Ürün Foto" fill className="object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => setEditImages(editImages.filter((_, i) => i !== imgIdx))}
-                          className="absolute inset-0 bg-red-600/70 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-xs font-bold"
-                        >
-                          Kaldır
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer shadow-lg hover:scale-[1.02] transition-transform">Değişiklikleri Kaydet</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ETKİNLİK DÜZENLEME MODALİ */}
-      {editingEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Etkinliği Düzenle</h3>
-              <button type="button" onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
-            </div>
-            <form onSubmit={handleUpdateEvent} className="space-y-4">
-              <input type="text" required value={editEvtTitle} onChange={(e) => setEditEvtTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <button type="submit" className="w-full rounded-full bg-primary py-3 text-xs font-bold uppercase text-black cursor-pointer">Kaydet</button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
