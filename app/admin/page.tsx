@@ -68,7 +68,7 @@ export default function AdminPage() {
   const [editDescription, setEditDescription] = useState('')
   const [editImages, setEditImages] = useState<string[]>([])
 
-  // Etkinlik Formu
+  // Yeni Etkinlik Formu
   const [evtTitle, setEvtTitle] = useState('')
   const [evtDesc, setEvtDesc] = useState('')
   const [evtDate, setEvtDate] = useState('')
@@ -77,13 +77,14 @@ export default function AdminPage() {
   const [instructorName, setInstructorName] = useState('')
   const [evtImage, setEvtImage] = useState('')
 
-  // Etkinlik Düzenleme Modal
+  // Etkinlik Düzenleme Modal (Tüm alanlar eklendi)
   const [editingEvent, setEditingEvent] = useState<any | null>(null)
   const [editEvtTitle, setEditEvtTitle] = useState('')
   const [editEvtBranch, setEditEvtBranch] = useState('KOŞU')
   const [editEvtLocation, setEditEvtLocation] = useState('')
   const [editEvtDate, setEditEvtDate] = useState('')
   const [editEvtInstructor, setEditEvtInstructor] = useState('')
+  const [editEvtDesc, setEditEvtDesc] = useState('')
   const [editEvtImage, setEditEvtImage] = useState('')
 
   useEffect(() => {
@@ -135,6 +136,7 @@ export default function AdminPage() {
     window.location.href = '/'
   }
 
+  // Kupon İşlemleri
   const handleAddCoupon = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!couponCode || !discountPct) return
@@ -231,6 +233,7 @@ export default function AdminPage() {
     setEditEvtLocation(evt.location || '')
     setEditEvtDate(evt.date ? evt.date.slice(0, 16) : '')
     setEditEvtInstructor(evt.instructor_name || '')
+    setEditEvtDesc(evt.description || '')
     setEditEvtImage(evt.image_url || '')
   }
 
@@ -243,6 +246,7 @@ export default function AdminPage() {
       location: editEvtLocation,
       date: editEvtDate,
       instructor_name: editEvtInstructor,
+      description: editEvtDesc,
       image_url: editEvtImage || editingEvent.image_url
     }).eq('id', editingEvent.id)
 
@@ -489,7 +493,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* YENİ ETKİNLİK OLUŞTURMA */}
+        {/* YENİ ETKİNLİK OLUŞTURMA (Tüm Alanlar Ekli) */}
         {isCommunityAdmin && (
           <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Yeni Topluluk Etkinliği Oluştur</span></h2>
@@ -508,9 +512,9 @@ export default function AdminPage() {
               <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
                 <span className="text-xs text-zinc-400 truncate">{evtImage ? '✓ Afiş Yüklendi' : 'Etkinlik Afişi Seç'}</span>
                 <Upload className="h-4 w-4 text-primary" />
-                <input type="file" accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'event')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
               </div>
-              <textarea rows={1} placeholder="Açıklama" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-2 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              <textarea rows={2} placeholder="Açıklama" value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="sm:col-span-2 lg:col-span-3 rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <button type="submit" className="sm:col-span-2 lg:col-span-3 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Etkinliği Yayınla</button>
             </form>
           </div>
@@ -544,12 +548,12 @@ export default function AdminPage() {
               {filteredEvents.map((evt) => (
                 <div key={evt.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950 p-4">
                   <div>
-                    <span className="text-[10px] font-mono text-primary uppercase">{evt.branch}</span>
+                    <span className="text-[10px] font-mono text-primary uppercase">{evt.branch} {evt.instructor_name ? `• ${evt.instructor_name}` : ''}</span>
                     <h4 className="font-bold text-xs text-white">{evt.title}</h4>
                   </div>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => openEditEventModal(evt)} className="p-2 bg-zinc-800 rounded-xl text-zinc-200 cursor-pointer"><Edit3 size={14} /></button>
-                    <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl cursor-pointer"><Trash2 size={14} /></button>
+                    {isSuperAdmin && <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="p-2 bg-red-500/10 text-red-400 rounded-xl cursor-pointer"><Trash2 size={14} /></button>}
                   </div>
                 </div>
               ))}
@@ -631,12 +635,12 @@ export default function AdminPage() {
 
       </div>
 
-      {/* ÜRÜN DÜZENLEME MODALİ (Fotoğraf Ekleme / Kaldırma Özellikli) */}
+      {/* ÜRÜN DÜZENLEME MODALİ */}
       {editingProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Ürünü ve Fotoğrafları Düzenle</h3>
+              <h3 className="font-bold text-base text-white">Ürünü ve Beden Stoklarını Düzenle</h3>
               <button type="button" onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
             </div>
 
@@ -658,7 +662,6 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Ürün Fotoğrafları Yönetimi (Ekle/Çıkar) */}
               <div>
                 <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-2">Ürün Fotoğrafları</label>
                 <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer hover:border-primary">
@@ -666,6 +669,7 @@ export default function AdminPage() {
                   <Upload className="h-4 w-4 text-primary" />
                   <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'edit')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
                 </div>
+
                 {editImages.length > 0 && (
                   <div className="flex items-center gap-3 pt-3 overflow-x-auto">
                     {editImages.map((imgUrl, imgIdx) => (
@@ -685,23 +689,57 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* ETKİNLİK DÜZENLEME MODALİ (Afiş Değiştirme Özellikli) */}
+      {/* ETKİNLİK DÜZENLEME MODALİ (Tüm Alanlar ve Afiş Değiştirme Ekli) */}
       {editingEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm" onClick={() => setEditingEvent(null)}>
-          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Etkinliği ve Afişi Düzenle</h3>
+              <h3 className="font-bold text-base text-white">Etkinliği ve Bilgilerini Düzenle</h3>
               <button type="button" onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleUpdateEvent} className="space-y-4">
-              <input type="text" required value={editEvtTitle} onChange={(e) => setEditEvtTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              
-              {/* Etkinlik Afişi Değiştirme */}
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Etkinlik Adı</label>
+                <input type="text" required value={editEvtTitle} onChange={(e) => setEditEvtTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Eğitmen İsmi</label>
+                  <input type="text" value={editEvtInstructor} onChange={(e) => setEditEvtInstructor(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Branş</label>
+                  <select value={editEvtBranch} onChange={(e) => setEditEvtBranch(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
+                    <option value="KOŞU">KOŞU</option>
+                    <option value="YOGA & MOBILITY">YOGA & MOBILITY</option>
+                    <option value="TENİS">TENİS</option>
+                    <option value="VOLEYBOL">VOLEYBOL</option>
+                    <option value="YELKEN">YELKEN</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Konum</label>
+                  <input type="text" value={editEvtLocation} onChange={(e) => setEditEvtLocation(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Tarih & Saat</label>
+                  <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Açıklama</label>
+                <textarea rows={2} value={editEvtDesc} onChange={(e) => setEditEvtDesc(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
+              </div>
+
               <div>
                 <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-2">Etkinlik Afişi</label>
                 <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
-                  <span className="text-xs text-zinc-400 truncate">{editEvtImage ? '✓ Yeni Afiş Seçildi' : 'Afiş Değiştir'}</span>
+                  <span className="text-xs text-zinc-400 truncate">{editEvtImage ? '✓ Afiş Seçildi' : 'Afişi Değiştir'}</span>
                   <Upload className="h-4 w-4 text-primary" />
                   <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'editev')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
                 </div>
