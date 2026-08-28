@@ -1,9 +1,16 @@
 'use client'
 
-import Link from 'next/link'
-import Image from 'next/image'
 import { useState } from 'react'
-import { ArrowUpRight, Users, ShoppingBag, Sparkles, ShieldCheck, X, Mail } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  ShieldCheck,
+  Sparkles,
+  ShoppingBag,
+  X,
+} from 'lucide-react'
 import { OriseMark } from '@/components/logo'
 import { cn } from '@/lib/utils'
 
@@ -17,7 +24,7 @@ const PANELS = [
       'Şehrin enerjisini birlikte yükselten haftalık koşu, yoga ve açık hava antrenman buluşmaları.',
     cta: 'Etkinlikleri Keşfet',
     meta: 'KOŞU · VOLEYBOL · TENİS · PİLATES · YELKEN',
-    icon: Users,
+    icon: Sparkles,
     bgImage: '/community-hero.jpeg',
     align: 'left',
     subText: 'Haftalık Antrenman & Atölyeler',
@@ -39,44 +46,8 @@ const PANELS = [
   },
 ]
 
-const LEGAL_DOCS: Record<string, { title: string; content: string[] }> = {
-  kvkk: {
-    title: 'KVKK Aydınlatma & Açık Rıza Metni',
-    content: [
-      '1. Veri Sorumlusunun Kimliği: 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, Orise Club olarak kişisel verileriniz, veri sorumlusu sıfatıyla aşağıda açıklanan kapsamda işlenmektedir.',
-      '2. İşlenen Kişisel Verileriniz: Ad-soyad, e-posta adresi, telefon numarası, teslimat/fatura adresleri ve etkinlik katılım/sağlık beyanı bilgileriniz.',
-      '3. Kişisel Verilerin İşlenme Amaçları: Mağaza alışverişlerinizin faturalandırma ve kargo teslimat süreçlerinin yürütülmesi, güvenli ödeme altyapısının sağlanması ve topluluk etkinliklerine katılım süreçlerinin yönetilmesi.',
-      '4. İletişim: Mağaza işlemleri için store@oriseclub.com, topluluk için community@oriseclub.com adresleri üzerinden bize ulaşabilirsiniz.'
-    ],
-  },
-  privacy: {
-    title: 'Gizlilik ve Çerez Politikası',
-    content: [
-      '1. Gizlilik İlkemiz: Orise Club, e-ticaret müşterilerinin ve topluluk üyelerinin gizliliğine son derece önem verir. Tüm ödeme verileri şifrelenmiş güvenli altyapıyla korunur.',
-      '2. Çerez Kullanımı: Sitemizdeki alışveriş sepeti ve oturum işlemlerinin yürütülmesi için zorunlu çerezler kullanılmaktadır.',
-      '3. İletişim Kanalları: Sorularınız için store@oriseclub.com üzerinden destek alabilirsiniz.'
-    ],
-  },
-  terms: {
-    title: 'Mesafeli Satış ve Hizmet Sözleşmesi',
-    content: [
-      '1. Taraflar: İş bu sözleşme, Orise Club ("Satıcı") ile internet sitesi üzerinden alışveriş yapan Alıcı arasında akdedilmiştir.',
-      '2. Konu: İnternet sitesi üzerinden satışa sunulan teknik tekstil ürünlerinin teslimatı ve satış şartlarını düzenler. Topluluk etkinlikleri ise ücretsiz buluşma niteliğindedir.',
-      '3. İletişim: store@oriseclub.com'
-    ],
-  },
-  refund: {
-    title: 'İptal ve İade Koşulları',
-    content: [
-      '1. Ürün İadeleri: Mağazamızdan satın alınan kullanılmamış ürünler teslim tarihinden itibaren 14 gün içinde iade edilebilir.',
-      '2. Destek: İade ve değişim talepleriniz için store@oriseclub.com adresine e-posta gönderebilirsiniz.'
-    ],
-  },
-}
-
 export function SplitHero() {
   const [hovered, setHovered] = useState<'community' | 'store' | null>(null)
-  const [activeLegalModal, setActiveLegalModal] = useState<string | null>(null)
 
   return (
     <section className="relative flex h-full w-full flex-col overflow-hidden md:flex-row bg-black select-none font-sans">
@@ -133,7 +104,7 @@ export function SplitHero() {
             onMouseEnter={() => setHovered(panel.id as 'community' | 'store')}
             onMouseLeave={() => setHovered(null)}
             className={cn(
-              "group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-700 last:border-b-0 md:h-full md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16 pb-24 md:pb-24",
+              "group relative flex w-full flex-col items-center justify-center border-b border-white/5 p-8 text-center transition-all duration-700 last:border-b-0 md:h-full md:border-b-0 md:border-r md:last:border-r-0 md:p-12 lg:p-16 pb-28 md:pb-28",
               panel.primary ? "md:w-[52%]" : "md:w-[48%]"
             )}
           >
@@ -211,62 +182,42 @@ export function SplitHero() {
         )
       })}
 
-      {/* FOOTER & İLETİŞİM / SOSYAL MEDYA LİNKLERİ */}
-      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-3 px-6 sm:px-10 py-3 bg-black/95 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400">
+      {/* FOOTER & İLETİŞİM / YASAL SAYFA YÖNLENDİRMELERİ */}
+      <footer className="absolute bottom-0 inset-x-0 z-40 flex flex-col md:flex-row items-center justify-between gap-3 px-6 sm:px-10 py-3 bg-black/95 border-t border-white/10 backdrop-blur-xl text-xs font-mono text-zinc-400">
         <div className="flex items-center gap-2.5">
           <span className="font-bold text-white tracking-wider">ORISE CLUB</span>
           <span className="text-zinc-600">/</span>
           <span className="text-[10px] tracking-widest text-primary uppercase">ATHLETICS & STUDIO</span>
         </div>
 
-        {/* Yasal Metin Tetikleyicileri */}
+        {/* Yasal Sayfa Bağlantıları */}
         <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
-          {['kvkk', 'privacy', 'terms', 'refund'].map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setActiveLegalModal(key)}
-              className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4 cursor-pointer uppercase"
-            >
-              {key === 'kvkk' ? 'KVKK' : key === 'privacy' ? 'Gizlilik' : key === 'terms' ? 'Mesafeli Satış' : 'İade'}
-            </button>
-          ))}
+          <Link href="/gizlilik" className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4 uppercase">
+            Gizlilik Politikası
+          </Link>
+          <span className="text-zinc-700">·</span>
+          <Link href="/mesafeli-satis" className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4 uppercase">
+            Mesafeli Satış
+          </Link>
+          <span className="text-zinc-700">·</span>
+          <Link href="/iade-kosullari" className="hover:text-primary transition-colors underline decoration-zinc-700 underline-offset-4 uppercase">
+            İptal & İade
+          </Link>
         </div>
 
-        {/* E-posta ve Sosyal Medya Bağlantıları */}
-        <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] font-bold uppercase tracking-wider">
-          <div className="flex items-center gap-1.5 text-zinc-300">
-            <Mail className="h-3 w-3 text-primary" />
-            <span className="text-[10px] text-zinc-400 lowercase">store@oriseclub.com</span>
+        {/* Güvenlik Rozetleri ve İyzico Ödeme Logoları */}
+        <div className="flex items-center gap-3">
+          <span className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-emerald-400 font-bold">
+            <ShieldCheck className="h-3.5 w-3.5" /> 256-BIT SSL
+          </span>
+          <div className="flex items-center gap-1.5 font-bold uppercase text-[9px] bg-zinc-900 border border-white/10 px-2.5 py-1 rounded-lg">
+            <span className="text-blue-400">VISA</span>
+            <span className="text-amber-400">MC</span>
+            <span className="text-red-400">TROY</span>
+            <span className="text-primary font-black border-l border-white/20 pl-1.5">İYZİCO İLE ÖDE</span>
           </div>
-          <span className="text-zinc-700">|</span>
-          <a href="https://www.instagram.com/orisestore/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Mağaza IG</a>
-          <span className="text-zinc-600">·</span>
-          <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Topluluk IG</a>
-          <span className="text-zinc-600">·</span>
-          <a href="https://www.linkedin.com/company/orisecommunity" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a>
         </div>
       </footer>
-
-      {/* YASAL METİN MODALİ */}
-      {activeLegalModal && LEGAL_DOCS[activeLegalModal] && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setActiveLegalModal(null)}>
-          <div className="relative w-full max-w-xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 space-y-4 text-white max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <span className="text-primary font-bold text-sm uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Yasal Bilgilendirme</span>
-              <button onClick={() => setActiveLegalModal(null)} className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-black cursor-pointer"><X className="h-4 w-4" /></button>
-            </div>
-            <h3 className="text-xl font-black">{LEGAL_DOCS[activeLegalModal].title}</h3>
-            <div className="space-y-3 pt-2">
-              {LEGAL_DOCS[activeLegalModal].content.map((paragraph, index) => (
-                <p key={index} className="text-xs text-zinc-300 leading-relaxed">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   )
 }
