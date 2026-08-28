@@ -45,7 +45,7 @@ export default function GizlilikPage() {
           <section className="space-y-2">
             <h2 className="text-sm font-bold text-white uppercase tracking-wider font-mono">4. İletişim</h2>
             <p>
-              Gizlilik politikamız ile ilgili her türlü soru, öneri ve talepleriniz için <span className="text-primary font-mono">community@oriseclub.com</span> e-posta adresi üzerinden bizimle iletişime geçebilirsiniz.
+              Gizlilik politikamız ile ilgili her türlü soru, öneri ve talepleriniz için <span className="text-primary font-mono">store@oriseclub.com</span> e-posta adresi üzerinden bizimle iletişime geçebilirsiniz.
             </p>
           </section>
         </div>
