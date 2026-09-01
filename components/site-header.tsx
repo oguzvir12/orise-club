@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Settings, X, Upload, MessageSquare, MessageCircle, Send, Loader2 } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Settings, X, Upload, MessageCircle, Send, Loader2, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -28,7 +28,7 @@ function AiChatButton() {
       const data = await res.json()
       setResponse(data.response)
     } catch (e) {
-      setResponse("Bir hata oluştu ama admin'e ilettim, merak etme!")
+      setResponse("Bir hata oluştu ama en kısa sürede döneceğiz!")
     } finally {
       setLoading(false)
       setMsg('')
@@ -40,7 +40,7 @@ function AiChatButton() {
       <button 
         onClick={() => setIsOpen(!isOpen)} 
         className="fixed bottom-6 left-6 z-[90] h-14 w-14 rounded-full bg-primary text-black shadow-2xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
-        aria-label="ORISE AI Buddy Destek"
+        aria-label="Destek Asistanı"
       >
         {isOpen ? <X /> : <MessageCircle />}
       </button>
@@ -48,11 +48,11 @@ function AiChatButton() {
       {isOpen && (
         <div className="fixed bottom-24 left-6 z-[90] w-80 h-96 bg-zinc-950 border border-white/10 rounded-3xl shadow-2xl p-4 flex flex-col">
           <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
-            <span className="text-xs font-bold text-primary uppercase">ORISE AI Buddy 🤖</span>
+            <span className="text-xs font-bold text-primary uppercase">ORISE STORE DESTEK 🤖</span>
             <button onClick={() => setIsOpen(false)} className="text-zinc-400 hover:text-white text-xs cursor-pointer">✕</button>
           </div>
           <div className="flex-1 overflow-y-auto text-xs text-white space-y-2 p-2">
-            {!response && <p className="text-zinc-500">Selam! Kulüp hakkında neyi merak ediyorsun?</p>}
+            {!response && <p className="text-zinc-500">Selam! Siparişlerin veya koleksiyon hakkında nasıl yardımcı olabilirim?</p>}
             {response && <p className="bg-zinc-900 p-3 rounded-xl leading-relaxed">{response}</p>}
           </div>
           <div className="flex gap-2 pt-2 border-t border-white/5">
@@ -61,7 +61,7 @@ function AiChatButton() {
               onChange={(e) => setMsg(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
               className="flex-1 bg-black rounded-full px-3 py-2 text-xs text-white focus:outline-none border border-white/10" 
-              placeholder="Soru sor..." 
+              placeholder="Mesaj yazın..." 
             />
             <button onClick={sendMessage} className="bg-primary p-2.5 rounded-full text-black hover:opacity-90 cursor-pointer">
               {loading ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} />}
@@ -88,20 +88,11 @@ export function SiteHeader() {
   const [title, setTitle] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
 
-  // Sağlık & Acil Durum Alanları
-  const [bloodType, setBloodType] = useState('')
-  const [emergencyContact, setEmergencyContact] = useState('')
-  const [emergencyPhone, setEmergencyPhone] = useState('')
-  const [medicalNotes, setMedicalNotes] = useState('')
-  const [dailyMedication, setDailyMedication] = useState('')
-
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   
-  const [myEvents, setMyEvents] = useState<any[]>([])
   const [myOrders, setMyOrders] = useState<any[]>([])
-  const [activeTab, setActiveTab] = useState<'profile' | 'events' | 'orders'>('profile')
 
   const fetchProfile = async (userId: string, userEmail?: string) => {
     try {
@@ -115,17 +106,9 @@ export function SiteHeader() {
         setBillingAddress(data.billing_address || '')
         setTitle(data.title || '')
         setAvatarUrl(data.avatar_url || '')
-        setBloodType(data.blood_type || '')
-        setEmergencyContact(data.emergency_contact || '')
-        setEmergencyPhone(data.emergency_phone || '')
-        setMedicalNotes(data.medical_notes || '')
-        setDailyMedication(data.daily_medication || '')
       }
 
       if (userEmail) {
-        const { data: regData } = await supabase.from('event_registrations').select('*, events(*)').ilike('email', userEmail.trim())
-        if (regData) setMyEvents(regData)
-
         const { data: ordData } = await supabase.from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
         if (ordData) setMyOrders(ordData)
       }
@@ -156,7 +139,7 @@ export function SiteHeader() {
       if (session?.user) {
         await fetchProfile(session.user.id, session.user.email)
       } else {
-        setFullName(''); setPhone(''); setInstagram(''); setAddress(''); setBillingAddress(''); setTitle(''); setAvatarUrl(''); setBloodType(''); setEmergencyContact(''); setEmergencyPhone(''); setMedicalNotes(''); setDailyMedication(''); setMyEvents([]); setMyOrders([])
+        setFullName(''); setPhone(''); setInstagram(''); setAddress(''); setBillingAddress(''); setTitle(''); setAvatarUrl(''); setMyOrders([])
       }
     })
     return () => subscription.unsubscribe()
@@ -209,18 +192,13 @@ export function SiteHeader() {
         address: address, 
         billing_address: billingAddress, 
         title: title, 
-        avatar_url: avatarUrl,
-        blood_type: bloodType,
-        emergency_contact: emergencyContact,
-        emergency_phone: emergencyPhone,
-        medical_notes: medicalNotes,
-        daily_medication: dailyMedication
+        avatar_url: avatarUrl
       }
 
       const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
       if (error) throw error
 
-      setSuccessMsg('Profil ve sağlık bilgileriniz güncellendi!')
+      setSuccessMsg('Fatura ve teslimat bilgileriniz güncellendi!')
       setTimeout(() => { setSuccessMsg(''); window.location.reload() }, 1000)
     } catch (err: any) {
       alert('Kayıt Hatası: ' + err.message)
@@ -234,18 +212,14 @@ export function SiteHeader() {
       <header className={cn('fixed inset-x-0 top-0 z-50 transition-all duration-300', scrolled ? 'border-b border-border bg-background/80 backdrop-blur-xl' : 'border-b border-transparent bg-transparent')}>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
           <div className="flex items-center gap-6">
-            <Link href="/" aria-label="ORISE CLUB Ana Sayfa"><Logo /></Link>
-            <Link href="/hub" className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-zinc-300 hover:text-primary transition-colors">
-              <MessageSquare className="h-4 w-4 text-primary" />
-              <span>ORISE HUB</span>
+            <Link href="/" aria-label="ORISE STORE Ana Sayfa"><Logo /></Link>
+            <Link href="/store" className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-zinc-300 hover:text-primary transition-colors">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>KOLEKSİYON</span>
             </Link>
           </div>
 
           <div className="flex items-center gap-3">
-            <Link href="/hub" className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-secondary/50 text-foreground backdrop-blur-md hover:border-primary hover:text-primary">
-              <MessageSquare className="h-4 w-4" />
-            </Link>
-
             <button type="button" onClick={openCart} aria-label="Sepeti aç" className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-secondary/50 text-foreground backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-primary cursor-pointer">
               <ShoppingBag className="h-[18px] w-[18px]" />
               {count > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground">{count}</span>}
@@ -281,160 +255,61 @@ export function SiteHeader() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-primary" />
-                <h3 className="font-bold text-sm uppercase tracking-wider">Kişisel Bilgiler & Sağlık Kartı</h3>
+                <h3 className="font-bold text-sm uppercase tracking-wider">Müşteri & Fatura Bilgileri</h3>
               </div>
               <button type="button" onClick={() => setIsProfileOpen(false)} className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
 
-            <div className="flex gap-2 border-b border-white/10 pb-3 overflow-x-auto">
-              <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${activeTab === 'profile' ? 'bg-primary text-black' : 'bg-white/5 text-zinc-400 hover:text-white'}`}>Profil & Sağlık</button>
-              <button onClick={() => setActiveTab('events')} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${activeTab === 'events' ? 'bg-primary text-black' : 'bg-white/5 text-zinc-400 hover:text-white'}`}>Etkinliklerim ({myEvents.length})</button>
-              <button onClick={() => setActiveTab('orders')} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${activeTab === 'orders' ? 'bg-primary text-black' : 'bg-white/5 text-zinc-400 hover:text-white'}`}>Siparişlerim ({myOrders.length})</button>
-            </div>
-
-            {activeTab === 'profile' ? (
-              <form onSubmit={handleUpdateProfile} className="space-y-4">
-                <div className="flex items-center gap-4 py-2">
-                  <div className="relative h-16 w-16 rounded-full overflow-hidden border border-white/20 bg-zinc-900 flex-shrink-0">
-                    <Image src={avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop'} alt="Avatar" fill className="object-cover" />
-                  </div>
-                  <div>
-                    <label className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-bold text-white hover:bg-white/10 cursor-pointer">
-                      <Upload className="h-3.5 w-3.5 text-primary" />
-                      <span>{uploading ? 'Yükleniyor...' : 'Fotoğraf Seç'}</span>
-                      <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-                    </label>
-                  </div>
+            <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div className="flex items-center gap-4 py-2">
+                <div className="relative h-16 w-16 rounded-full overflow-hidden border border-white/20 bg-zinc-900 flex-shrink-0">
+                  <Image src={avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop'} alt="Avatar" fill className="object-cover" />
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
-                    <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon</label>
-                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-primary block mb-1 font-bold">Kan Grubu</label>
-                    <input type="text" value={bloodType} onChange={(e) => setBloodType(e.target.value)} placeholder="Örn: 0 Rh(+)" className="w-full rounded-xl border border-primary/30 bg-black px-4 py-3 text-xs text-white" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Instagram</label>
-                    <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  </div>
-                </div>
-
-                {/* ACİL DURUM VE SAĞLIK BİLGİLERİ */}
-                <div className="border-t border-white/10 pt-4 space-y-4">
-                  <h4 className="text-xs font-bold text-primary uppercase">Acil Durum & Sağlık Bilgileri</h4>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Acil Durumda Aranacak Kişi</label>
-                      <input type="text" value={emergencyContact} onChange={(e) => setEmergencyContact(e.target.value)} placeholder="Adı Soyadı / Yakınlık" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Acil Durum Telefonu</label>
-                      <input type="tel" value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} placeholder="05XX XXX XX XX" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Bilinen Hastalık / Kronik Rahatsızlık</label>
-                    <input type="text" value={medicalNotes} onChange={(e) => setMedicalNotes(e.target.value)} placeholder="Yoksa 'Yok' yazabilirsiniz" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Düzenli Kullandığı İlaçlar</label>
-                    <input type="text" value={dailyMedication} onChange={(e) => setDailyMedication(e.target.value)} placeholder="Yoksa 'Yok' yazabilirsiniz" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  </div>
-                </div>
-
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat Adresi</label>
-                  <textarea rows={2} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  <label className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-bold text-white hover:bg-white/10 cursor-pointer">
+                    <Upload className="h-3.5 w-3.5 text-primary" />
+                    <span>{uploading ? 'Yükleniyor...' : 'Fotoğraf Seç'}</span>
+                    <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                  </label>
                 </div>
-
-                {successMsg && <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-xs text-emerald-400 text-center font-mono">{successMsg}</div>}
-
-                <button type="submit" disabled={loading} className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">Değişiklikleri Kaydet</button>
-              </form>
-            ) : activeTab === 'events' ? (
-              <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
-                {myEvents.length === 0 ? (
-                  <div className="py-12 text-center text-zinc-500 text-xs font-mono">Katıldığınız etkinlik bulunmuyor.</div>
-                ) : (
-                  myEvents.map((item) => {
-                    const evt = item.events
-                    if (!evt) return null
-                    const isApproved = item.status === 'approved'
-                    return (
-                      <div key={item.id} className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono uppercase text-primary bg-primary/10 px-2.5 py-1 rounded-full">{evt.branch}</span>
-                          <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full uppercase ${isApproved ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>{isApproved ? 'Onaylandı' : 'Onay Bekliyor'}</span>
-                        </div>
-                        <h4 className="font-bold text-sm text-white">{evt.title}</h4>
-                        {isApproved && <a href="https://chat.whatsapp.com/G0tIj76Ky7BCsVUaa1laFg" target="_blank" rel="noopener noreferrer" className="text-emerald-400 underline text-[11px] block">WhatsApp Grubuna Katıl →</a>}
-                      </div>
-                    )
-                  })
-                )}
               </div>
-            ) : (
-              <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
+                  <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon</label>
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat ve Fatura Adresi</label>
+                <textarea rows={3} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Mahalle, Cadde, No, İlçe / İl" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              </div>
+
+              {successMsg && <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-xs text-emerald-400 text-center font-mono">{successMsg}</div>}
+
+              <button type="submit" disabled={loading} className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">Bilgileri Güncelle</button>
+            </form>
+
+            <div className="border-t border-white/10 pt-4 space-y-4">
+              <h4 className="text-xs font-bold text-primary uppercase">Sipariş Geçmişim ({myOrders.length})</h4>
+              <div className="space-y-3 max-h-40 overflow-y-auto">
                 {myOrders.length === 0 ? (
-                  <div className="py-12 text-center text-zinc-500 text-xs font-mono">Henüz mağazadan siparişiniz yok.</div>
+                  <p className="text-xs text-zinc-500 font-mono">Henüz siparişiniz bulunmuyor.</p>
                 ) : (
-                  myOrders.map((ord) => {
-                    const isShipped = ord.status === 'shipped'
-                    const isDelivered = ord.status === 'delivered' || ord.status === 'approved'
-
-                    return (
-                      <div key={ord.id} className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono uppercase text-primary bg-primary/10 px-2.5 py-1 rounded-full">₺{ord.total_price}</span>
-                          <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                            {isDelivered ? 'Teslim Edildi / Onaylandı' : isShipped ? 'Kargoda' : 'Onay Bekliyor'}
-                          </span>
-                        </div>
-                        <div className="space-y-1">
-                          {ord.items?.map((i: any, idx: number) => (
-                            <div key={idx} className="text-xs text-white">• {i.name} (x{i.quantity})</div>
-                          ))}
-                        </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] font-mono text-zinc-400">
-                          <span>Teslimat: {ord.delivery_type === 'shipping' ? 'Kargo' : 'Elden Teslim'}</span>
-                          {ord.tracking_number && <span className="text-primary font-bold">Kargo Takip: {ord.tracking_number}</span>}
-                        </div>
-
-                        {isShipped && (
-                          <div className="pt-2 text-right">
-                            <button
-                              onClick={async () => {
-                                const { error } = await supabase.from('orders').update({ status: 'delivered' }).eq('id', ord.id)
-                                if (!error) {
-                                  alert('Sipariş teslim alındı olarak onaylandı!')
-                                  window.location.reload()
-                                }
-                              }}
-                              className="px-3 py-1.5 bg-emerald-500 text-black rounded-lg text-xs font-bold uppercase cursor-pointer"
-                            >
-                              Siparişi Onayla (Teslim Aldım)
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })
+                  myOrders.map((ord) => (
+                    <div key={ord.id} className="p-3 rounded-xl bg-zinc-900 border border-white/5 flex justify-between items-center text-xs">
+                      <span>Sipariş #{ord.id.slice(0, 6)}</span>
+                      <span className="text-primary font-bold">₺{ord.total_price}</span>
+                    </div>
+                  ))
                 )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}
