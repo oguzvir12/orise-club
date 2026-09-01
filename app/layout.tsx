@@ -1,7 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Geist, Space_Grotesk } from 'next/font/google'
 import { CartProvider } from '@/components/cart/cart-provider'
 import { SiteHeader } from '@/components/site-header'
@@ -52,16 +51,23 @@ export default function RootLayout({
   return (
     <html
       lang="tr"
-      className={`${geist.variable} ${spaceGrotesk.variable} bg-background`}
+      className={`${geist.variable} ${spaceGrotesk.variable} bg-black text-white`}
     >
-      <body className="font-sans antialiased text-foreground bg-background flex flex-col min-h-screen">
+      <body className="font-sans antialiased bg-black text-white flex flex-col min-h-screen selection:bg-primary selection:text-black">
         <CartProvider>
+          {/* Üst Menü */}
           <SiteHeader />
-          <div className="w-full flex-1">{children}</div>
+
+          {/* Sayfa İçeriği (Header yüksekliği kadar üstten boşluk bırakıldı) */}
+          <main className="flex-1 pt-16 w-full">
+            {children}
+          </main>
+
+          {/* Sepet Çekmecesi */}
           <CartDrawer />
 
-          {/* SİTE GENELİNDE SABİT PROFESYONEL E-TİCARET FOOTER (Yasal Mevzuatlar, Reklamlar ve İyzico Güvencesi) */}
-          <footer className="w-full border-t border-white/10 bg-black py-10 px-6 sm:px-10 lg:px-14 mt-auto z-40">
+          {/* Kusursuz Hizalanmış Profesyonel E-Ticaret Footer */}
+          <footer className="w-full border-t border-white/10 bg-black py-12 px-6 sm:px-10 lg:px-14 z-30">
             <div className="mx-auto max-w-7xl flex flex-col lg:flex-row items-center justify-between gap-6 text-xs font-mono text-zinc-400">
               
               <div className="flex items-center gap-4">
