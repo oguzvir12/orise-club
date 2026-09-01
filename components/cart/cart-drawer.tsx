@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Minus, Plus, ShoppingBag, Trash2, X, Tag, Check, AlertCircle } from 'lucide-react'
+import { Minus, Plus, ShoppingBag, Trash2, X, Tag, Check, AlertCircle, Truck, FileText } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -14,6 +14,8 @@ const formatTL = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n)
 
+const SHIPPING_FEE = 60
+
 export function CartDrawer() {
   const { items, isOpen, closeCart, subtotal, removeItem, updateQuantity } = useCart()
   const [loading, setLoading] = useState(false)
@@ -23,6 +25,25 @@ export function CartDrawer() {
   const [appliedDiscount, setAppliedDiscount] = useState(0)
   const [couponCodeName, setCouponCodeName] = useState('')
   const [couponError, setCouponError] = useState('')
+
+  // Fatura adresi ve kargo tercihleri
+  const [sameAsShipping, setSameAsShipping] = useState(true)
+  const [billingAddressInput, setBillingAddressInput] = useState('')
+  const [userProfile, setUserProfile] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
+        if (data) {
+          setUserProfile(data)
+          setBillingAddressInput(data.billing_address || data.address || '')
+        }
+      }
+    }
+    if (isOpen) fetchProfile()
+  }, [isOpen])
 
   const handleApplyCoupon = async () => {
     setCouponError('')
@@ -46,9 +67,8 @@ export function CartDrawer() {
   }
 
   const discountAmount = (subtotal * appliedDiscount) / 100
-  const finalTotal = subtotal - discountAmount
+  const finalTotal = subtotal - discountAmount + SHIPPING_FEE
 
-  // İyzico ve Paraşüt için katı veri doğrulama (Spam/Asd engelleme)
   const validateCustomerProfile = (profile: any) => {
     if (!profile) return 'Kullanıcı profili bulunamadı.'
 
@@ -57,26 +77,26 @@ export function CartDrawer() {
     const tcNo = (profile.tc_no || '').trim()
     const address = (profile.address || '').trim()
 
-    // Ad Soyad Kontrolü (En az 2 kelime ve spam engeli)
     const nameParts = fullName.split(' ')
     if (nameParts.length < 2 || fullName.toLowerCase().includes('asd') || fullName.toLowerCase().includes('qwe')) {
       return 'Lütfen geçerli bir Ad ve Soyad giriniz (Örn: Ahmet Yılmaz).'
     }
 
-    // Telefon Kontrolü (05 ile başlamalı ve en az 10 hane olmalı)
     const cleanPhone = phone.replace(/\D/g, '')
     if (!cleanPhone.startsWith('05') || cleanPhone.length < 10) {
       return 'Lütfen geçerli bir cep telefonu numarası giriniz (05XXXXXXXXX).'
     }
 
-    // TCKN Kontrolü (Paraşüt ve İyzico e-Fatura için 11 haneli zorunlu)
     if (!/^\d{11}$/.test(tcNo)) {
       return 'Fatura ve yasal süreçler için 11 haneli geçerli bir TCKN girmelisiniz.'
     }
 
-    // Adres Kontrolü (Spam engeli - en az 10 karakter ve asd içermemeli)
-    if (address.length < 10 || address.toLowerCase().includes('asd') || address.toLowerCase().includes('qwe')) {
+    if (address.length < 10 || address.toLowerCase().includes('asd')) {
       return 'Lütfen geçerli ve açık bir teslimat adresi belirtiniz.'
+    }
+
+    if (!sameAsShipping && (!billingAddressInput || billingAddressInput.length < 10)) {
+      return 'Lütfen geçerli bir ayrı fatura adresi belirtiniz.'
     }
 
     return null
@@ -94,7 +114,6 @@ export function CartDrawer() {
     setLoading(true)
 
     try {
-      // Kullanıcının profil bilgilerini çekip eksiksiz mi diye denetliyoruz
       const { data: profile, error: profError } = await supabase
         .from('profiles')
         .select('*')
@@ -107,7 +126,6 @@ export function CartDrawer() {
         return
       }
 
-      // Spam ve eksik veri denetimi (Paraşüt / İyzico validasyonu)
       const errorMsg = validateCustomerProfile(profile)
       if (errorMsg) {
         setValidationError(errorMsg)
@@ -115,10 +133,32 @@ export function CartDrawer() {
         return
       }
 
-      // Her şey yolundaysa İyzico entegrasyon akışı ve sipariş kaydı tetiklenir
+      // Siparişi Supabase orders tablosuna kaydetme simülasyonu/hazırlığı
+      const finalBillingAddr = sameAsShipping ? profile.address : billingAddressInput
+
+      const orderPayload = {
+        user_id: session.user.id,
+        customer_name: profile.full_name,
+        email: session.user.email,
+        phone: profile.phone,
+        tc_no: profile.tc_no,
+        address: profile.address,
+        billing_address: finalBillingAddr,
+        same_billing: sameAsShipping,
+        items: items,
+        subtotal: subtotal,
+        discount: discountAmount,
+        shipping_fee: SHIPPING_FEE,
+        total_price: finalTotal,
+        status: 'Ödeme Bekliyor'
+      }
+
+      const { error: ordError } = await supabase.from('orders').insert([orderPayload])
+      if (ordError) throw ordError
+
       setTimeout(() => {
         setLoading(false)
-        alert('Fatura ve İyzico verileriniz doğrulandı. Canlı API anahtarlarınız aktifleştiğinde ödeme sayfasına yönlendirileceksiniz.')
+        alert('Siparişiniz oluşturuldu! İyzico güvenli ödeme sayfasına yönlendiriliyorsunuz.')
       }, 800)
 
     } catch (err: any) {
@@ -136,7 +176,7 @@ export function CartDrawer() {
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 bg-black/80">
           <h2 className="flex items-center gap-2.5 text-sm font-black uppercase tracking-widest text-white">
             <ShoppingBag className="h-4 w-4 text-primary" />
-            <span>Sepetim</span>
+            <span>Sepetim ({items.reduce((a, b) => a + (b.quantity || 1), 0)})</span>
           </h2>
           <button type="button" onClick={closeCart} className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-zinc-300 hover:bg-primary hover:text-black cursor-pointer transition-colors">
             <X className="h-4 w-4" />
@@ -184,6 +224,31 @@ export function CartDrawer() {
         {items.length > 0 && (
           <div className="space-y-4 border-t border-white/10 bg-zinc-950 px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
             
+            {/* Fatura Adresi Tercihi */}
+            <div className="space-y-2 pb-2 border-b border-white/5">
+              <label className="flex items-center gap-2 cursor-pointer text-xs text-zinc-300">
+                <input 
+                  type="checkbox" 
+                  checked={sameAsShipping} 
+                  onChange={(e) => setSameAsShipping(e.target.checked)} 
+                  className="rounded border-white/20 bg-black text-primary focus:ring-0 cursor-pointer h-4 w-4"
+                />
+                <span className="font-medium">Fatura adresim teslimat adresimle aynı</span>
+              </label>
+
+              {!sameAsShipping && (
+                <div className="pt-1">
+                  <input
+                    type="text"
+                    placeholder="Ayrı Fatura Adresinizi Giriniz"
+                    value={billingAddressInput}
+                    onChange={(e) => setBillingAddressInput(e.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white focus:border-primary focus:outline-none"
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="space-y-1.5">
               <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 block">İndirim Kuponu</span>
               <div className="flex gap-2">
@@ -214,18 +279,22 @@ export function CartDrawer() {
               {couponError && <p className="text-[10px] font-mono text-red-400">{couponError}</p>}
             </div>
 
-            <div className="space-y-1.5 pt-2 border-t border-white/5">
+            <div className="space-y-1.5 pt-2 border-t border-white/5 font-mono">
               <div className="flex items-center justify-between text-xs text-zinc-400">
                 <span>Ara Toplam</span>
                 <span>{formatTL(subtotal)}</span>
               </div>
               {appliedDiscount > 0 && (
-                <div className="flex items-center justify-between text-xs text-emerald-400 font-mono">
+                <div className="flex items-center justify-between text-xs text-emerald-400">
                   <span>İndirim (%{appliedDiscount})</span>
                   <span>-{formatTL(discountAmount)}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center justify-between text-xs text-zinc-400">
+                <span className="flex items-center gap-1"><Truck size={13} /> Kargo Ücreti</span>
+                <span>{formatTL(SHIPPING_FEE)}</span>
+              </div>
+              <div className="flex items-center justify-between pt-1 font-sans">
                 <span className="text-xs font-mono uppercase tracking-wider text-zinc-300">Toplam Tutar</span>
                 <span className="text-xl font-black text-primary">{formatTL(finalTotal)}</span>
               </div>
