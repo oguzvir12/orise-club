@@ -264,7 +264,7 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Nike Tarzı Büyük, Derin ve Çarpıcı Hero (Banner) Alanı */}
+            {/* Nike Tarzı Büyük, Derin ve Türkçe Çarpıcı Hero (Banner) Alanı */}
             <section className="relative h-[70vh] min-h-[500px] w-full overflow-hidden flex items-end pb-16 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10">
               <div className="absolute inset-0 z-0 overflow-hidden">
                 <Image src="/store-hero.jpeg" alt="Orise Store" fill priority className="object-cover object-center scale-105 brightness-90 contrast-110 transition-transform duration-1000 hover:scale-100" />
@@ -274,11 +274,11 @@ function StoreContent() {
               <div className="relative z-10 max-w-3xl space-y-4">
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-4 py-1.5 text-[11px] font-mono tracking-[0.25em] text-white uppercase backdrop-blur-md">
                   <Sparkles className="h-3 w-3 text-primary animate-pulse" />
-                  <span>More Than a Brand, a Club</span>
+                  <span>Bir Markadan Fazlası, Bir Kulüp</span>
                 </div>
 
                 <h1 className="font-sans text-5xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-white uppercase leading-none drop-shadow-2xl">
-                  PLAY MIND <br /><span className="text-primary">GAMES</span>
+                  RİTMİNİ <br /><span className="text-primary">HİSSET</span>
                 </h1>
 
                 <p className="text-sm sm:text-base text-zinc-200 font-sans max-w-lg leading-relaxed drop-shadow">
