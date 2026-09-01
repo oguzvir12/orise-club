@@ -264,36 +264,36 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Minimalist, Şık ve Yaşayan Editorial Header (Compact & High-End) */}
-            <section className="relative overflow-hidden border-b border-white/10 py-10 lg:py-14 bg-gradient-to-b from-zinc-950/90 to-black select-none">
-              <div className="absolute inset-0 z-0 overflow-hidden opacity-25">
+            {/* Minimalist, Lüks ve Estetik Karşılama Alanı (High-End Editorial Header) */}
+            <section className="relative overflow-hidden border-b border-white/10 py-12 lg:py-16 bg-gradient-to-b from-zinc-950/80 to-black select-none">
+              <div className="absolute inset-0 z-0 overflow-hidden opacity-20">
                 <Image src="/store-hero.jpeg" alt="Orise Store" fill priority className="object-cover grayscale contrast-125 scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
               </div>
               
               <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="space-y-2">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3.5 py-1 text-[10px] font-mono uppercase tracking-[0.3em] text-primary backdrop-blur-md">
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1 text-[11px] font-mono uppercase tracking-[0.25em] text-primary backdrop-blur-md">
                     <Sparkles className="h-3 w-3 text-primary animate-pulse" />
-                    <span>Haretet Kulübü & Stüdyo Koleksiyonu</span>
+                    <span>More Than a Brand, a Club</span>
                   </div>
                   
                   <h1 className="font-sans text-3xl font-black tracking-tighter text-white sm:text-5xl lg:text-6xl">
                     ORISE <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-200">STORE</span>
                   </h1>
                   
-                  <p className="text-xs sm:text-sm text-zinc-400 font-mono tracking-wide max-w-lg">
-                    Şehrin ritminden ve kulüp kültüründen ilham alan sınırlı üretim teknik parçalar.
+                  <p className="text-xs sm:text-sm text-zinc-400 font-sans tracking-wide max-w-lg leading-relaxed">
+                    Şehrin enerjisini ve kulüp kültürünü sokak modasına taşıyan özel seri teknik spor giyim koleksiyonu.
                   </p>
                 </div>
 
-                {/* Canlı Sistem İmzası / Ticker */}
+                {/* Minimalist Canlı Drop Göstergesi */}
                 <div className="hidden lg:flex items-center gap-3 text-xs font-mono text-zinc-400 border border-white/10 bg-zinc-900/60 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-xl">
                   <span className="relative flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </span>
-                  <span className="tracking-widest uppercase text-[11px] font-bold text-zinc-200">LIVE DROP ACTIVE // 2026</span>
+                  <span className="tracking-widest uppercase text-[11px] font-bold text-zinc-200">LIMITED DROP // 2026</span>
                 </div>
               </div>
             </section>
