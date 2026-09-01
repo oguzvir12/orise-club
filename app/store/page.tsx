@@ -13,8 +13,6 @@ import {
   Flame,
   ArrowUpDown,
   Sparkles,
-  ShieldCheck,
-  Mail,
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -266,33 +264,36 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Lüks Mağaza Karşılama (Hero) Alanı */}
-            <section className="relative overflow-hidden border-b border-white/10 pt-16 pb-16 lg:pt-24 lg:pb-20">
-              <div className="absolute inset-0 z-0 overflow-hidden">
-                <Image src="/store-hero.jpeg" alt="Orise Store" fill priority className="object-cover opacity-30 grayscale contrast-125 scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40" />
+            {/* Minimalist, Şık ve Yaşayan Editorial Header (Compact & High-End) */}
+            <section className="relative overflow-hidden border-b border-white/10 py-10 lg:py-14 bg-gradient-to-b from-zinc-950/90 to-black select-none">
+              <div className="absolute inset-0 z-0 overflow-hidden opacity-25">
+                <Image src="/store-hero.jpeg" alt="Orise Store" fill priority className="object-cover grayscale contrast-125 scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
               </div>
               
-              <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-                <div className="max-w-2xl space-y-4">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/20 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-primary backdrop-blur-md shadow-[0_0_20px_rgba(249,115,22,0.3)]">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span>HAREKET KULÜBÜ & STÜDYO KOLEKSİYONU</span>
+              <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3.5 py-1 text-[10px] font-mono uppercase tracking-[0.3em] text-primary backdrop-blur-md">
+                    <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+                    <span>Haretet Kulübü & Stüdyo Koleksiyonu</span>
                   </div>
                   
-                  <h1 className="font-sans text-4xl font-black tracking-tighter text-white sm:text-6xl lg:text-7xl leading-tight">
-                    Kulübe Özel <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">Drop</span> Koleksiyonu.
+                  <h1 className="font-sans text-3xl font-black tracking-tighter text-white sm:text-5xl lg:text-6xl">
+                    ORISE <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-200">STORE</span>
                   </h1>
                   
-                  <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-normal">
-                    Şehrin enerjisinden ve kulüp kültüründen ilham alan sınırlı üretim teknik spor giyim, sokak stili ve performans parçaları.
+                  <p className="text-xs sm:text-sm text-zinc-400 font-mono tracking-wide max-w-lg">
+                    Şehrin ritminden ve kulüp kültüründen ilham alan sınırlı üretim teknik parçalar.
                   </p>
+                </div>
 
-                  <div className="pt-2 flex items-center gap-3">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-mono text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                      <ShieldCheck className="h-3.5 w-3.5" /> İyzico & 256-BIT SSL Güvencesiyle
-                    </span>
-                  </div>
+                {/* Canlı Sistem İmzası / Ticker */}
+                <div className="hidden lg:flex items-center gap-3 text-xs font-mono text-zinc-400 border border-white/10 bg-zinc-900/60 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-xl">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <span className="tracking-widest uppercase text-[11px] font-bold text-zinc-200">LIVE DROP ACTIVE // 2026</span>
                 </div>
               </div>
             </section>
@@ -338,7 +339,7 @@ function StoreContent() {
                         onClick={() => openProductDetail(product)} 
                         onMouseEnter={() => productImages.length > 1 && setHoveredImageIdx({ ...hoveredImageIdx, [product.id]: 1 })}
                         onMouseLeave={() => setHoveredImageIdx({ ...hoveredImageIdx, [product.id]: 0 })}
-                        className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-primary/60 cursor-pointer'}`}
+                        className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all duration-300 hover:scale-[1.01] ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-primary/60 cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
                       >
                         <div>
                           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950 flex items-center justify-center">
@@ -368,7 +369,7 @@ function StoreContent() {
 
                           <div className="mt-5 space-y-1.5">
                             <div className="text-[10px] font-mono text-primary uppercase">{product.category_label || 'ÖZEL DROP'}</div>
-                            <h3 className="font-sans text-lg font-bold text-white group-hover:text-primary">{product.title}</h3>
+                            <h3 className="font-sans text-lg font-bold text-white group-hover:text-primary transition-colors">{product.title}</h3>
                             <p className="text-xs text-zinc-400 line-clamp-1">{product.subtitle}</p>
                           </div>
                         </div>
