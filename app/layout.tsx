@@ -20,7 +20,7 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: 'ORISE STORE — More Than a Brand, a Club',
+  title: 'ORISE STORE — Bir Markadan Fazlası, Bir Kulüp',
   description: 'Şehrin enerjisinden ve kulüp kültüründen ilham alan yeni nesil teknik spor giyim, sokak stili ve performans drop koleksiyonları.',
   generator: 'v0.app',
   metadataBase: new URL('https://oriseclub.com'),
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     apple: '/icon.svg',
   },
   openGraph: {
-    title: 'ORISE STORE — More Than a Brand, a Club',
+    title: 'ORISE STORE — Bir Markadan Fazlası, Bir Kulüp',
     description: 'Şehrin enerjisini birlikte yükselten yeni nesil spor topluluğu ve kulübe özel drop koleksiyonlar.',
     url: 'https://oriseclub.com',
     siteName: 'ORISE STORE',
@@ -67,7 +67,7 @@ export default function RootLayout({
           {/* Sepet Çekmecesi */}
           <CartDrawer />
 
-          {/* Profesyonel Nike / Kurumsal Tarz Çok Sütunlu Footer */}
+          {/* Profesyonel Türkçe Kurumsal Sütunlu Footer */}
           <footer className="w-full border-t border-white/10 bg-zinc-950 pt-16 pb-12 px-6 sm:px-10 lg:px-16 font-sans text-xs">
             <div className="mx-auto max-w-7xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">
               
@@ -77,7 +77,7 @@ export default function RootLayout({
                   <span className="font-sans text-xl font-black tracking-tighter text-white">ORISE <span className="text-primary">STORE</span></span>
                 </div>
                 <p className="text-zinc-400 leading-relaxed max-w-sm">
-                  More Than a Brand, a Club. Şehrin ritminden ve kulüp kültüründen ilham alan özel seri teknik parçalar.
+                  Bir Markadan Fazlası, Bir Kulüp. Şehrin ritminden ve kulüp kültüründen ilham alan özel seri teknik parçalar.
                 </p>
                 <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-mono text-emerald-400 font-bold">
                   <ShieldCheck className="h-4 w-4" /> 256-BIT SSL & İyzico Güvencesi
@@ -139,7 +139,7 @@ export default function RootLayout({
 
             {/* Alt Telif ve Yasal Onur Bandı */}
             <div className="mx-auto max-w-7xl mt-14 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-zinc-500">
-              <p>© 2026 ORISE STORE. Tüm Hakları Saklıdır. // More Than a Brand, a Club.</p>
+              <p>© 2026 ORISE STORE. Tüm Hakları Saklıdır. // Bir Markadan Fazlası, Bir Kulüp.</p>
               <div className="flex items-center gap-6">
                 <Link href="/gizlilik" className="hover:text-white transition-colors">Gizlilik Politikası</Link>
                 <Link href="/mesafeli-satis" className="hover:text-white transition-colors">Kullanım ve Satış Şartları</Link>
