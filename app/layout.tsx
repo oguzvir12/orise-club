@@ -53,24 +53,23 @@ export default function RootLayout({
       lang="tr"
       className={`${geist.variable} ${spaceGrotesk.variable} bg-black text-white`}
     >
-      <body className="font-sans antialiased bg-black text-white flex flex-col min-h-screen selection:bg-primary selection:text-black">
+      <body className="font-sans antialiased bg-black text-white flex flex-col min-h-screen selection:bg-primary selection:text-black overflow-x-hidden">
         <CartProvider>
           {/* Üst Menü */}
           <SiteHeader />
 
-          {/* Sayfa İçeriği */}
-          <main className="flex-1 pt-16 w-full">
+          {/* Sayfa İçeriği - Üst boşluk header ile çakışmayacak şekilde hizalandı */}
+          <main className="flex-1 w-full pt-16">
             {children}
           </main>
 
           {/* Sepet Çekmecesi */}
           <CartDrawer />
 
-          {/* Profesyonel, Sütunlu ve Kapsamlı E-Ticaret Footer */}
-          <footer className="w-full border-t border-white/10 bg-zinc-950 py-16 px-6 sm:px-10 lg:px-16 z-30 font-sans">
+          {/* Profesyonel Sütunlu Footer */}
+          <footer className="w-full border-t border-white/10 bg-zinc-950 py-16 px-6 sm:px-10 lg:px-16 font-sans">
             <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
               
-              {/* 1. Sütun: Marka & Güvence */}
               <div className="lg:col-span-2 space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="font-sans text-xl font-black tracking-tighter text-white">ORISE <span className="text-primary">STORE</span></span>
@@ -83,7 +82,6 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* 2. Sütun: Kurumsal / Hakkımızda */}
               <div className="space-y-3 font-mono">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Kurumsal</h4>
                 <ul className="space-y-2 text-xs text-zinc-400">
@@ -93,7 +91,6 @@ export default function RootLayout({
                 </ul>
               </div>
 
-              {/* 3. Sütun: Yasal Mevzuatlar */}
               <div className="space-y-3 font-mono">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Yasal & Güvenlik</h4>
                 <ul className="space-y-2 text-xs text-zinc-400">
@@ -103,7 +100,6 @@ export default function RootLayout({
                 </ul>
               </div>
 
-              {/* 4. Sütun: Sosyal Medya & İletişim */}
               <div className="space-y-3 font-mono">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-primary">İletişim & Sosyal</h4>
                 <ul className="space-y-2.5 text-xs text-zinc-400">
@@ -132,7 +128,6 @@ export default function RootLayout({
 
             </div>
 
-            {/* Alt Telif ve Onur Bandı */}
             <div className="mx-auto max-w-7xl mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-zinc-500">
               <p>© 2026 ORISE STORE. Tüm hakları saklıdır.</p>
               <p className="tracking-widest uppercase">STÜDYO & HAREKET KULÜBÜ</p>
