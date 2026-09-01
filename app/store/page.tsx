@@ -12,6 +12,8 @@ import {
   Maximize2,
   Flame,
   ArrowUpDown,
+  Sparkles,
+  ShieldCheck,
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -262,21 +264,33 @@ function StoreContent() {
         </div>
       ) : (
         <>
-          {/* Mağaza Hero Alanı (Üst boşluk optimize edildi) */}
-          <section className="relative overflow-hidden border-b border-white/10 pt-12 pb-12 lg:pt-16 lg:pb-16">
+          {/* Lüks Mağaza Karşılama (Hero) Alanı */}
+          <section className="relative overflow-hidden border-b border-white/10 pt-16 pb-16 lg:pt-24 lg:pb-20">
             <div className="absolute inset-0 z-0 overflow-hidden">
-              <Image src="/store-hero.jpeg" alt="" fill priority className="object-cover opacity-25 grayscale contrast-125" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-transparent" />
+              <Image src="/store-hero.jpeg" alt="Orise Store" fill priority className="object-cover opacity-30 grayscale contrast-125 scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40" />
             </div>
+            
             <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-              <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-                  <span>HAREKET KULÜBÜ & STÜDYO</span>
+              <div className="max-w-2xl space-y-4">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/20 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-primary backdrop-blur-md shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>HAREKET KULÜBÜ & STÜDYO KOLEKSİYONU</span>
                 </div>
-                <h1 className="font-sans text-4xl font-black tracking-tighter text-white sm:text-6xl lg:text-7xl">
-                  Kulübe Özel <span className="text-primary">Drop</span> Koleksiyonu.
+                
+                <h1 className="font-sans text-4xl font-black tracking-tighter text-white sm:text-6xl lg:text-7xl leading-tight">
+                  Kulübe Özel <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">Drop</span> Koleksiyonu.
                 </h1>
-                <p className="text-xs font-mono text-zinc-400">Sınırlı üretim teknik spor giyim parçaları.</p>
+                
+                <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-normal">
+                  Şehrin enerjisinden ve kulüp kültüründen ilham alan sınırlı üretim teknik spor giyim, sokak stili ve performans parçaları.
+                </p>
+
+                <div className="pt-2 flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-mono text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                    <ShieldCheck className="h-3.5 w-3.5" /> İyzico & 256-BIT SSL Güvencesiyle
+                  </span>
+                </div>
               </div>
             </div>
           </section>
