@@ -13,6 +13,7 @@ import {
   Flame,
   ArrowUpDown,
   Sparkles,
+  Truck,
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -139,9 +140,15 @@ function StoreContent() {
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black flex flex-col justify-between">
       
       <div>
+        {/* Ücretsiz Kargo Duyuru Bandı */}
+        <div className="bg-primary text-black py-2 px-4 text-center text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+          <Truck size={15} />
+          <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz!</span>
+        </div>
+
         {/* Üst Geri Dönüş Butonu (Sadece Ürün Detayındayken Görünür) */}
         {selectedProduct && (
-          <div className="absolute top-4 left-6 z-30 sm:left-8">
+          <div className="absolute top-14 left-6 z-30 sm:left-8">
             <button type="button" onClick={closeProductDetail} className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all hover:border-primary cursor-pointer">
               <ArrowLeft className="h-3.5 w-3.5 text-primary" />
               <span>Tüm Koleksiyon</span>
