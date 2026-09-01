@@ -161,8 +161,8 @@ export default function RootLayout({
               <p>© 2026 ORISE CLUB. Tüm Hakları Saklıdır. // Bir Markadan Fazlası, Bir Kulüp.</p>
               <div className="flex items-center gap-6">
                 <Link href="/gizlilik" className="hover:text-white transition-colors">Gizlilik Politikası</Link>
-                <Link href="/mesafeli-satis" className="hover:text-white transition-colors">Kullanım ve Satış Şartları</Link>
-                <Link href="/iade-kosullari" className="hover:text-white transition-colors">Şirket Ayrıntıları</Link>
+                <Link href="/mesafeli-satis" className="hover:text-white transition-colors">Mesafeli Satış Sözleşmesi</Link>
+                <Link href="/iade-kosullari" className="hover:text-white transition-colors">İade & Değişim</Link>
               </div>
             </div>
           </footer>
