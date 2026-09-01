@@ -264,41 +264,37 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Minimalist, Lüks ve Estetik Karşılama Alanı (High-End Editorial Header) */}
-            <section className="relative overflow-hidden border-b border-white/10 py-12 lg:py-16 bg-gradient-to-b from-zinc-950/80 to-black select-none">
-              <div className="absolute inset-0 z-0 overflow-hidden opacity-20">
-                <Image src="/store-hero.jpeg" alt="Orise Store" fill priority className="object-cover grayscale contrast-125 scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+            {/* Nike Tarzı Büyük, Derin ve Çarpıcı Hero (Banner) Alanı */}
+            <section className="relative h-[70vh] min-h-[500px] w-full overflow-hidden flex items-end pb-16 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10">
+              <div className="absolute inset-0 z-0 overflow-hidden">
+                <Image src="/store-hero.jpeg" alt="Orise Store" fill priority className="object-cover object-center scale-105 brightness-90 contrast-110 transition-transform duration-1000 hover:scale-100" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
               </div>
-              
-              <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1 text-[11px] font-mono uppercase tracking-[0.25em] text-primary backdrop-blur-md">
-                    <Sparkles className="h-3 w-3 text-primary animate-pulse" />
-                    <span>More Than a Brand, a Club</span>
-                  </div>
-                  
-                  <h1 className="font-sans text-3xl font-black tracking-tighter text-white sm:text-5xl lg:text-6xl">
-                    ORISE <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-200">STORE</span>
-                  </h1>
-                  
-                  <p className="text-xs sm:text-sm text-zinc-400 font-sans tracking-wide max-w-lg leading-relaxed">
-                    Şehrin enerjisini ve kulüp kültürünü sokak modasına taşıyan özel seri teknik spor giyim koleksiyonu.
-                  </p>
+
+              <div className="relative z-10 max-w-3xl space-y-4">
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-4 py-1.5 text-[11px] font-mono tracking-[0.25em] text-white uppercase backdrop-blur-md">
+                  <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+                  <span>More Than a Brand, a Club</span>
                 </div>
 
-                {/* Minimalist Canlı Drop Göstergesi */}
-                <div className="hidden lg:flex items-center gap-3 text-xs font-mono text-zinc-400 border border-white/10 bg-zinc-900/60 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-xl">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                  </span>
-                  <span className="tracking-widest uppercase text-[11px] font-bold text-zinc-200">LIMITED DROP // 2026</span>
+                <h1 className="font-sans text-5xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-white uppercase leading-none drop-shadow-2xl">
+                  PLAY MIND <br /><span className="text-primary">GAMES</span>
+                </h1>
+
+                <p className="text-sm sm:text-base text-zinc-200 font-sans max-w-lg leading-relaxed drop-shadow">
+                  Şehrin enerjisini ve kulüp kültürünü sokak modasına taşıyan yeni nesil teknik spor giyim koleksiyonu.
+                </p>
+
+                <div className="pt-2 flex items-center gap-4">
+                  <a href="#collection" className="rounded-full bg-white text-black px-8 py-3.5 text-xs font-bold uppercase tracking-widest hover:bg-primary transition-colors shadow-xl">
+                    Koleksiyona Git
+                  </a>
                 </div>
               </div>
             </section>
 
             {/* Kategori ve Sıralama Çubuğu */}
+            <div id="collection"></div>
             <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-30 backdrop-blur-xl">
               <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 w-full sm:w-auto">
