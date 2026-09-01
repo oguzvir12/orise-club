@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Minus, Plus, ShoppingBag, Trash2, X, Tag, Check, AlertCircle, Truck, FileText } from 'lucide-react'
+import { Minus, Plus, ShoppingBag, Trash2, X, Tag, Check, AlertCircle, Truck } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -14,7 +14,8 @@ const formatTL = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n)
 
-const SHIPPING_FEE = 60
+const STANDARD_SHIPPING_FEE = 60
+const FREE_SHIPPING_THRESHOLD = 2000
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, subtotal, removeItem, updateQuantity } = useCart()
@@ -26,10 +27,8 @@ export function CartDrawer() {
   const [couponCodeName, setCouponCodeName] = useState('')
   const [couponError, setCouponError] = useState('')
 
-  // Fatura adresi ve kargo tercihleri
   const [sameAsShipping, setSameAsShipping] = useState(true)
   const [billingAddressInput, setBillingAddressInput] = useState('')
-  const [userProfile, setUserProfile] = useState<any>(null)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -37,7 +36,6 @@ export function CartDrawer() {
       if (session?.user) {
         const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
         if (data) {
-          setUserProfile(data)
           setBillingAddressInput(data.billing_address || data.address || '')
         }
       }
@@ -67,7 +65,14 @@ export function CartDrawer() {
   }
 
   const discountAmount = (subtotal * appliedDiscount) / 100
-  const finalTotal = subtotal - discountAmount + SHIPPING_FEE
+  const discountedSubtotal = subtotal - discountAmount
+  
+  // 2000 TL üstü ücretsiz kargo hesaplaması
+  const isFreeShipping = discountedSubtotal >= FREE_SHIPPING_THRESHOLD
+  const shippingFee = isFreeShipping ? 0 : STANDARD_SHIPPING_FEE
+  const finalTotal = discountedSubtotal + shippingFee
+
+  const remainingForFreeShipping = FREE_SHIPPING_THRESHOLD - discountedSubtotal
 
   const validateCustomerProfile = (profile: any) => {
     if (!profile) return 'Kullanıcı profili bulunamadı.'
@@ -133,7 +138,6 @@ export function CartDrawer() {
         return
       }
 
-      // Siparişi Supabase orders tablosuna kaydetme simülasyonu/hazırlığı
       const finalBillingAddr = sameAsShipping ? profile.address : billingAddressInput
 
       const orderPayload = {
@@ -148,7 +152,7 @@ export function CartDrawer() {
         items: items,
         subtotal: subtotal,
         discount: discountAmount,
-        shipping_fee: SHIPPING_FEE,
+        shipping_fee: shippingFee,
         total_price: finalTotal,
         status: 'Ödeme Bekliyor'
       }
@@ -182,6 +186,21 @@ export function CartDrawer() {
             <X className="h-4 w-4" />
           </button>
         </div>
+
+        {/* Ücretsiz Kargo İlerleme / Bilgi Çubuğu */}
+        {items.length > 0 && (
+          <div className="bg-zinc-900/80 border-b border-white/10 px-6 py-2.5 text-[11px] font-mono text-zinc-300 flex items-center justify-between">
+            {isFreeShipping ? (
+              <span className="text-emerald-400 font-bold flex items-center gap-1.5 w-full justify-center">
+                🎉 Tebrikler! 2000 TL Üzeri Ücretsiz Kargo Kazandınız.
+              </span>
+            ) : (
+              <span>
+                Ücretsiz kargo için <strong className="text-primary">{formatTL(remainingForFreeShipping)}</strong> daha ekleyin!
+              </span>
+            )}
+          </div>
+        )}
 
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
@@ -292,7 +311,7 @@ export function CartDrawer() {
               )}
               <div className="flex items-center justify-between text-xs text-zinc-400">
                 <span className="flex items-center gap-1"><Truck size={13} /> Kargo Ücreti</span>
-                <span>{formatTL(SHIPPING_FEE)}</span>
+                <span>{isFreeShipping ? <span className="text-emerald-400 font-bold uppercase">Ücretsiz</span> : formatTL(STANDARD_SHIPPING_FEE)}</span>
               </div>
               <div className="flex items-center justify-between pt-1 font-sans">
                 <span className="text-xs font-mono uppercase tracking-wider text-zinc-300">Toplam Tutar</span>
@@ -322,7 +341,7 @@ export function CartDrawer() {
               
               <div className="flex items-center justify-center pt-1">
                 <Image 
-                  src="/images/iyzico_ile_ode_horizontal_white.svg" 
+                  src="/images/logo_band_white.svg" 
                   alt="iyzico ile Öde" 
                   width={110} 
                   height={22} 
