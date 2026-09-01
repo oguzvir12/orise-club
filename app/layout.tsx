@@ -20,8 +20,8 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: 'ORISE STORE — Hareket Kulübü & Stüdyo Mağazası',
-  description: 'Kulüp kültüründen ilham alan özel tasarım teknik spor giyim ve sokak stili e-ticaret mağazası.',
+  title: 'ORISE STORE — More Than a Brand, a Club',
+  description: 'Şehrin enerjisinden ve kulüp kültüründen ilham alan yeni nesil teknik spor giyim, sokak stili ve performans drop koleksiyonları.',
   generator: 'v0.app',
   metadataBase: new URL('https://oriseclub.com'),
   icons: {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     apple: '/icon.svg',
   },
   openGraph: {
-    title: 'ORISE STORE — Hareket Kulübü & Stüdyo Mağazası',
+    title: 'ORISE STORE — More Than a Brand, a Club',
     description: 'Şehrin enerjisini birlikte yükselten yeni nesil spor topluluğu ve kulübe özel drop koleksiyonlar.',
     url: 'https://oriseclub.com',
     siteName: 'ORISE STORE',
@@ -67,61 +67,57 @@ export default function RootLayout({
           {/* Sepet Çekmecesi */}
           <CartDrawer />
 
-          {/* Profesyonel, Sütunlu ve İyzico Logobandlı E-Ticaret Footer */}
-          <footer className="w-full border-t border-white/10 bg-zinc-950 py-16 px-6 sm:px-10 lg:px-16 font-sans">
-            <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+          {/* Nike Tarzı Profesyonel, Kapsamlı ve Çok Sütunlu Footer */}
+          <footer className="w-full border-t border-white/10 bg-zinc-950 pt-16 pb-12 px-6 sm:px-10 lg:px-16 font-sans text-xs">
+            <div className="mx-auto max-w-7xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">
               
-              {/* 1. Sütun: Marka, Açıklama ve İyzico Logoband */}
-              <div className="lg:col-span-2 space-y-5">
+              {/* 1. Sütun: Marka & Güvence */}
+              <div className="col-span-2 space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="font-sans text-xl font-black tracking-tighter text-white">ORISE <span className="text-primary">STORE</span></span>
                 </div>
-                <p className="text-xs text-zinc-400 leading-relaxed max-w-sm">
-                  Şehrin enerjisinden ve kulüp kültüründen ilham alan yeni nesil teknik spor giyim, sokak stili ve performans drop koleksiyonları.
+                <p className="text-zinc-400 leading-relaxed max-w-sm">
+                  More Than a Brand, a Club. Şehrin ritminden ve kulüp kültüründen ilham alan özel seri teknik parçalar.
                 </p>
-                
-                <div className="space-y-3 pt-1">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-mono text-emerald-400 font-bold">
-                    <ShieldCheck className="h-4 w-4" /> 256-BIT SSL & İyzico Güvencesi
-                  </div>
-                  
-                  {/* İyzico ve Ödeme Yöntemleri Resmi Logobandı */}
-                  <div className="pt-2">
-                    <Image 
-                      src="/images/logo_band_white.svg" 
-                      alt="İyzico ve Güvenli Ödeme Logoları" 
-                      width={220} 
-                      height={35} 
-                      className="object-contain h-7 w-auto opacity-90 filter brightness-95"
-                    />
-                  </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-mono text-emerald-400 font-bold">
+                  <ShieldCheck className="h-4 w-4" /> 256-BIT SSL & İyzico Güvencesi
+                </div>
+                <div className="pt-2">
+                  <Image 
+                    src="/images/logo_band_white.svg" 
+                    alt="İyzico ve Güvenli Ödeme Logoları" 
+                    width={200} 
+                    height={30} 
+                    className="object-contain h-6 w-auto opacity-85"
+                  />
                 </div>
               </div>
 
-              {/* 2. Sütun: Kurumsal */}
+              {/* 2. Sütun: Kaynaklar / Mağaza */}
               <div className="space-y-3 font-mono">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Kurumsal</h4>
-                <ul className="space-y-2 text-xs text-zinc-400">
-                  <li><Link href="/hakkimizda" className="hover:text-white transition-colors flex items-center gap-1">Hakkımızda <ArrowUpRight size={12}/></Link></li>
-                  <li><Link href="/store" className="hover:text-white transition-colors flex items-center gap-1">Mağaza Koleksiyonu <ArrowUpRight size={12}/></Link></li>
-                  <li><Link href="/community" className="hover:text-white transition-colors flex items-center gap-1">Topluluk Takvimi <ArrowUpRight size={12}/></Link></li>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-white">Kaynaklar</h4>
+                <ul className="space-y-2.5 text-zinc-400">
+                  <li><Link href="/store" className="hover:text-primary transition-colors flex items-center gap-1">Tüm Koleksiyon <ArrowUpRight size={12}/></Link></li>
+                  <li><Link href="/store?category=sale" className="hover:text-primary transition-colors flex items-center gap-1">Fırsat & İndirimler <ArrowUpRight size={12}/></Link></li>
+                  <li><Link href="/community" className="hover:text-primary transition-colors flex items-center gap-1">Etkinlik Takvimi <ArrowUpRight size={12}/></Link></li>
                 </ul>
               </div>
 
-              {/* 3. Sütun: Yasal Mevzuatlar */}
+              {/* 3. Sütun: Yasal & Şirket */}
               <div className="space-y-3 font-mono">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Yasal & Güvenlik</h4>
-                <ul className="space-y-2 text-xs text-zinc-400">
-                  <li><Link href="/gizlilik" className="hover:text-white transition-colors">Gizlilik Politikası</Link></li>
-                  <li><Link href="/mesafeli-satis" className="hover:text-white transition-colors">Mesafeli Satış Sözleşmesi</Link></li>
-                  <li><Link href="/iade-kosullari" className="hover:text-white transition-colors">İade & Değişim Koşulları</Link></li>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-white">Şirket & Yasal</h4>
+                <ul className="space-y-2.5 text-zinc-400">
+                  <li><Link href="/hakkimizda" className="hover:text-primary transition-colors">Hakkımızda</Link></li>
+                  <li><Link href="/gizlilik" className="hover:text-primary transition-colors">Gizlilik Politikası</Link></li>
+                  <li><Link href="/mesafeli-satis" className="hover:text-primary transition-colors">Mesafeli Satış Sözleşmesi</Link></li>
+                  <li><Link href="/iade-kosullari" className="hover:text-primary transition-colors">İade & Değişim Koşulları</Link></li>
                 </ul>
               </div>
 
-              {/* 4. Sütun: İletişim & Sosyal Medya */}
-              <div className="space-y-3 font-mono">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-primary">İletişim & Sosyal</h4>
-                <ul className="space-y-2.5 text-xs text-zinc-400">
+              {/* 4. Sütun: İletişim & Sosyal */}
+              <div className="space-y-3 font-mono col-span-2 lg:col-span-1">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-white">İletişim & Sosyal</h4>
+                <ul className="space-y-2.5 text-zinc-400">
                   <li>
                     <a href="mailto:store@oriseclub.com" className="hover:text-primary transition-colors flex items-center gap-2">
                       <Mail className="h-3.5 w-3.5 text-primary" /> store@oriseclub.com
@@ -147,10 +143,14 @@ export default function RootLayout({
 
             </div>
 
-            {/* Alt Telif ve Onur Bandı */}
-            <div className="mx-auto max-w-7xl mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-zinc-500">
-              <p>© 2026 ORISE STORE. Tüm hakları saklıdır.</p>
-              <p className="tracking-widest uppercase">STÜDYO & HAREKET KULÜBÜ</p>
+            {/* Alt Telif ve Yasal Onur Bandı */}
+            <div className="mx-auto max-w-7xl mt-14 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-zinc-500">
+              <p>© 2026 ORISE STORE. Tüm hakları saklıdır. // More Than a Brand, a Club.</p>
+              <div className="flex items-center gap-6">
+                <Link href="/gizlilik" className="hover:text-white transition-colors">Gizlilik</Link>
+                <Link href="/mesafeli-satis" className="hover:text-white transition-colors">Şartlar</Link>
+                <Link href="/iade-kosullari" className="hover:text-white transition-colors">İade Politikası</Link>
+              </div>
             </div>
           </footer>
         </CartProvider>
