@@ -12,7 +12,6 @@ import {
   Maximize2,
   Flame,
   ArrowUpDown,
-  Zap,
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -47,7 +46,6 @@ function StoreContent() {
   const [isAdded, setIsAdded] = useState<boolean>(false)
 
   const fetchProducts = async () => {
-    // Sadece aktif olan (is_active !== false) ürünleri getir
     const { data } = await supabase
       .from('products')
       .select('*')
@@ -138,23 +136,20 @@ function StoreContent() {
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
-      <div className="fixed top-4 left-6 z-[60] sm:left-8">
-        {selectedProduct ? (
+      
+      {/* Üst Geri Dönüş Butonu (Sadece Ürün Detayındayken Görünür) */}
+      {selectedProduct && (
+        <div className="absolute top-4 left-6 z-30 sm:left-8">
           <button type="button" onClick={closeProductDetail} className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all hover:border-primary cursor-pointer">
             <ArrowLeft className="h-3.5 w-3.5 text-primary" />
             <span>Tüm Koleksiyon</span>
           </button>
-        ) : (
-          <Link href="/" className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all hover:border-primary">
-            <ArrowLeft className="h-3.5 w-3.5 text-primary" />
-            <span>Ana Sayfa</span>
-          </Link>
-        )}
-      </div>
+        </div>
+      )}
 
       {selectedProduct ? (
         <div>
-          <section className="pt-28 pb-20 sm:pt-36 sm:pb-24 border-b border-white/10">
+          <section className="pt-12 pb-20 sm:pt-16 sm:pb-24 border-b border-white/10">
             <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
               <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
                 
@@ -203,7 +198,6 @@ function StoreContent() {
 
                     <p className="mt-4 text-sm leading-relaxed text-zinc-300">{selectedProduct.description}</p>
 
-                    {/* Renk Seçenekleri */}
                     {selectedProduct.colors && selectedProduct.colors.length > 0 && (
                       <div className="mt-6 space-y-2">
                         <div className="text-xs font-mono text-zinc-400 uppercase">Renk: <strong className="text-white">{selectedColor}</strong></div>
@@ -217,7 +211,6 @@ function StoreContent() {
                       </div>
                     )}
 
-                    {/* Beden ve Stok Seçimi */}
                     <div className="mt-6 space-y-2">
                       <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi & Stok Durumu</div>
                       <div className="grid grid-cols-4 gap-2">
@@ -269,13 +262,14 @@ function StoreContent() {
         </div>
       ) : (
         <>
-          <section className="relative overflow-hidden border-b border-white/10 pt-32 pb-16 lg:pt-40 lg:pb-20">
+          {/* Mağaza Hero Alanı (Üst boşluk optimize edildi) */}
+          <section className="relative overflow-hidden border-b border-white/10 pt-12 pb-12 lg:pt-16 lg:pb-16">
             <div className="absolute inset-0 z-0 overflow-hidden">
               <Image src="/store-hero.jpeg" alt="" fill priority className="object-cover opacity-25 grayscale contrast-125" />
               <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-transparent" />
             </div>
             <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
                   <span>HAREKET KULÜBÜ & STÜDYO</span>
                 </div>
@@ -287,7 +281,8 @@ function StoreContent() {
             </div>
           </section>
 
-          <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-40 backdrop-blur-xl">
+          {/* Kategori ve Sıralama Çubuğu */}
+          <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-30 backdrop-blur-xl">
             <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 w-full sm:w-auto">
                 {CATEGORIES.map((cat) => (
@@ -308,6 +303,7 @@ function StoreContent() {
             </div>
           </section>
 
+          {/* Ürün Listesi Grid */}
           <section className="bg-gradient-to-b from-black via-zinc-950/40 to-black py-16 sm:py-20">
             <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
