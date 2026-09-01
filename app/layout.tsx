@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Geist, Space_Grotesk } from 'next/font/google'
 import { CartProvider } from '@/components/cart/cart-provider'
 import { SiteHeader } from '@/components/site-header'
@@ -58,7 +59,7 @@ export default function RootLayout({
           {/* Üst Menü */}
           <SiteHeader />
 
-          {/* Sayfa İçeriği - Üst boşluk header ile çakışmayacak şekilde hizalandı */}
+          {/* Sayfa İçeriği */}
           <main className="flex-1 w-full pt-16">
             {children}
           </main>
@@ -66,22 +67,38 @@ export default function RootLayout({
           {/* Sepet Çekmecesi */}
           <CartDrawer />
 
-          {/* Profesyonel Sütunlu Footer */}
+          {/* Profesyonel, Sütunlu ve İyzico Logobandlı E-Ticaret Footer */}
           <footer className="w-full border-t border-white/10 bg-zinc-950 py-16 px-6 sm:px-10 lg:px-16 font-sans">
             <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
               
-              <div className="lg:col-span-2 space-y-4">
+              {/* 1. Sütun: Marka, Açıklama ve İyzico Logoband */}
+              <div className="lg:col-span-2 space-y-5">
                 <div className="flex items-center gap-2">
                   <span className="font-sans text-xl font-black tracking-tighter text-white">ORISE <span className="text-primary">STORE</span></span>
                 </div>
                 <p className="text-xs text-zinc-400 leading-relaxed max-w-sm">
                   Şehrin enerjisinden ve kulüp kültüründen ilham alan yeni nesil teknik spor giyim, sokak stili ve performans drop koleksiyonları.
                 </p>
-                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-mono text-emerald-400 font-bold">
-                  <ShieldCheck className="h-4 w-4" /> 256-BIT SSL & İyzico Güvenceli Ödeme
+                
+                <div className="space-y-3 pt-1">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-mono text-emerald-400 font-bold">
+                    <ShieldCheck className="h-4 w-4" /> 256-BIT SSL & İyzico Güvencesi
+                  </div>
+                  
+                  {/* İyzico ve Ödeme Yöntemleri Resmi Logobandı */}
+                  <div className="pt-2">
+                    <Image 
+                      src="/images/logo_band_white.svg" 
+                      alt="İyzico ve Güvenli Ödeme Logoları" 
+                      width={220} 
+                      height={35} 
+                      className="object-contain h-7 w-auto opacity-90 filter brightness-95"
+                    />
+                  </div>
                 </div>
               </div>
 
+              {/* 2. Sütun: Kurumsal */}
               <div className="space-y-3 font-mono">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Kurumsal</h4>
                 <ul className="space-y-2 text-xs text-zinc-400">
@@ -91,6 +108,7 @@ export default function RootLayout({
                 </ul>
               </div>
 
+              {/* 3. Sütun: Yasal Mevzuatlar */}
               <div className="space-y-3 font-mono">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-primary">Yasal & Güvenlik</h4>
                 <ul className="space-y-2 text-xs text-zinc-400">
@@ -100,6 +118,7 @@ export default function RootLayout({
                 </ul>
               </div>
 
+              {/* 4. Sütun: İletişim & Sosyal Medya */}
               <div className="space-y-3 font-mono">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-primary">İletişim & Sosyal</h4>
                 <ul className="space-y-2.5 text-xs text-zinc-400">
@@ -128,6 +147,7 @@ export default function RootLayout({
 
             </div>
 
+            {/* Alt Telif ve Onur Bandı */}
             <div className="mx-auto max-w-7xl mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-zinc-500">
               <p>© 2026 ORISE STORE. Tüm hakları saklıdır.</p>
               <p className="tracking-widest uppercase">STÜDYO & HAREKET KULÜBÜ</p>
