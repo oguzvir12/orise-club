@@ -58,7 +58,7 @@ export default function RootLayout({
           {/* Üst Menü */}
           <SiteHeader />
 
-          {/* Sayfa İçeriği (Gereksiz üst boşluklar temizlendi) */}
+          {/* Sayfa İçeriği */}
           <main className="flex-1 pt-16 w-full">
             {children}
           </main>
