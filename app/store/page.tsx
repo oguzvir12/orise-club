@@ -205,7 +205,11 @@ function StoreContent() {
                         </div>
                       </div>
 
-                      <p className="mt-4 text-sm leading-relaxed text-zinc-300">{selectedProduct.description}</p>
+                      {/* Şekilli / HTML Destekli Ürün Açıklaması */}
+                      <div 
+                        className="mt-6 text-sm leading-relaxed text-zinc-300 space-y-2 bg-zinc-950/60 p-5 rounded-2xl border border-white/10 font-sans"
+                        dangerouslySetInnerHTML={{ __html: selectedProduct.description }}
+                      />
 
                       {selectedProduct.colors && selectedProduct.colors.length > 0 && (
                         <div className="mt-6 space-y-2">
