@@ -17,14 +17,24 @@ import {
   HelpCircle,
   Send,
   Ban,
-  CheckCircle2
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-const BAD_WORDS = ['küfür1', 'küfür2', 'pis', 'mal', 'salak', 'orospu', 'aq', 'amk'] 
+// Genişletilmiş ve Akıllı Küfür / Argo Filtre Listesi
+const BAD_WORDS = [
+  'orospu', 'oç', 'amk', 'aq', 'sik', 'yarrak', 'piç', 'pezevenk', 'kahpe', 
+  'göt', 'andeaval', 'salak', 'mal', 'gerizekalı', 'aptal', 'ibne', 'götveren'
+] 
+
 function containsBadWord(text: string): boolean {
   const lower = text.toLowerCase()
-  return BAD_WORDS.some(word => lower.includes(word))
+  return BAD_WORDS.some(word => {
+    // Kelime bütünlüğünü ve türevlerini yakalamak için kontrol
+    const regex = new RegExp(`\\b${word}\\b`, 'i')
+    return regex.test(lower) || lower.includes(word)
+  })
 }
 
 const PRESET_COLORS = [
@@ -34,6 +44,18 @@ const PRESET_COLORS = [
   { name: 'Turuncu', hex: '#f97316' },
   { name: 'Lacivert', hex: '#1e3a8a' },
   { name: 'Haki', hex: '#3f6212' },
+]
+
+const CATEGORY_OPTIONS = [
+  { id: 'tshirt', label: 'T-Shirt', group: 'Üst Giyim' },
+  { id: 'tank', label: 'Koşu Atleti / Singlet', group: 'Üst Giyim' },
+  { id: 'sweatshirt', label: 'Sweatshirt & Hoodie', group: 'Üst Giyim' },
+  { id: 'shorts', label: 'Performans Şort', group: 'Alt Giyim' },
+  { id: 'leggings', label: 'Tayt (Leggings)', group: 'Alt Giyim' },
+  { id: 'jogger', label: 'Eşofman / Jogger', group: 'Alt Giyim' },
+  { id: 'socks', label: 'Performans Çorap', group: 'Aksesuar & Ekipman' },
+  { id: 'hat', label: 'Şapka & Kep', group: 'Aksesuar & Ekipman' },
+  { id: 'equipment', label: 'Termos & Matara', group: 'Aksesuar & Ekipman' },
 ]
 
 export default function AdminPage() {
@@ -52,8 +74,8 @@ export default function AdminPage() {
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
   const [comparePrice, setComparePrice] = useState('')
-  const [category, setCategory] = useState('tank')
-  const [categoryLabel, setCategoryLabel] = useState('KOŞU ATLETİ')
+  const [category, setCategory] = useState('tshirt')
+  const [categoryLabel, setCategoryLabel] = useState('T-Shirt')
   const [selectedColors, setSelectedColors] = useState<string[]>(['Siyah'])
   const [gender, setGender] = useState('erkek')
   
@@ -65,7 +87,7 @@ export default function AdminPage() {
   const [description, setDescription] = useState('')
   const [imageList, setImageList] = useState<string[]>([])
 
-  // Ürün Düzenleme Modal (Kategori eklendi)
+  // Ürün Düzenleme Modal (Kategori seçimi eksiksiz eklendi)
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editSubtitle, setEditSubtitle] = useState('')
@@ -74,8 +96,8 @@ export default function AdminPage() {
   const [editColors, setEditColors] = useState<string[]>([])
   const [editColorSizesMap, setEditColorSizesMap] = useState<{ [color: string]: { [size: string]: number } }>({})
   const [editActiveColorTab, setEditActiveColorTab] = useState<string>('')
-  const [editCategory, setEditCategory] = useState('tank')
-  const [editCategoryLabel, setEditCategoryLabel] = useState('KOŞU ATLETİ')
+  const [editCategory, setEditCategory] = useState('tshirt')
+  const [editCategoryLabel, setEditCategoryLabel] = useState('T-Shirt')
   const [editGender, setEditGender] = useState('erkek')
   const [editDescription, setEditDescription] = useState('')
   const [editImages, setEditImages] = useState<string[]>([])
@@ -133,6 +155,17 @@ export default function AdminPage() {
     if (!error) {
       alert('Soru silindi.')
       fetchData()
+    }
+  }
+
+  const handleClearAllOrders = async () => {
+    if (!confirm('DİKKAT: Tüm test siparişleri kalıcı olarak silinecektir. Emin misiniz?')) return
+    const { error } = await supabase.from('orders').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+    if (!error) {
+      alert('Tüm sipariş geçmişi temizlendi!')
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
     }
   }
 
@@ -274,8 +307,8 @@ export default function AdminPage() {
     }
     setEditColorSizesMap(sizesStructure)
 
-    setEditCategory(prod.category || 'tank')
-    setEditCategoryLabel(prod.category_label || 'KOŞU ATLETİ')
+    setEditCategory(prod.category || 'tshirt')
+    setEditCategoryLabel(prod.category_label || 'T-Shirt')
     setEditGender(prod.gender || 'erkek')
     setEditDescription(prod.description || '')
     setEditImages(prod.image_urls || (prod.image_url ? [prod.image_url] : []))
@@ -407,7 +440,7 @@ export default function AdminPage() {
                       <span>Müşteri: <strong className="text-white">{q.user_name}</strong></span>
                       <div className="flex items-center gap-3">
                         <span>{new Date(q.created_at).toLocaleString('tr-TR')}</span>
-                        <button type="button" onClick={() => handleDeleteQuestion(q.id)} className="text-red-400 hover:text-red-300 font-bold cursor-pointer" title="Soruyu Sil">Sil</button>
+                        <button type="button" onClick={() => handleDeleteQuestion(q.id)} className="text-red-400 hover:text-red-300 font-bold cursor-pointer" title="Soruyu Sil">sil</button>
                       </div>
                     </div>
                     <p className="font-bold text-white">Soru: {q.question}</p>
@@ -437,11 +470,23 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* MAĞAZA SİPARİŞLERİ & İPTAL / İADE KİLİT MEKANİZMASI */}
+        {/* MAĞAZA SİPARİŞLERİ & TEMİZLEME */}
         {(isSuperAdmin || isStoreAdmin) && (
           <div className="space-y-12">
             <div className="space-y-6">
-              <h2 className="text-base font-bold flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><span>Mağaza Siparişleri & İptal / İade Yönetimi ({orders.length})</span></h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><span>Mağaza Siparişleri & İptal / İade Yönetimi ({orders.length})</span></h2>
+                {orders.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearAllOrders}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-1.5 text-xs font-bold text-red-400 hover:bg-red-500/20 cursor-pointer"
+                  >
+                    <AlertTriangle size={13} /> Tüm Sipariş Geçmişini Temizle
+                  </button>
+                )}
+              </div>
+
               <div className="rounded-3xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs font-mono">
@@ -546,7 +591,7 @@ export default function AdminPage() {
 
             {/* YENİ ÜRÜN EKLEME */}
             <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Renk Bazlı Bağımsız Stok Matrisi)</span></h2>
+              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Genişletilmiş Kategoriler)</span></h2>
               <form onSubmit={handleAddProduct} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
@@ -562,21 +607,12 @@ export default function AdminPage() {
                   <select value={category} onChange={(e) => {
                     const val = e.target.value
                     setCategory(val)
-                    if (val === 'tank') setCategoryLabel('KOŞU ATLETİ')
-                    else if (val === 'sweatshirt') setCategoryLabel('SWEATSHIRT')
-                    else if (val === 'shorts') setCategoryLabel('ŞORT')
-                    else if (val === 'leggings') setCategoryLabel('TAYT')
-                    else if (val === 'socks') setCategoryLabel('PERFORMANS ÇORAP')
-                    else if (val === 'hat') setCategoryLabel('ŞAPKA')
-                    else if (val === 'equipment') setCategoryLabel('TERMOS & MATARA')
+                    const match = CATEGORY_OPTIONS.find(c => c.id === val)
+                    if (match) setCategoryLabel(match.label)
                   }} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
-                    <option value="tank">Koşu Atleti</option>
-                    <option value="sweatshirt">Sweatshirt</option>
-                    <option value="shorts">Şort</option>
-                    <option value="leggings">Tayt</option>
-                    <option value="socks">Performans Çorap</option>
-                    <option value="hat">Şapka</option>
-                    <option value="equipment">Termos & Matara</option>
+                    {CATEGORY_OPTIONS.map((cat) => (
+                      <option key={cat.id} value={cat.id}>[{cat.group}] {cat.label}</option>
+                    ))}
                   </select>
 
                   <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
@@ -678,7 +714,7 @@ export default function AdminPage() {
                       </div>
                       <div>
                         <h4 className="font-bold text-xs text-white">{prod.title}</h4>
-                        <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | Kategori: {prod.category}</div>
+                        <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | Kategori: {prod.category_label || prod.category}</div>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -694,7 +730,7 @@ export default function AdminPage() {
 
       </div>
 
-      {/* ÜRÜN DÜZENLEME MODALI (Kategori Seçimi Eklendi) */}
+      {/* ÜRÜN DÜZENLEME MODALI */}
       {editingProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -710,21 +746,12 @@ export default function AdminPage() {
                 <select value={editCategory} onChange={(e) => {
                   const val = e.target.value
                   setEditCategory(val)
-                  if (val === 'tank') setEditCategoryLabel('KOŞU ATLETİ')
-                  else if (val === 'sweatshirt') setEditCategoryLabel('SWEATSHIRT')
-                  else if (val === 'shorts') setEditCategoryLabel('ŞORT')
-                  else if (val === 'leggings') setEditCategoryLabel('TAYT')
-                  else if (val === 'socks') setEditCategoryLabel('PERFORMANS ÇORAP')
-                  else if (val === 'hat') setEditCategoryLabel('ŞAPKA')
-                  else if (val === 'equipment') setEditCategoryLabel('TERMOS & MATARA')
+                  const match = CATEGORY_OPTIONS.find(c => c.id === val)
+                  if (match) setEditCategoryLabel(match.label)
                 }} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
-                  <option value="tank">Koşu Atleti</option>
-                  <option value="sweatshirt">Sweatshirt</option>
-                  <option value="shorts">Şort</option>
-                  <option value="leggings">Tayt</option>
-                  <option value="socks">Performans Çorap</option>
-                  <option value="hat">Şapka</option>
-                  <option value="equipment">Termos & Matara</option>
+                  {CATEGORY_OPTIONS.map((cat) => (
+                    <option key={cat.id} value={cat.id}>[{cat.group}] {cat.label}</option>
+                  ))}
                 </select>
                 <select value={editGender} onChange={(e) => setEditGender(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
                   <option value="erkek">Erkek</option>
@@ -732,7 +759,6 @@ export default function AdminPage() {
                 </select>
               </div>
 
-              {/* Düzenleme Renk Paleti */}
               <div className="space-y-2">
                 <label className="text-[10px] font-mono uppercase text-zinc-400 block">Renkler</label>
                 <div className="flex flex-wrap gap-2">
@@ -758,7 +784,6 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Düzenleme Renk Bazlı Stok Sekmeleri */}
               {editColors.length > 0 && (
                 <div className="rounded-2xl border border-white/10 bg-black/50 p-4 space-y-4">
                   <div className="flex items-center gap-2 border-b border-white/10 pb-2">
