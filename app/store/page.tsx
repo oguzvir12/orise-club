@@ -523,4 +523,130 @@ function StoreContent() {
                     const totalStock = product.sizes ? Object.values(product.sizes as Record<string, number>).reduce((a: any, b: any) => a + b, 0) : (product.stock ?? 0)
                     const isSoldOut = totalStock <= 0
 
-                    const currentHoverIdx
+                    const currentHoverIdx = hoveredImageIdx[product.id] || 0
+
+                    return (
+                      <div 
+                        key={product.id} 
+                        onClick={() => openProductDetail(product)} 
+                        onMouseEnter={() => productImages.length > 1 && setHoveredImageIdx({ ...hoveredImageIdx, [product.id]: 1 })}
+                        onMouseLeave={() => setHoveredImageIdx({ ...hoveredImageIdx, [product.id]: 0 })}
+                        className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all duration-300 hover:scale-[1.01] ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-primary/60 cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
+                      >
+                        <div>
+                          <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950 flex items-center justify-center">
+                            {isSoldOut ? (
+                              <div className="absolute inset-0 z-20 bg-black/75 flex items-center justify-center">
+                                <span className="rounded-xl bg-zinc-900 border border-white/20 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-zinc-300 shadow-2xl">
+                                  TÜKENDİ (SOLD OUT)
+                                </span>
+                              </div>
+                            ) : (
+                              <>
+                                {hasDiscount && (
+                                  <span className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-[10px] font-black uppercase text-white shadow-lg">
+                                    <Flame className="h-3 w-3" /> FIRSAT
+                                  </span>
+                                )}
+                              </>
+                            )}
+                            
+                            <Image 
+                              src={productImages[currentHoverIdx] || productImages[0]} 
+                              alt={product.title} 
+                              fill 
+                              className="object-contain p-2 transition-transform duration-700 group-hover:scale-105" 
+                            />
+                          </div>
+
+                          <div className="mt-5 space-y-1.5">
+                            <div className="text-[10px] font-mono text-primary uppercase">{product.category_label || 'ÖZEL DROP'}</div>
+                            <h3 className="font-sans text-lg font-bold text-white group-hover:text-primary transition-colors">{product.title}</h3>
+                            <p className="text-xs text-zinc-400 line-clamp-1">{product.subtitle}</p>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
+                          <div className="flex items-center gap-2">
+                            <div className="text-lg font-black text-white">₺{Number(product.price).toLocaleString('tr-TR')}</div>
+                            {hasDiscount && (
+                              <div className="text-xs text-zinc-500 line-through font-mono">₺{Number(product.compare_at_price).toLocaleString('tr-TR')}</div>
+                            )}
+                          </div>
+                          <div className={`inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase transition-all ${isSoldOut ? 'bg-zinc-900 text-zinc-600' : 'bg-zinc-800/80 text-zinc-200 group-hover:bg-primary group-hover:text-black'}`}>
+                            <span>{isSoldOut ? 'Tükendi' : 'İncele'}</span>
+                            {!isSoldOut && <ArrowUpRight className="h-3.5 w-3.5" />}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+      </div>
+
+      {/* BEDEN ÖLÇÜ TABLOSU MODALI (GÖNDERDİĞİN TABLOLAR) */}
+      {isSizeTableOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setIsSizeTableOpen(false)}>
+          <div className="relative w-full max-w-3xl rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto text-white" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <h3 className="text-lg font-black uppercase text-primary tracking-wider">
+                {selectedProduct?.gender === 'kadin' ? '' : ''} Ölçü Tablosu ({selectedProduct?.gender === 'kadin' ? 'KADIN' : 'ERKEK'})
+              </h3>
+              <button type="button" onClick={() => setIsSizeTableOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black cursor-pointer"><X className="h-4 w-4" /></button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-center text-xs font-mono border border-white/10">
+                <thead className="bg-zinc-900 text-primary">
+                  <tr>
+                    <th className="p-3 border border-white/10 text-left">Ölçüm Yeri / Beden</th>
+                    <th className="p-3 border border-white/10">XS</th>
+                    <th className="p-3 border border-white/10">S</th>
+                    <th className="p-3 border border-white/10">M</th>
+                    <th className="p-3 border border-white/10">L</th>
+                    <th className="p-3 border border-white/10">XL</th>
+                    <th className="p-3 border border-white/10">2XL</th>
+                    <th className="p-3 border border-white/10">3XL</th>
+                    {selectedProduct?.gender === 'erkek' && <th className="p-3 border border-white/10">4XL</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10 text-zinc-300">
+                  {selectedProduct?.gender === 'kadin' ? (
+                    <>
+                      <tr><td className="p-2.5 border border-white/10 text-left">Omuzdan Boy</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">Göğüs</td><td>48</td><td>50</td><td>52</td><td>54</td><td>56</td><td>58</td><td>60</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">Etek</td><td>48</td><td>50</td><td>52</td><td>54</td><td>56</td><td>58</td><td>60</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">Omuzdan Omuza</td><td>45</td><td>47</td><td>49</td><td>51</td><td>53</td><td>55</td><td>57</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">Kol Boyu</td><td>15.25</td><td>16</td><td>16.75</td><td>17.5</td><td>18.25</td><td>19</td><td>19.75</td></tr>
+                    </>
+                  ) : (
+                    <>
+                      <tr><td className="p-2.5 border border-white/10 text-left">Omuzdan Ön Boy</td><td>68</td><td>70</td><td>72</td><td>74</td><td>76</td><td>78</td><td>80</td><td>82</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">Göğüs</td><td>54</td><td>56</td><td>58</td><td>60</td><td>62</td><td>64</td><td>66</td><td>68</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">Etek</td><td>54</td><td>56</td><td>58</td><td>60</td><td>62</td><td>64</td><td>66</td><td>—</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">Omuzdan Omuza</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td><td>68</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">Kol Boyu</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
+                    </>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[10px] text-zinc-500 font-mono text-center">Tüm ölçüler santimetre (cm) cinsinden verilmiştir. Üretim toleransı ±1 cm'dir.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function StorePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <StoreContent />
+    </Suspense>
+  )
+}
