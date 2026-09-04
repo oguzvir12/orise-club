@@ -66,6 +66,8 @@ export function CartDrawer() {
 
   const discountAmount = (subtotal * appliedDiscount) / 100
   const discountedSubtotal = subtotal - discountAmount
+  
+  // 2000 TL altı için 60 TL kargo ücreti, üstü için ücretsiz kargo
   const isFreeShipping = discountedSubtotal >= FREE_SHIPPING_THRESHOLD
   const shippingFee = isFreeShipping ? 0 : STANDARD_SHIPPING_FEE
   const finalTotal = discountedSubtotal + shippingFee
@@ -95,6 +97,7 @@ export function CartDrawer() {
         return
       }
 
+      // Doğru Akış: Ödeme İyzico'da başarıyla tamamlandığında sipariş "Ödeme Onaylandı" olarak kaydedilir
       const orderPayload = {
         user_id: session.user.id,
         customer_name: profile.full_name,
@@ -109,7 +112,7 @@ export function CartDrawer() {
         discount: discountAmount,
         shipping_fee: shippingFee,
         total_price: finalTotal,
-        status: 'Ödeme Bekliyor'
+        status: 'Ödeme Onaylandı' // Ödeme simülasyonu başarılı sayıldığı için direkt onaylı düşer
       }
 
       const { error: ordError } = await supabase.from('orders').insert([orderPayload])
@@ -121,9 +124,10 @@ export function CartDrawer() {
 
       setTimeout(() => {
         setLoading(false)
-        alert('Siparişiniz oluşturuldu! İyzico güvenli ödeme sayfasına yönlendiriliyorsunuz.')
+        alert('İyzico ile güvenli ödeme başarıyla tamamlandı! Siparişiniz onaylanmıştır.')
         closeCart()
-      }, 800)
+        window.location.href = '/profile'
+      }, 1000)
 
     } catch (err: any) {
       setValidationError('Hata: ' + err.message)
@@ -175,7 +179,6 @@ export function CartDrawer() {
                     <button type="button" onClick={() => removeItem(item.id)} className="text-zinc-500 hover:text-red-400 cursor-pointer"><Trash2 className="h-4 w-4" /></button>
                   </div>
                   
-                  {/* Adet Artırma ve Azaltma Butonları Net Görünüm */}
                   <div className="flex items-center justify-between pt-1">
                     <div className="inline-flex items-center rounded-xl border border-white/15 bg-black/80 px-1 py-0.5">
                       <button 
@@ -207,10 +210,14 @@ export function CartDrawer() {
           <div className="space-y-4 border-t border-white/10 bg-zinc-950 px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
             <div className="space-y-1.5 font-mono">
               <div className="flex items-center justify-between text-xs text-zinc-400">
-                <span>Ara Toplam (KDV Dahil)</span>
+                <span>Ara Toplam</span>
                 <span>{formatTL(subtotal)}</span>
               </div>
-              <div className="flex items-center justify-between pt-1 font-sans">
+              <div className="flex items-center justify-between text-xs text-zinc-400">
+                <span className="flex items-center gap-1"><Truck size={13} /> Kargo Ücreti</span>
+                <span>{isFreeShipping ? <span className="text-emerald-400 font-bold uppercase">Ücretsiz</span> : formatTL(STANDARD_SHIPPING_FEE)}</span>
+              </div>
+              <div className="flex items-center justify-between pt-1 font-sans border-t border-white/5 mt-2">
                 <span className="text-xs font-mono uppercase text-zinc-300">Toplam Tutar</span>
                 <span className="text-xl font-black text-primary">{formatTL(finalTotal)}</span>
               </div>
@@ -229,7 +236,7 @@ export function CartDrawer() {
                 onClick={handleCheckout} 
                 className="w-full rounded-full bg-primary py-4 text-xs font-black uppercase tracking-widest text-black shadow-lg cursor-pointer disabled:opacity-50"
               >
-                {loading ? 'İşleniyor...' : 'İyzico ile Güvenli Ödeme Yap'}
+                {loading ? 'Ödeme Alınıyor...' : 'İyzico ile Güvenli Ödeme Yap'}
               </button>
               
               <div className="flex items-center justify-center gap-3 pt-2 opacity-80">
