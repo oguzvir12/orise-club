@@ -463,3 +463,40 @@ function StoreContent() {
       </div>
 
       {/* Beden Ölçü Tablosu Modal */}
+      {isSizeTableOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setIsSizeTableOpen(false)}>
+          <div className="relative w-full max-w-3xl rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 text-white" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <h3 className="text-lg font-black uppercase text-primary tracking-wider">
+                {selectedProduct?.gender === 'kadin' ? 'KADIN BEDEN TABLOSU' : 'ERKEK BEDEN TABLOSU'} Ölçü Tablosu
+              </h3>
+              <button type="button" onClick={() => setIsSizeTableOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-center text-xs font-mono border border-white/10">
+                <thead className="bg-zinc-900 text-primary">
+                  <tr>
+                    <th className="p-3 border border-white/10 text-left">Ölçüm Yeri / Beden</th>
+                    <th className="p-3 border border-white/10">XS</th><th className="p-3 border border-white/10">S</th><th className="p-3 border border-white/10">M</th><th className="p-3 border border-white/10">L</th><th className="p-3 border border-white/10">XL</th><th className="p-3 border border-white/10">2XL</th><th className="p-3 border border-white/10">3XL</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10 text-zinc-300">
+                  <tr><td className="p-2.5 border border-white/10 text-left">Omuzdan Boy</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td></tr>
+                  <tr><td className="p-2.5 border border-white/10 text-left">Göğüs</td><td>48</td><td>50</td><td>52</td><td>54</td><td>56</td><td>58</td><td>60</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function StorePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <StoreContent />
+    </Suspense>
+  )
+}
