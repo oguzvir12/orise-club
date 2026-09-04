@@ -30,13 +30,10 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
 
-  const [registrations, setRegistrations] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
-  const [events, setEvents] = useState<any[]>([])
-  const [profiles, setProfiles] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
   const [coupons, setCoupons] = useState<any[]>([])
-
+  const [profiles, setProfiles] = useState<any[]>([])
   const [selectedMember, setSelectedMember] = useState<any | null>(null)
 
   // Kupon State
@@ -44,16 +41,21 @@ export default function AdminPage() {
   const [discountPct, setDiscountPct] = useState('')
   const [usageLimit, setUsageLimit] = useState('100')
 
-  // Yeni Ürün Ekleme
+  // Yeni Ürün Ekleme (8 Beden Matrisi + Cinsiyet)
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
   const [comparePrice, setComparePrice] = useState('')
   const [colorsInput, setColorsInput] = useState('Siyah, Beyaz')
+  const [gender, setGender] = useState('erkek') // 'erkek' veya 'kadin'
+  const [sizeXS, setSizeXS] = useState('5')
   const [sizeS, setSizeS] = useState('10')
   const [sizeM, setSizeM] = useState('15')
   const [sizeL, setSizeL] = useState('15')
   const [sizeXL, setSizeXL] = useState('10')
+  const [size2XL, setSize2XL] = useState('5')
+  const [size3XL, setSize3XL] = useState('5')
+  const [size4XL, setSize4XL] = useState('5')
   const [description, setDescription] = useState('')
   const [imageList, setImageList] = useState<string[]>([])
 
@@ -64,14 +66,18 @@ export default function AdminPage() {
   const [editPrice, setEditPrice] = useState('')
   const [editComparePrice, setEditComparePrice] = useState('')
   const [editColors, setEditColors] = useState('')
+  const [editGender, setEditGender] = useState('erkek')
+  const [editSizeXS, setEditSizeXS] = useState(0)
   const [editSizeS, setEditSizeS] = useState(0)
   const [editSizeM, setEditSizeM] = useState(0)
   const [editSizeL, setEditSizeL] = useState(0)
   const [editSizeXL, setEditSizeXL] = useState(0)
+  const [editSize2XL, setEditSize2XL] = useState(0)
+  const [editSize3XL, setEditSize3XL] = useState(0)
+  const [editSize4XL, setEditSize4XL] = useState(0)
   const [editDescription, setEditDescription] = useState('')
   const [editImages, setEditImages] = useState<string[]>([])
 
-  // Kargo Takip Numarası Girişi için State
   const [trackingNoInput, setTrackingNoInput] = useState<{ [key: string]: string }>({})
 
   useEffect(() => {
@@ -82,7 +88,7 @@ export default function AdminPage() {
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
-      if (profile && ['admin', 'super_admin', 'store_admin', 'community_admin', 'captain'].includes(profile.role)) {
+      if (profile && ['admin', 'super_admin', 'store_admin'].includes(profile.role)) {
         setIsLoggedIn(true)
         setAdminProfile(profile)
         fetchData()
@@ -149,7 +155,16 @@ export default function AdminPage() {
     if (!title || !price) return
 
     const colorArray = colorsInput.split(',').map(c => c.trim()).filter(Boolean)
-    const sizesObj = { S: Number(sizeS) || 0, M: Number(sizeM) || 0, L: Number(sizeL) || 0, XL: Number(sizeXL) || 0 }
+    const sizesObj = { 
+      XS: Number(sizeXS) || 0, 
+      S: Number(sizeS) || 0, 
+      M: Number(sizeM) || 0, 
+      L: Number(sizeL) || 0, 
+      XL: Number(sizeXL) || 0,
+      '2XL': Number(size2XL) || 0,
+      '3XL': Number(size3XL) || 0,
+      '4XL': Number(size4XL) || 0
+    }
     const totalStock = Object.values(sizesObj).reduce((a: any, b: any) => a + b, 0)
 
     const { error } = await supabase.from('products').insert([{
@@ -160,6 +175,7 @@ export default function AdminPage() {
       stock: totalStock,
       sizes: sizesObj,
       colors: colorArray,
+      gender: gender,
       is_active: true,
       description: description || 'Kaliteli tekstil.',
       category: 'tank',
@@ -189,10 +205,15 @@ export default function AdminPage() {
     setEditPrice(prod.price || '')
     setEditComparePrice(prod.compare_at_price || '')
     setEditColors(prod.colors ? prod.colors.join(', ') : '')
+    setEditGender(prod.gender || 'erkek')
+    setEditSizeXS(prod.sizes?.XS ?? 0)
     setEditSizeS(prod.sizes?.S ?? 0)
     setEditSizeM(prod.sizes?.M ?? 0)
     setEditSizeL(prod.sizes?.L ?? 0)
     setEditSizeXL(prod.sizes?.XL ?? 0)
+    setEditSize2XL(prod.sizes?.['2XL'] ?? 0)
+    setEditSize3XL(prod.sizes?.['3XL'] ?? 0)
+    setEditSize4XL(prod.sizes?.['4XL'] ?? 0)
     setEditDescription(prod.description || '')
     setEditImages(prod.image_urls || (prod.image_url ? [prod.image_url] : []))
   }
@@ -202,7 +223,16 @@ export default function AdminPage() {
     if (!editingProduct) return
 
     const colorArray = editColors.split(',').map(c => c.trim()).filter(Boolean)
-    const sizesObj = { S: Number(editSizeS) || 0, M: Number(editSizeM) || 0, L: Number(editSizeL) || 0, XL: Number(editSizeXL) || 0 }
+    const sizesObj = { 
+      XS: Number(editSizeXS) || 0, 
+      S: Number(editSizeS) || 0, 
+      M: Number(editSizeM) || 0, 
+      L: Number(editSizeL) || 0, 
+      XL: Number(editSizeXL) || 0,
+      '2XL': Number(editSize2XL) || 0,
+      '3XL': Number(editSize3XL) || 0,
+      '4XL': Number(editSize4XL) || 0
+    }
     const totalStock = Object.values(sizesObj).reduce((a: any, b: any) => a + b, 0)
 
     const { error } = await supabase.from('products').update({
@@ -213,6 +243,7 @@ export default function AdminPage() {
       stock: totalStock,
       sizes: sizesObj,
       colors: colorArray,
+      gender: editGender,
       description: editDescription,
       image_urls: editImages
     }).eq('id', editingProduct.id)
@@ -272,7 +303,7 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* MAĞAZA SİPARİŞLERİ VE KARGO GİRİŞİ */}
+        {/* SİPARİŞLER & KARGO YÖNETİMİ */}
         {(isSuperAdmin || isStoreAdmin) && (
           <div className="space-y-12">
             <div className="space-y-6">
@@ -312,7 +343,7 @@ export default function AdminPage() {
                               <div className="flex items-center gap-2">
                                 <input
                                   type="text"
-                                  placeholder="Kargo Takip No (Aras/MNG)"
+                                  placeholder="Kargo Takip No"
                                   value={trackingNoInput[ord.id] || ''}
                                   onChange={(e) => setTrackingNoInput({ ...trackingNoInput, [ord.id]: e.target.value })}
                                   className="bg-black border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white w-44"
@@ -351,17 +382,22 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* YENİ ÜRÜN EKLEME */}
+            {/* YENİ ÜRÜN EKLEME (Genişletilmiş Bedenler) */}
             <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle</span></h2>
+              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Tüm Bedenler)</span></h2>
               <form onSubmit={handleAddProduct} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   <input type="number" placeholder="Güncel Fiyat (₺)" required value={price} onChange={(e) => setPrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   <input type="number" placeholder="Eski Fiyat" value={comparePrice} onChange={(e) => setComparePrice(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  <select value={gender} onChange={(e) => setGender(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
+                    <option value="erkek">Erkek Koleksiyonu</option>
+                    <option value="kadin">Kadın Koleksiyonu</option>
+                  </select>
                 </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input type="text" placeholder="Renkler (Siyah, Beyaz, Antrasit)" value={colorsInput} onChange={(e) => setColorsInput(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  <input type="text" placeholder="Renkler (Siyah, Beyaz)" value={colorsInput} onChange={(e) => setColorsInput(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
                     <span className="text-xs text-zinc-400 truncate">{uploading ? 'Yükleniyor...' : imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf` : 'Fotoğraf Seç'}</span>
                     <Upload className="h-4 w-4 text-primary" />
@@ -380,18 +416,27 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-4 gap-3">
-                  <div><span className="text-[10px] text-zinc-500">S Beden</span><input type="number" value={sizeS} onChange={(e) => setSizeS(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[10px] text-zinc-500">M Beden</span><input type="number" value={sizeM} onChange={(e) => setSizeM(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[10px] text-zinc-500">L Beden</span><input type="number" value={sizeL} onChange={(e) => setSizeL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[10px] text-zinc-500">XL Beden</span><input type="number" value={sizeXL} onChange={(e) => setSizeXL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" /></div>
+                {/* 8 Beden Stok Matrisi */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-zinc-400">Beden Stok Matrisi</label>
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                    <div><span className="text-[9px] text-zinc-500">XS</span><input type="number" value={sizeXS} onChange={(e) => setSizeXS(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                    <div><span className="text-[9px] text-zinc-500">S</span><input type="number" value={sizeS} onChange={(e) => setSizeS(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                    <div><span className="text-[9px] text-zinc-500">M</span><input type="number" value={sizeM} onChange={(e) => setSizeM(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                    <div><span className="text-[9px] text-zinc-500">L</span><input type="number" value={sizeL} onChange={(e) => setSizeL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                    <div><span className="text-[9px] text-zinc-500">XL</span><input type="number" value={sizeXL} onChange={(e) => setSizeXL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                    <div><span className="text-[9px] text-zinc-500">2XL</span><input type="number" value={size2XL} onChange={(e) => setSize2XL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                    <div><span className="text-[9px] text-zinc-500">3XL</span><input type="number" value={size3XL} onChange={(e) => setSize3XL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                    <div><span className="text-[9px] text-zinc-500">4XL</span><input type="number" value={size4XL} onChange={(e) => setSize4XL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                  </div>
                 </div>
-                <textarea rows={2} placeholder="Ürün Açıklaması (HTML destekler)" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
+
+                <textarea rows={3} placeholder="Ürün Açıklaması (HTML Etiketleri Destekler: <strong>, <ul>, <li> vb.)" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
                 <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Ürünü Yayınla</button>
               </form>
             </div>
 
-            {/* YÜKLÜ ÜRÜNLER LİSTESİ */}
+            {/* YÜKLÜ ÜRÜNLER */}
             <div className="space-y-4">
               <h2 className="text-base font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /><span>Yüklü Ürünler ({products.length})</span></h2>
               <div className="space-y-3">
@@ -403,7 +448,7 @@ export default function AdminPage() {
                       </div>
                       <div>
                         <h4 className="font-bold text-xs text-white">{prod.title}</h4>
-                        <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | S({prod.sizes?.S ?? 0}) M({prod.sizes?.M ?? 0}) L({prod.sizes?.L ?? 0}) XL({prod.sizes?.XL ?? 0})</div>
+                        <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | Cinsiyet: {prod.gender || 'erkek'}</div>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -424,41 +469,31 @@ export default function AdminPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Ürünü ve Fotoğrafları Düzenle</h3>
+              <h3 className="font-bold text-base text-white">Ürünü ve Beden Matrisini Düzenle</h3>
               <button type="button" onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleUpdateProduct} className="space-y-4">
               <input type="text" required value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
               <div className="grid grid-cols-2 gap-4">
                 <input type="number" required value={editPrice} onChange={(e) => setEditPrice(e.target.value)} placeholder="Fiyat" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                <input type="number" value={editComparePrice} onChange={(e) => setEditComparePrice(e.target.value)} placeholder="Eski Fiyat" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <select value={editGender} onChange={(e) => setEditGender(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
+                  <option value="erkek">Erkek</option>
+                  <option value="kadin">Kadın</option>
+                </select>
               </div>
-              <input type="text" value={editColors} onChange={(e) => setEditColors(e.target.value)} placeholder="Renkler (Siyah, Beyaz)" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
 
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-2">Fotoğraflar</label>
-                <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
-                  <span className="text-xs text-zinc-400">Yeni Fotoğraf Ekle</span>
-                  <Upload className="h-4 w-4 text-primary" />
-                  <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'edit')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono uppercase text-zinc-400">8 Beden Stok Matrisi</label>
+                <div className="grid grid-cols-4 gap-2">
+                  <div><span className="text-[9px] text-zinc-500">XS</span><input type="number" value={editSizeXS} onChange={(e) => setEditSizeXS(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                  <div><span className="text-[9px] text-zinc-500">S</span><input type="number" value={editSizeS} onChange={(e) => setEditSizeS(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                  <div><span className="text-[9px] text-zinc-500">M</span><input type="number" value={editSizeM} onChange={(e) => setEditSizeM(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                  <div><span className="text-[9px] text-zinc-500">L</span><input type="number" value={editSizeL} onChange={(e) => setEditSizeL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                  <div><span className="text-[9px] text-zinc-500">XL</span><input type="number" value={editSizeXL} onChange={(e) => setEditSizeXL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                  <div><span className="text-[9px] text-zinc-500">2XL</span><input type="number" value={editSize2XL} onChange={(e) => setEditSize2XL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                  <div><span className="text-[9px] text-zinc-500">3XL</span><input type="number" value={editSize3XL} onChange={(e) => setEditSize3XL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+                  <div><span className="text-[9px] text-zinc-500">4XL</span><input type="number" value={editSize4XL} onChange={(e) => setEditSize4XL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
                 </div>
-                {editImages.length > 0 && (
-                  <div className="flex items-center gap-3 pt-3 overflow-x-auto">
-                    {editImages.map((imgUrl, imgIdx) => (
-                      <div key={imgIdx} className="relative h-16 w-16 rounded-xl overflow-hidden border border-white/20 flex-none group">
-                        <Image src={imgUrl} alt="" fill className="object-cover" />
-                        <button type="button" onClick={() => setEditImages(editImages.filter((_, i) => i !== imgIdx))} className="absolute inset-0 bg-red-600/80 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-xs font-bold cursor-pointer">Kaldır</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-4 gap-2">
-                <input type="number" value={editSizeS} onChange={(e) => setEditSizeS(Number(e.target.value))} placeholder="S" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
-                <input type="number" value={editSizeM} onChange={(e) => setEditSizeM(Number(e.target.value))} placeholder="M" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
-                <input type="number" value={editSizeL} onChange={(e) => setEditSizeL(Number(e.target.value))} placeholder="L" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
-                <input type="number" value={editSizeXL} onChange={(e) => setEditSizeXL(Number(e.target.value))} placeholder="XL" className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white text-center" />
               </div>
 
               <textarea rows={3} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
