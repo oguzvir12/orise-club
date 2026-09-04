@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   ArrowLeft,
-  Users,
   Trash2,
   Lock,
   LogOut,
@@ -14,13 +13,7 @@ import {
   Edit3,
   X,
   Upload,
-  Calendar,
-  Download,
   ShoppingBag,
-  Tag,
-  ShieldAlert,
-  Eye,
-  Truck,
   HelpCircle,
   Send,
   Ban,
@@ -28,13 +21,20 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-// Küfür ve Argo Filtreleme Listesi
 const BAD_WORDS = ['küfür1', 'küfür2', 'pis', 'mal', 'salak', 'orospu', 'aq', 'amk'] 
-
 function containsBadWord(text: string): boolean {
   const lower = text.toLowerCase()
   return BAD_WORDS.some(word => lower.includes(word))
 }
+
+const PRESET_COLORS = [
+  { name: 'Siyah', hex: '#000000' },
+  { name: 'Beyaz', hex: '#FFFFFF' },
+  { name: 'Gri', hex: '#6b7280' },
+  { name: 'Turuncu', hex: '#f97316' },
+  { name: 'Lacivert', hex: '#1e3a8a' },
+  { name: 'Haki', hex: '#3f6212' },
+]
 
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -44,18 +44,17 @@ export default function AdminPage() {
 
   const [products, setProducts] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
-  const [coupons, setCoupons] = useState<any[]>([])
   const [questions, setQuestions] = useState<any[]>([])
   const [answerInputs, setAnswerInputs] = useState<{ [key: string]: string }>({})
 
-  // Yeni Ürün Ekleme
+  // Yeni Ürün Ekleme (Renk Paleti İkonları ile)
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
   const [comparePrice, setComparePrice] = useState('')
   const [category, setCategory] = useState('tank')
   const [categoryLabel, setCategoryLabel] = useState('KOŞU ATLETİ')
-  const [colorsInput, setColorsInput] = useState('Siyah, Beyaz')
+  const [selectedColors, setSelectedColors] = useState<string[]>(['Siyah'])
   const [gender, setGender] = useState('erkek')
   
   const [sizeXS, setSizeXS] = useState('5')
@@ -69,13 +68,13 @@ export default function AdminPage() {
   const [description, setDescription] = useState('')
   const [imageList, setImageList] = useState<string[]>([])
 
-  // Ürün Düzenleme (Çalışmayan Modal Düzeltildi)
+  // Ürün Düzenleme Modal
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editSubtitle, setEditSubtitle] = useState('')
   const [editPrice, setEditPrice] = useState('')
   const [editComparePrice, setEditComparePrice] = useState('')
-  const [editColors, setEditColors] = useState('')
+  const [editColors, setEditColors] = useState<string[]>([])
   const [editCategory, setEditCategory] = useState('tank')
   const [editGender, setEditGender] = useState('erkek')
   const [editSizeXS, setEditSizeXS] = useState(0)
@@ -123,9 +122,6 @@ export default function AdminPage() {
 
       const { data: qData } = await supabase.from('product_questions').select('*').order('created_at', { ascending: false })
       if (qData) setQuestions(qData)
-
-      const { data: cpData } = await supabase.from('coupons').select('*').order('created_at', { ascending: false })
-      if (cpData) setCoupons(cpData)
     } catch (e) {
       console.error(e)
     } finally {
@@ -137,6 +133,22 @@ export default function AdminPage() {
     await supabase.auth.signOut()
     setIsLoggedIn(false)
     window.location.href = '/'
+  }
+
+  const toggleColorSelection = (colorName: string, isEdit: boolean = false) => {
+    if (isEdit) {
+      if (editColors.includes(colorName)) {
+        setEditColors(editColors.filter(c => c !== colorName))
+      } else {
+        setEditColors([...editColors, colorName])
+      }
+    } else {
+      if (selectedColors.includes(colorName)) {
+        setSelectedColors(selectedColors.filter(c => c !== colorName))
+      } else {
+        setSelectedColors([...selectedColors, colorName])
+      }
+    }
   }
 
   const handleMultipleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'new' | 'edit') => {
@@ -165,7 +177,6 @@ export default function AdminPage() {
     e.preventDefault()
     if (!title || !price) return
 
-    const colorArray = colorsInput.split(',').map(c => c.trim()).filter(Boolean)
     const sizesObj = { 
       XS: Number(sizeXS) || 0, S: Number(sizeS) || 0, M: Number(sizeM) || 0, L: Number(sizeL) || 0, 
       XL: Number(sizeXL) || 0, '2XL': Number(size2XL) || 0, '3XL': Number(size3XL) || 0, '4XL': Number(size4XL) || 0
@@ -179,7 +190,7 @@ export default function AdminPage() {
       compare_at_price: comparePrice ? Number(comparePrice) : null,
       stock: totalStock,
       sizes: sizesObj,
-      colors: colorArray,
+      colors: selectedColors,
       gender: gender,
       category: category,
       category_label: categoryLabel,
@@ -209,7 +220,7 @@ export default function AdminPage() {
     setEditSubtitle(prod.subtitle || '')
     setEditPrice(prod.price || '')
     setEditComparePrice(prod.compare_at_price || '')
-    setEditColors(prod.colors ? prod.colors.join(', ') : '')
+    setEditColors(prod.colors || ['Siyah'])
     setEditCategory(prod.category || 'tank')
     setEditGender(prod.gender || 'erkek')
     setEditSizeXS(prod.sizes?.XS ?? 0)
@@ -228,7 +239,6 @@ export default function AdminPage() {
     e.preventDefault()
     if (!editingProduct) return
 
-    const colorArray = editColors.split(',').map(c => c.trim()).filter(Boolean)
     const sizesObj = { 
       XS: Number(editSizeXS) || 0, S: Number(editSizeS) || 0, M: Number(editSizeM) || 0, L: Number(editSizeL) || 0, 
       XL: Number(editSizeXL) || 0, '2XL': Number(editSize2XL) || 0, '3XL': Number(editSize3XL) || 0, '4XL': Number(editSize4XL) || 0
@@ -242,7 +252,7 @@ export default function AdminPage() {
       compare_at_price: editComparePrice ? Number(editComparePrice) : null,
       stock: totalStock,
       sizes: sizesObj,
-      colors: colorArray,
+      colors: editColors,
       category: editCategory,
       gender: editGender,
       description: editDescription,
@@ -258,7 +268,13 @@ export default function AdminPage() {
     }
   }
 
-  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string, currentStatus: string) => {
+    // İptal edilen veya iade edilen siparişin statüsü değiştirilemez!
+    if (currentStatus === 'İptal Edildi' || currentStatus === 'İade Edildi') {
+      alert('İptal edilmiş veya iade edilmiş siparişlerin statüsü değiştirilemez!')
+      return
+    }
+
     const trackingNo = trackingNoInput[orderId] || null
     const { error } = await supabase.from('orders').update({
       status: newStatus,
@@ -273,10 +289,9 @@ export default function AdminPage() {
     }
   }
 
-  // Siparişi İptal Et / İade Onayla
   const handleCancelOrRefundOrder = async (orderId: string, actionType: 'cancel' | 'refund') => {
     const statusText = actionType === 'cancel' ? 'İptal Edildi' : 'İade Edildi'
-    if (!confirm(`Bu siparişi "${statusText}" olarak işaretlemek istiyor musunuz? İyzico entegrasyonu üzerinden otomatik iade tetiklenecektir.`)) return
+    if (!confirm(`Bu siparişi "${statusText}" olarak işaretlemek istiyor musunuz?`)) return
 
     const { error } = await supabase.from('orders').update({
       status: statusText,
@@ -296,16 +311,14 @@ export default function AdminPage() {
     if (!ans?.trim()) return
 
     if (containsBadWord(ans)) {
-      alert('Yanıtınızda uygunsuz kelimeler tespit edildi. Lütfen düzenleyin.')
+      alert('Yanıtınızda uygunsuz kelimeler tespit edildi.')
       return
     }
 
     const { error } = await supabase.from('product_questions').update({ answer: ans }).eq('id', qId)
     if (!error) {
-      alert('Soru yanıtlandı ve yayınlandı!')
+      alert('Soru yanıtlandı!')
       fetchData()
-    } else {
-      alert('Hata: ' + error.message)
     }
   }
 
@@ -317,9 +330,9 @@ export default function AdminPage() {
     return (
       <div className="fixed inset-0 z-50 bg-black text-white flex items-center justify-center p-6 font-sans">
         <div className="w-full max-w-md rounded-3xl border border-white/15 bg-zinc-950 p-8 shadow-2xl space-y-6 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40"><Lock className="h-5 w-5" /></div>
+          <Lock className="mx-auto h-8 w-8 text-primary" />
           <h1 className="text-xl font-black text-white">Yönetici Girişi Gerekli</h1>
-          <Link href="/" className="inline-block w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Ana Sayfaya Dön</Link>
+          <Link href="/" className="inline-block w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase text-black">Ana Sayfaya Dön</Link>
         </div>
       </div>
     )
@@ -327,26 +340,23 @@ export default function AdminPage() {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black text-white p-6 sm:p-10 font-sans">
-      <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-6 mb-8">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-zinc-900 text-zinc-300 hover:text-white"><ArrowLeft className="h-4 w-4" /></Link>
-          <div>
-            <h1 className="text-xl font-black text-white">ORISE Kontrol Paneli</h1>
-            <p className="text-xs font-mono text-primary uppercase">Rol: {role}</p>
-          </div>
+      <div className="mx-auto max-w-7xl flex items-center justify-between border-b border-white/10 pb-6 mb-8">
+        <div>
+          <h1 className="text-xl font-black text-white">ORISE Kontrol Paneli</h1>
+          <p className="text-xs font-mono text-primary uppercase">Rol: {role}</p>
         </div>
-        <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20 cursor-pointer"><LogOut className="h-3.5 w-3.5" /> Çıkış</button>
+        <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 cursor-pointer"><LogOut className="h-3.5 w-3.5" /> Çıkış</button>
       </div>
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* MÜŞTERİ SORU & CEVAP (Küfür Filtreli) */}
+        {/* MÜŞTERİ SORU & CEVAP */}
         {(isSuperAdmin || isStoreAdmin) && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold flex items-center gap-2 text-primary"><HelpCircle className="h-5 w-5" /><span>Müşteri Ürün Soruları ({questions.filter(q => !q.answer).length} Bekleyen)</span></h2>
+            <h2 className="text-base font-bold flex items-center gap-2 text-primary"><HelpCircle className="h-5 w-5" /><span>Müşteri Ürün Soruları</span></h2>
             <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6 space-y-4">
               {questions.length === 0 ? (
-                <p className="text-xs text-zinc-500 font-mono">Henüz soru bulunmuyor.</p>
+                <p className="text-xs text-zinc-500 font-mono">Bekleyen soru bulunmuyor.</p>
               ) : (
                 questions.map((q) => (
                   <div key={q.id} className="p-4 rounded-2xl border border-white/10 bg-black/60 space-y-3 text-xs">
@@ -364,16 +374,12 @@ export default function AdminPage() {
                       <div className="flex gap-2 pt-2">
                         <input
                           type="text"
-                          placeholder="Yanıtınızı yazın (Otomatik küfür filtresi devrede)..."
+                          placeholder="Yanıtınızı yazın..."
                           value={answerInputs[q.id] || ''}
                           onChange={(e) => setAnswerInputs({ ...answerInputs, [q.id]: e.target.value })}
                           className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
                         />
-                        <button
-                          type="button"
-                          onClick={() => handleAnswerQuestion(q.id)}
-                          className="px-4 py-2 bg-primary text-black font-bold rounded-xl text-xs flex items-center gap-1 cursor-pointer"
-                        >
+                        <button type="button" onClick={() => handleAnswerQuestion(q.id)} className="px-4 py-2 bg-primary text-black font-bold rounded-xl text-xs flex items-center gap-1 cursor-pointer">
                           <Send size={14} /> Yanıtla
                         </button>
                       </div>
@@ -385,7 +391,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* MAĞAZA SİPARİŞLERİ VE İPTAL / İADE OPERASYONLARI */}
+        {/* MAĞAZA SİPARİŞLERİ & İPTAL / İADE KİLİT MEKANİZMASI */}
         {(isSuperAdmin || isStoreAdmin) && (
           <div className="space-y-12">
             <div className="space-y-6">
@@ -405,79 +411,86 @@ export default function AdminPage() {
                       {orders.length === 0 ? (
                         <tr><td colSpan={4} className="p-6 text-center text-zinc-500">Sipariş bulunmuyor.</td></tr>
                       ) : (
-                        orders.map((ord) => (
-                          <tr key={ord.id} className="hover:bg-zinc-900/40 align-top">
-                            <td className="p-4 font-bold text-white space-y-1">
-                              <div className="text-[10px] text-primary">{new Date(ord.created_at).toLocaleString('tr-TR')}</div>
-                              <div>{ord.customer_name}</div>
-                              <div className="text-[10px] text-zinc-400 font-normal">{ord.phone}</div>
-                            </td>
-                            <td className="p-4">
-                              {ord.items?.map((i: any, idx: number) => (
-                                <div key={idx}>• {i.name} (x{i.quantity})</div>
-                              ))}
-                              <div className="text-primary font-bold mt-1">Toplam: ₺{ord.total_price}</div>
-                            </td>
-                            <td className="p-4 text-[11px]">
-                              <div>{ord.address}</div>
-                            </td>
-                            <td className="p-4 space-y-3">
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="text"
-                                  placeholder="Kargo Takip No"
-                                  value={trackingNoInput[ord.id] || ''}
-                                  onChange={(e) => setTrackingNoInput({ ...trackingNoInput, [ord.id]: e.target.value })}
-                                  className="bg-black border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white w-36"
-                                />
-                                <select
-                                  id={`status-${ord.id}`}
-                                  defaultValue={ord.status}
-                                  className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white"
-                                >
-                                  <option value="Ödeme Bekliyor">Ödeme Bekliyor</option>
-                                  <option value="Ödeme Onaylandı">Ödeme Onaylandı</option>
-                                  <option value="Kargolandı">Kargolandı</option>
-                                  <option value="İade Talep Edildi">İade Talep Edildi</option>
-                                  <option value="İade Edildi">İade Edildi</option>
-                                  <option value="İptal Edildi">İptal Edildi</option>
-                                </select>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const sel = (document.getElementById(`status-${ord.id}`) as HTMLSelectElement).value
-                                    handleUpdateOrderStatus(ord.id, sel)
-                                  }}
-                                  className="px-3 py-1.5 bg-primary text-black rounded-lg text-[11px] font-bold cursor-pointer"
-                                >
-                                  Kaydet
-                                </button>
-                              </div>
+                        orders.map((ord) => {
+                          const isLocked = ord.status === 'İptal Edildi' || ord.status === 'İade Edildi'
 
-                              {/* İptal / İade Butonları */}
-                              <div className="flex gap-2 pt-1">
-                                {ord.status !== 'İptal Edildi' && ord.status !== 'İade Edildi' && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCancelOrRefundOrder(ord.id, 'cancel')}
-                                    className="px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg text-[10px] font-bold hover:bg-red-500/20 cursor-pointer inline-flex items-center gap-1"
+                          return (
+                            <tr key={ord.id} className="hover:bg-zinc-900/40 align-top">
+                              <td className="p-4 font-bold text-white space-y-1">
+                                <div className="text-[10px] text-primary">{new Date(ord.created_at).toLocaleString('tr-TR')}</div>
+                                <div>{ord.customer_name}</div>
+                                <div className="text-[10px] text-zinc-400 font-normal">{ord.phone}</div>
+                              </td>
+                              <td className="p-4">
+                                {ord.items?.map((i: any, idx: number) => (
+                                  <div key={idx}>• {i.name} (x{i.quantity})</div>
+                                ))}
+                                <div className="text-primary font-bold mt-1">Toplam: ₺{ord.total_price}</div>
+                              </td>
+                              <td className="p-4 text-[11px]">
+                                <div>{ord.address}</div>
+                              </td>
+                              <td className="p-4 space-y-3">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Kargo Takip No"
+                                    value={trackingNoInput[ord.id] || ''}
+                                    onChange={(e) => setTrackingNoInput({ ...trackingNoInput, [ord.id]: e.target.value })}
+                                    className="bg-black border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white w-36"
+                                  />
+                                  <select
+                                    id={`status-${ord.id}`}
+                                    defaultValue={ord.status}
+                                    disabled={isLocked}
+                                    className={`bg-black border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-white ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   >
-                                    <Ban size={12} /> Siparişi İptal Et
-                                  </button>
-                                )}
-                                {ord.status === 'İade Talep Edildi' && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCancelOrRefundOrder(ord.id, 'refund')}
-                                    className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-bold hover:bg-emerald-500/20 cursor-pointer inline-flex items-center gap-1"
-                                  >
-                                    <CheckCircle2 size={12} /> İadeyi Onayla & Parayı İade Et
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))
+                                    <option value="Ödeme Bekliyor">Ödeme Bekliyor</option>
+                                    <option value="Ödeme Onaylandı">Ödeme Onaylandı</option>
+                                    <option value="Kargolandı">Kargolandı</option>
+                                    <option value="Teslim Edildi">Teslim Edildi</option>
+                                    <option value="İade Talep Edildi">İade Talep Edildi</option>
+                                    <option value="İade Edildi">İade Edildi</option>
+                                    <option value="İptal Edildi">İptal Edildi</option>
+                                  </select>
+                                  {!isLocked && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const sel = (document.getElementById(`status-${ord.id}`) as HTMLSelectElement).value
+                                        handleUpdateOrderStatus(ord.id, sel, ord.status)
+                                      }}
+                                      className="px-3 py-1.5 bg-primary text-black rounded-lg text-[11px] font-bold cursor-pointer"
+                                    >
+                                      Kaydet
+                                    </button>
+                                  )}
+                                </div>
+
+                                <div className="flex gap-2 pt-1">
+                                  {!isLocked && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCancelOrRefundOrder(ord.id, 'cancel')}
+                                      className="px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg text-[10px] font-bold hover:bg-red-500/20 cursor-pointer inline-flex items-center gap-1"
+                                    >
+                                      <Ban size={12} /> Siparişi İptal Et
+                                    </button>
+                                  )}
+                                  {ord.status === 'İade Talep Edildi' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCancelOrRefundOrder(ord.id, 'refund')}
+                                      className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-bold hover:bg-emerald-500/20 cursor-pointer inline-flex items-center gap-1"
+                                    >
+                                      <CheckCircle2 size={12} /> İadeyi Onayla & Parayı İade Et
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })
                       )}
                     </tbody>
                   </table>
@@ -485,9 +498,9 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* YENİ ÜRÜN EKLEME */}
+            {/* YENİ ÜRÜN EKLEME (Yuvarlak Renk Paleti İkonları İle) */}
             <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle</span></h2>
+              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Renk & Beden Matrisi)</span></h2>
               <form onSubmit={handleAddProduct} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
@@ -499,7 +512,7 @@ export default function AdminPage() {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
                     <option value="tank">Koşu Atleti</option>
                     <option value="sweatshirt">Sweatshirt</option>
@@ -509,11 +522,34 @@ export default function AdminPage() {
                     <option value="hat">Şapka</option>
                     <option value="equipment">Termos & Matara</option>
                   </select>
-                  <input type="text" placeholder="Renkler (Siyah, Beyaz)" value={colorsInput} onChange={(e) => setColorsInput(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+
                   <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
                     <span className="text-xs text-zinc-400 truncate">{uploading ? 'Yükleniyor...' : imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf` : 'Fotoğraf Seç'}</span>
                     <Upload className="h-4 w-4 text-primary" />
                     <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'new')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                  </div>
+                </div>
+
+                {/* Yuvarlak Renk Seçici Paleti */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block">Ürün Renk Seçenekleri (Tıklayarak Seçin)</label>
+                  <div className="flex flex-wrap gap-3">
+                    {PRESET_COLORS.map((col) => {
+                      const isSelected = selectedColors.includes(col.name)
+                      return (
+                        <button
+                          key={col.name}
+                          type="button"
+                          onClick={() => toggleColorSelection(col.name, false)}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold cursor-pointer transition-all ${
+                            isSelected ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-black text-zinc-400'
+                          }`}
+                        >
+                          <span className="h-3.5 w-3.5 rounded-full border border-white/30" style={{ backgroundColor: col.hex }} />
+                          {col.name}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
@@ -591,6 +627,29 @@ export default function AdminPage() {
                   <option value="erkek">Erkek</option>
                   <option value="kadin">Kadın</option>
                 </select>
+              </div>
+
+              {/* Düzenleme Renk Paleti */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block">Renkler</label>
+                <div className="flex flex-wrap gap-2">
+                  {PRESET_COLORS.map((col) => {
+                    const isSelected = editColors.includes(col.name)
+                    return (
+                      <button
+                        key={col.name}
+                        type="button"
+                        onClick={() => toggleColorSelection(col.name, true)}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold cursor-pointer ${
+                          isSelected ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-black text-zinc-400'
+                        }`}
+                      >
+                        <span className="h-3 w-3 rounded-full border" style={{ backgroundColor: col.hex }} />
+                        {col.name}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               <div className="space-y-1">
