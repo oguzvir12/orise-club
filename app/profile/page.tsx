@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, ShoppingBag, Phone, CreditCard, MapPin, User, Save, Upload, Trash2 } from 'lucide-react'
+import { ArrowLeft, ShoppingBag, Phone, CreditCard, MapPin, User, Save, Upload, Trash2, Truck, RefreshCw } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function ProfilePage() {
@@ -42,45 +42,26 @@ export default function ProfilePage() {
 
       const userId = session.user.id
       const email = session.user.email || ''
-      const userMeta = session.user.user_metadata || {}
 
-      // Profili veritabanından çek
       let { data: prof } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle()
 
-      // Eğer profil yoksa veya temel alanlar boşsa, auth metadata'dan tamamla ve upsert et
-      if (!prof || !prof.full_name) {
-        const initialData = {
-          id: userId,
-          email: email,
-          full_name: prof?.full_name || userMeta.full_name || userMeta.name || 'Kulüp Üyesi',
-          phone: prof?.phone || userMeta.phone || '',
-          tc_no: prof?.tc_no || userMeta.tc_no || '',
-          address: prof?.address || userMeta.address || '',
-          avatar_url: prof?.avatar_url || userMeta.avatar_url || '',
-          role: prof?.role || 'member',
-          branch: prof?.branch || 'ALL'
-        }
-
-        await supabase.from('profiles').upsert(initialData)
-        prof = initialData
+      if (prof) {
+        setUserData(prof)
+        setFullName(prof.full_name || '')
+        setPhone(prof.phone || '')
+        setTcNo(prof.tc_no || '')
+        setAddress(prof.address || '')
+        setAvatarUrl(prof.avatar_url || '')
       }
 
-      setUserData(prof)
-      setFullName(prof.full_name || '')
-      setPhone(prof.phone || '')
-      setTcNo(prof.tc_no || '')
-      setAddress(prof.address || '')
-      setAvatarUrl(prof.avatar_url || '')
-
-      // Kullanıcının siparişlerini çek
       const { data: ords } = await supabase
         .from('orders')
         .select('*')
-        .ilike('email', email.trim())
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
 
       if (ords) setMyOrders(ords)
@@ -92,45 +73,14 @@ export default function ProfilePage() {
     }
   }
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = e.target.files?.[0]
-      if (!file) return
-
-      setUploadingAvatar(true)
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) return
-
-      const fileName = `avatar-${session.user.id}-${Date.now()}.${file.name.split('.').pop()}`
-      const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
-      if (uploadError) throw uploadError
-
-      const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
-      if (data?.publicUrl) {
-        await supabase.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', session.user.id)
-        setAvatarUrl(data.publicUrl)
-        alert('Profil fotoğrafınız güncellendi!')
-        loadUserProfileAndData()
-      }
-    } catch (err: any) {
-      alert('Fotoğraf yüklenemedi: ' + err.message)
-    } finally {
-      setUploadingAvatar(false)
-    }
-  }
-
-  const handleRemoveAvatar = async () => {
-    if (!confirm('Profil fotoğrafınızı kaldırmak istiyor musunuz?')) return
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) return
-
-      await supabase.from('profiles').update({ avatar_url: null }).eq('id', session.user.id)
-      setAvatarUrl('')
-      alert('Profil fotoğrafı kaldırıldı.')
+  const handleReturnRequest = async (orderId: string) => {
+    if (!confirm('Bu sipariş için iade talebi başlatmak istiyor musunuz?')) return
+    const { error } = await supabase.from('orders').update({ status: 'İade Talep Edildi' }).eq('id', orderId)
+    if (!error) {
+      alert('İade talebiniz alınmıştır. Müşteri temsilcimiz sizinle iletişime geçecektir.')
       loadUserProfileAndData()
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } else {
+      alert('Hata: ' + error.message)
     }
   }
 
@@ -172,37 +122,8 @@ export default function ProfilePage() {
           <span className="text-xs font-mono text-primary uppercase">ORISE CLUB KULLANICI PROFİLİ</span>
         </div>
 
-        {/* KULLANICI BİLGİLERİ VE AVATAR YÖNETİMİ */}
+        {/* PROFİL BİLGİLERİ */}
         <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-white/10 pb-6">
-            <div className="flex items-center gap-4">
-              <div className="relative h-20 w-20 rounded-full overflow-hidden border-2 border-primary/50 bg-zinc-900 flex items-center justify-center text-xl font-black shrink-0">
-                {avatarUrl ? (
-                  <Image src={avatarUrl} alt="Avatar" fill className="object-cover" />
-                ) : (
-                  <span className="text-primary">{fullName?.[0]?.toUpperCase() || 'O'}</span>
-                )}
-              </div>
-              <div className="space-y-1">
-                <h1 className="text-xl font-black text-white">{fullName || 'Kulüp Üyesi'}</h1>
-                <p className="text-xs font-mono text-zinc-400">{userData?.email}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 border border-white/15 px-4 py-2 text-xs font-bold text-zinc-200 hover:border-primary cursor-pointer transition-all">
-                <Upload className="h-3.5 w-3.5 text-primary" />
-                <span>{uploadingAvatar ? 'Yükleniyor...' : 'Fotoğraf Değiştir'}</span>
-                <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-              </label>
-              {avatarUrl && (
-                <button type="button" onClick={handleRemoveAvatar} className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 cursor-pointer" title="Fotoğrafı Kaldır">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </div>
-
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <h3 className="text-xs font-mono uppercase tracking-widest text-primary">Fatura & Teslimat Bilgileri (İyzico Uyumlu)</h3>
             
@@ -280,19 +201,19 @@ export default function ProfilePage() {
           </form>
         </div>
 
-        {/* MAĞAZA SİPARİŞLERİ */}
+        {/* SİPARİŞLER & KARGO TAKİBİ & İADE TALEBİ */}
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <ShoppingBag className="h-5 w-5 text-primary" />
-              <span>Mağaza Siparişlerim & Kargo Takibi</span>
+              <span>Siparişlerim & Canlı Kargo Takibi</span>
             </h2>
             <span className="text-xs font-mono text-zinc-500">[{myOrders.length} SİPARİŞ]</span>
           </div>
 
           {myOrders.length === 0 ? (
             <div className="rounded-3xl border border-white/10 bg-zinc-950/60 p-8 text-center text-xs text-zinc-400">
-              Henüz bir mağaza siparişiniz bulunmuyor.
+              Henüz bir siparişiniz bulunmuyor.
             </div>
           ) : (
             <div className="space-y-4">
@@ -303,10 +224,11 @@ export default function ProfilePage() {
                       <span className="text-[10px] font-mono text-zinc-500 uppercase">Sipariş ID: {ord.id.slice(0, 8)}...</span>
                       <div className="text-xs font-mono text-zinc-400">{new Date(ord.created_at).toLocaleDateString('tr-TR')}</div>
                     </div>
-                    <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase font-bold bg-primary/20 text-primary border border-primary/30">
                       {ord.status}
                     </span>
                   </div>
+
                   <div className="space-y-2">
                     {ord.items?.map((item: any, idx: number) => (
                       <div key={idx} className="flex justify-between text-xs text-zinc-300 font-mono">
@@ -314,6 +236,24 @@ export default function ProfilePage() {
                         <span className="text-primary font-bold">₺{item.price * item.quantity}</span>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Kargo Takip Numarası ve İade Butonu */}
+                  <div className="pt-3 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-mono">
+                    <div className="flex items-center gap-2 text-zinc-300">
+                      <Truck className="h-4 w-4 text-primary" />
+                      <span>Kargo Takip No: <strong>{ord.tracking_number || 'Henüz kargolanmadı'}</strong></span>
+                    </div>
+
+                    {ord.status === 'Kargolandı' && (
+                      <button
+                        type="button"
+                        onClick={() => handleReturnRequest(ord.id)}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 border border-red-500/30 px-4 py-1.5 text-[11px] text-red-400 hover:bg-red-500/20 cursor-pointer"
+                      >
+                        <RefreshCw className="h-3 w-3" /> İade / Değişim Talebi Oluştur
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
