@@ -20,7 +20,9 @@ import {
   Tag,
   ShieldAlert,
   Eye,
-  Truck
+  Truck,
+  HelpCircle,
+  Send
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -33,21 +35,20 @@ export default function AdminPage() {
   const [products, setProducts] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
   const [coupons, setCoupons] = useState<any[]>([])
-  const [profiles, setProfiles] = useState<any[]>([])
-  const [selectedMember, setSelectedMember] = useState<any | null>(null)
+  const [questions, setQuestions] = useState<any[]>([])
+  
+  const [answerInputs, setAnswerInputs] = useState<{ [key: string]: string }>({})
 
-  // Kupon State
-  const [couponCode, setCouponCode] = useState('')
-  const [discountPct, setDiscountPct] = useState('')
-  const [usageLimit, setUsageLimit] = useState('100')
-
-  // Yeni Ürün Ekleme (8 Beden Matrisi + Cinsiyet)
+  // Yeni Ürün Ekleme (Kategori, Cinsiyet ve 8 Beden)
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
   const [comparePrice, setComparePrice] = useState('')
+  const [category, setCategory] = useState('tank')
+  const [categoryLabel, setCategoryLabel] = useState('KOŞU ATLETİ')
   const [colorsInput, setColorsInput] = useState('Siyah, Beyaz')
-  const [gender, setGender] = useState('erkek') // 'erkek' veya 'kadin'
+  const [gender, setGender] = useState('erkek')
+  
   const [sizeXS, setSizeXS] = useState('5')
   const [sizeS, setSizeS] = useState('10')
   const [sizeM, setSizeM] = useState('15')
@@ -66,6 +67,8 @@ export default function AdminPage() {
   const [editPrice, setEditPrice] = useState('')
   const [editComparePrice, setEditComparePrice] = useState('')
   const [editColors, setEditColors] = useState('')
+  const [editCategory, setEditCategory] = useState('tank')
+  const [editCategoryLabel, setEditCategoryLabel] = useState('')
   const [editGender, setEditGender] = useState('erkek')
   const [editSizeXS, setEditSizeXS] = useState(0)
   const [editSizeS, setEditSizeS] = useState(0)
@@ -110,11 +113,11 @@ export default function AdminPage() {
         setTrackingNoInput(initialTracking)
       }
 
+      const { data: qData } = await supabase.from('product_questions').select('*').order('created_at', { ascending: false })
+      if (qData) setQuestions(qData)
+
       const { data: cpData } = await supabase.from('coupons').select('*').order('created_at', { ascending: false })
       if (cpData) setCoupons(cpData)
-
-      const { data: profData } = await supabase.from('profiles').select('*').order('full_name', { ascending: true })
-      if (profData) setProfiles(profData)
     } catch (e) {
       console.error(e)
     } finally {
@@ -156,14 +159,8 @@ export default function AdminPage() {
 
     const colorArray = colorsInput.split(',').map(c => c.trim()).filter(Boolean)
     const sizesObj = { 
-      XS: Number(sizeXS) || 0, 
-      S: Number(sizeS) || 0, 
-      M: Number(sizeM) || 0, 
-      L: Number(sizeL) || 0, 
-      XL: Number(sizeXL) || 0,
-      '2XL': Number(size2XL) || 0,
-      '3XL': Number(size3XL) || 0,
-      '4XL': Number(size4XL) || 0
+      XS: Number(sizeXS) || 0, S: Number(sizeS) || 0, M: Number(sizeM) || 0, L: Number(sizeL) || 0, 
+      XL: Number(sizeXL) || 0, '2XL': Number(size2XL) || 0, '3XL': Number(size3XL) || 0, '4XL': Number(size4XL) || 0
     }
     const totalStock = Object.values(sizesObj).reduce((a: any, b: any) => a + b, 0)
 
@@ -176,10 +173,10 @@ export default function AdminPage() {
       sizes: sizesObj,
       colors: colorArray,
       gender: gender,
+      category: category,
+      category_label: categoryLabel,
       is_active: true,
       description: description || 'Kaliteli tekstil.',
-      category: 'tank',
-      category_label: 'ÖZEL DROP',
       image_urls: imageList.length > 0 ? imageList : ['https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop']
     }])
 
@@ -205,6 +202,8 @@ export default function AdminPage() {
     setEditPrice(prod.price || '')
     setEditComparePrice(prod.compare_at_price || '')
     setEditColors(prod.colors ? prod.colors.join(', ') : '')
+    setEditCategory(prod.category || 'tank')
+    setEditCategoryLabel(prod.categoryLabel || '')
     setEditGender(prod.gender || 'erkek')
     setEditSizeXS(prod.sizes?.XS ?? 0)
     setEditSizeS(prod.sizes?.S ?? 0)
@@ -224,14 +223,8 @@ export default function AdminPage() {
 
     const colorArray = editColors.split(',').map(c => c.trim()).filter(Boolean)
     const sizesObj = { 
-      XS: Number(editSizeXS) || 0, 
-      S: Number(editSizeS) || 0, 
-      M: Number(editSizeM) || 0, 
-      L: Number(editSizeL) || 0, 
-      XL: Number(editSizeXL) || 0,
-      '2XL': Number(editSize2XL) || 0,
-      '3XL': Number(editSize3XL) || 0,
-      '4XL': Number(editSize4XL) || 0
+      XS: Number(editSizeXS) || 0, S: Number(editSizeS) || 0, M: Number(editSizeM) || 0, L: Number(editSizeL) || 0, 
+      XL: Number(editSizeXL) || 0, '2XL': Number(editSize2XL) || 0, '3XL': Number(editSize3XL) || 0, '4XL': Number(editSize4XL) || 0
     }
     const totalStock = Object.values(sizesObj).reduce((a: any, b: any) => a + b, 0)
 
@@ -243,6 +236,7 @@ export default function AdminPage() {
       stock: totalStock,
       sizes: sizesObj,
       colors: colorArray,
+      category: editCategory,
       gender: editGender,
       description: editDescription,
       image_urls: editImages
@@ -257,15 +251,13 @@ export default function AdminPage() {
     }
   }
 
-  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
-    const trackingNo = trackingNoInput[orderId] || null
-    const { error } = await supabase.from('orders').update({
-      status: newStatus,
-      tracking_number: trackingNo
-    }).eq('id', orderId)
+  const handleAnswerQuestion = async (qId: string) => {
+    const ans = answerInputs[qId]
+    if (!ans?.trim()) return
 
+    const { error } = await supabase.from('product_questions').update({ answer: ans }).eq('id', qId)
     if (!error) {
-      alert('Sipariş statüsü ve kargo bilgisi güncellendi!')
+      alert('Soru yanıtlandı ve yayına alındı!')
       fetchData()
     } else {
       alert('Hata: ' + error.message)
@@ -303,7 +295,52 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* SİPARİŞLER & KARGO YÖNETİMİ */}
+        {/* MÜŞTERİ SORU & CEVAP YÖNETİMİ */}
+        {(isSuperAdmin || isStoreAdmin) && (
+          <div className="space-y-6">
+            <h2 className="text-base font-bold flex items-center gap-2 text-primary"><HelpCircle className="h-5 w-5" /><span>Müşteri Ürün Soruları ({questions.filter(q => !q.answer).length} Bekleyen)</span></h2>
+            <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6 space-y-4">
+              {questions.length === 0 ? (
+                <p className="text-xs text-zinc-500 font-mono">Henüz soru bulunmuyor.</p>
+              ) : (
+                questions.map((q) => (
+                  <div key={q.id} className="p-4 rounded-2xl border border-white/10 bg-black/60 space-y-3 text-xs">
+                    <div className="flex justify-between font-mono text-[10px] text-zinc-400">
+                      <span>Müşteri: <strong className="text-white">{q.user_name}</strong></span>
+                      <span>{new Date(q.created_at).toLocaleDateString('tr-TR')}</span>
+                    </div>
+                    <p className="font-bold text-white">Soru: {q.question}</p>
+                    
+                    {q.answer ? (
+                      <div className="text-primary bg-primary/10 p-3 rounded-xl border border-primary/20">
+                        <strong>Yanıtınız:</strong> {q.answer}
+                      </div>
+                    ) : (
+                      <div className="flex gap-2 pt-2">
+                        <input
+                          type="text"
+                          placeholder="Yanıtınızı yazın..."
+                          value={answerInputs[q.id] || ''}
+                          onChange={(e) => setAnswerInputs({ ...answerInputs, [q.id]: e.target.value })}
+                          className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleAnswerQuestion(q.id)}
+                          className="px-4 py-2 bg-primary text-black font-bold rounded-xl text-xs flex items-center gap-1 cursor-pointer"
+                        >
+                          <Send size={14} /> Yanıtla
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* MAĞAZA SİPARİŞLERİ */}
         {(isSuperAdmin || isStoreAdmin) && (
           <div className="space-y-12">
             <div className="space-y-6">
@@ -382,9 +419,9 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* YENİ ÜRÜN EKLEME (Genişletilmiş Bedenler) */}
+            {/* YENİ ÜRÜN EKLEME (Kategori Seçimi İle) */}
             <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Tüm Bedenler)</span></h2>
+              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Kategori & Beden Matrisi)</span></h2>
               <form onSubmit={handleAddProduct} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
@@ -396,7 +433,26 @@ export default function AdminPage() {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <select value={category} onChange={(e) => {
+                    const val = e.target.value
+                    setCategory(val)
+                    if (val === 'tank') setCategoryLabel('KOŞU ATLETİ')
+                    else if (val === 'sweatshirt') setCategoryLabel('SWEATSHIRT')
+                    else if (val === 'shorts') setCategoryLabel('ŞORT')
+                    else if (val === 'leggings') setCategoryLabel('TAYT')
+                    else if (val === 'socks') setCategoryLabel('PERFORMANS ÇORAP')
+                    else if (val === 'hat') setCategoryLabel('ŞAPKA')
+                    else if (val === 'equipment') setCategoryLabel('TERMOS & MATARA')
+                  }} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
+                    <option value="tank">Koşu Atleti</option>
+                    <option value="sweatshirt">Sweatshirt</option>
+                    <option value="shorts">Şort</option>
+                    <option value="leggings">Tayt</option>
+                    <option value="socks">Performans Çorap</option>
+                    <option value="hat">Şapka</option>
+                    <option value="equipment">Termos & Matara</option>
+                  </select>
                   <input type="text" placeholder="Renkler (Siyah, Beyaz)" value={colorsInput} onChange={(e) => setColorsInput(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
                     <span className="text-xs text-zinc-400 truncate">{uploading ? 'Yükleniyor...' : imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf` : 'Fotoğraf Seç'}</span>
@@ -416,7 +472,7 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                {/* 8 Beden Stok Matrisi */}
+                {/* 8 Beden Matrisi */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-mono uppercase text-zinc-400">Beden Stok Matrisi</label>
                   <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
@@ -431,7 +487,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <textarea rows={3} placeholder="Ürün Açıklaması (HTML Etiketleri Destekler: <strong>, <ul>, <li> vb.)" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
+                <textarea rows={3} placeholder="Ürün Açıklaması (HTML Etiketleri Destekler)" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
                 <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Ürünü Yayınla</button>
               </form>
             </div>
@@ -448,7 +504,7 @@ export default function AdminPage() {
                       </div>
                       <div>
                         <h4 className="font-bold text-xs text-white">{prod.title}</h4>
-                        <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | Cinsiyet: {prod.gender || 'erkek'}</div>
+                        <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | Kategori: {prod.category_label || prod.category}</div>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -463,45 +519,6 @@ export default function AdminPage() {
         )}
 
       </div>
-
-      {/* ÜRÜN DÜZENLEME MODALI */}
-      {editingProduct && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
-          <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Ürünü ve Beden Matrisini Düzenle</h3>
-              <button type="button" onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
-            </div>
-            <form onSubmit={handleUpdateProduct} className="space-y-4">
-              <input type="text" required value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <div className="grid grid-cols-2 gap-4">
-                <input type="number" required value={editPrice} onChange={(e) => setEditPrice(e.target.value)} placeholder="Fiyat" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                <select value={editGender} onChange={(e) => setEditGender(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
-                  <option value="erkek">Erkek</option>
-                  <option value="kadin">Kadın</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase text-zinc-400">8 Beden Stok Matrisi</label>
-                <div className="grid grid-cols-4 gap-2">
-                  <div><span className="text-[9px] text-zinc-500">XS</span><input type="number" value={editSizeXS} onChange={(e) => setEditSizeXS(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">S</span><input type="number" value={editSizeS} onChange={(e) => setEditSizeS(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">M</span><input type="number" value={editSizeM} onChange={(e) => setEditSizeM(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">L</span><input type="number" value={editSizeL} onChange={(e) => setEditSizeL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">XL</span><input type="number" value={editSizeXL} onChange={(e) => setEditSizeXL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">2XL</span><input type="number" value={editSize2XL} onChange={(e) => setEditSize2XL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">3XL</span><input type="number" value={editSize3XL} onChange={(e) => setEditSize3XL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">4XL</span><input type="number" value={editSize4XL} onChange={(e) => setEditSize4XL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                </div>
-              </div>
-
-              <textarea rows={3} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
-              <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase text-black cursor-pointer shadow-lg">Değişiklikleri Kaydet</button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
