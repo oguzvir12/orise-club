@@ -95,10 +95,8 @@ export function CartDrawer() {
         return
       }
 
-      // 1. Önce sepetteki her ürün için veritabanındaki stokları düşür
+      // Stok Düşme İşlemi
       for (const cartItem of items) {
-        // cartItem.id yapısı: `${selectedProduct.id}-${selectedColor}-${selectedSize}` şeklinde veya adından parse edebiliriz
-        // Ancak ID formatımız: productId-Renk-Beden şeklindeydi. Parse edelim:
         const lastHyphenIdx = cartItem.id.lastIndexOf('-')
         const size = cartItem.id.substring(lastHyphenIdx + 1)
         const rest = cartItem.id.substring(0, lastHyphenIdx)
@@ -106,12 +104,10 @@ export function CartDrawer() {
         const productId = rest.substring(0, secondLastHyphenIdx)
         const color = rest.substring(secondLastHyphenIdx + 1)
 
-        // Ürünün güncel verisini çek
         const { data: prodRecord } = await supabase.from('products').select('*').eq('id', productId).maybeSingle()
         if (prodRecord && prodRecord.sizes) {
           let updatedSizes = { ...prodRecord.sizes }
 
-          // Eğer renk bazlı matris yapısındaysa ({ Siyah: {S: 10} })
           if (updatedSizes[color] && typeof updatedSizes[color] === 'object') {
             const currentStock = updatedSizes[color][size] || 0
             const newStock = Math.max(0, currentStock - (cartItem.quantity || 1))
@@ -120,13 +116,11 @@ export function CartDrawer() {
               [size]: newStock
             }
           } else {
-            // Düz yapıdaysa ({ S: 10 })
             const currentStock = updatedSizes[size] || 0
             const newStock = Math.max(0, currentStock - (cartItem.quantity || 1))
             updatedSizes[size] = newStock
           }
 
-          // Toplam stoğu yeniden hesapla
           let newTotalStock = 0
           Object.values(updatedSizes).forEach((val: any) => {
             if (typeof val === 'object' && val !== null) {
@@ -136,7 +130,6 @@ export function CartDrawer() {
             }
           })
 
-          // Ürünü veritabanında güncelle
           await supabase.from('products').update({
             sizes: updatedSizes,
             stock: newTotalStock
@@ -144,7 +137,6 @@ export function CartDrawer() {
         }
       }
 
-      // 2. Siparişi oluştur
       const orderPayload = {
         user_id: session.user.id,
         customer_name: profile.full_name,
@@ -243,6 +235,8 @@ export function CartDrawer() {
 
         {items.length > 0 && (
           <div className="space-y-4 border-t border-white/10 bg-zinc-950 px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+            
+            {/* Fatura Adresi Alanı ve Net Başlığı */}
             <div className="space-y-2 pt-2 border-b border-white/10 pb-4">
               <label className="flex items-center gap-2 text-xs font-mono text-zinc-300 cursor-pointer">
                 <input 
@@ -255,13 +249,16 @@ export function CartDrawer() {
               </label>
 
               {!sameAsShipping && (
-                <input
-                  type="text"
-                  placeholder="Farklı fatura adresi girin..."
-                  value={billingAddressInput}
-                  onChange={(e) => setBillingAddressInput(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white"
-                />
+                <div className="space-y-1 pt-1">
+                  <label className="text-[10px] font-mono uppercase text-primary font-bold">Fatura Adresi</label>
+                  <input
+                    type="text"
+                    placeholder="Mahalle, Cadde, No, İlçe/İl..."
+                    value={billingAddressInput}
+                    onChange={(e) => setBillingAddressInput(e.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-black px-3 py-2.5 text-xs text-white focus:border-primary focus:outline-none"
+                  />
+                </div>
               )}
             </div>
 
