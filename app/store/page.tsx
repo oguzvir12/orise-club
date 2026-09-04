@@ -140,13 +140,11 @@ function StoreContent() {
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black flex flex-col justify-between">
       
       <div>
-        {/* Ücretsiz Kargo Duyuru Bandı */}
         <div className="bg-primary text-black py-2 px-4 text-center text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2">
           <Truck size={15} />
           <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz!</span>
         </div>
 
-        {/* Üst Geri Dönüş Butonu (Sadece Ürün Detayındayken Görünür) */}
         {selectedProduct && (
           <div className="absolute top-14 left-6 z-30 sm:left-8">
             <button type="button" onClick={closeProductDetail} className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all hover:border-primary cursor-pointer">
@@ -195,7 +193,7 @@ function StoreContent() {
 
                       <div className="mt-6 flex items-end gap-4">
                         <div>
-                          <span className="text-xs font-mono text-zinc-500 uppercase block">Kulüp Fiyatı</span>
+                          <span className="text-xs font-mono text-zinc-500 uppercase block">Kulüp Fiyatı (KDV Dahil)</span>
                           <div className="text-3xl font-black text-white flex items-center gap-3">
                             <span>₺{Number(selectedProduct.price).toLocaleString('tr-TR')}</span>
                             {selectedProduct.compare_at_price && selectedProduct.compare_at_price > selectedProduct.price && (
@@ -213,7 +211,7 @@ function StoreContent() {
 
                       {selectedProduct.colors && selectedProduct.colors.length > 0 && (
                         <div className="mt-6 space-y-2">
-                          <div className="text-xs font-mono text-zinc-400 uppercase">Renk: <strong className="text-white">{selectedColor}</strong></div>
+                          <div className="text-xs font-mono text-zinc-400 uppercase">Renk Seçimi: <strong className="text-white">{selectedColor}</strong></div>
                           <div className="flex gap-2">
                             {selectedProduct.colors.map((col: string) => (
                               <button key={col} type="button" onClick={() => setSelectedColor(col)} className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${selectedColor === col ? 'border-primary bg-primary/20 text-primary' : 'border-white/10 bg-zinc-900 text-zinc-400'}`}>
@@ -275,7 +273,6 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Nike Tarzı Büyük, Derin ve Türkçe Çarpıcı Hero (Banner) Alanı */}
             <section className="relative h-[70vh] min-h-[500px] w-full overflow-hidden flex items-end pb-16 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10">
               <div className="absolute inset-0 z-0 overflow-hidden">
                 <Image src="/store-hero.jpeg" alt="Orise Store" fill priority className="object-cover object-center scale-105 brightness-90 contrast-110 transition-transform duration-1000 hover:scale-100" />
@@ -304,7 +301,6 @@ function StoreContent() {
               </div>
             </section>
 
-            {/* Kategori ve Sıralama Çubuğu */}
             <div id="collection"></div>
             <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-30 backdrop-blur-xl">
               <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -327,7 +323,6 @@ function StoreContent() {
               </div>
             </section>
 
-            {/* Ürün Listesi Grid */}
             <section className="bg-gradient-to-b from-black via-zinc-950/40 to-black py-16 sm:py-20">
               <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
