@@ -95,13 +95,12 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* 2. Sütun: Kaynaklar / Mağaza */}
+              {/* 2. Sütun: Kaynaklar / Mağaza (Etkinlik Takvimi kaldırıldı) */}
               <div className="space-y-3 font-mono">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-white">Kurumsal & Mağaza</h4>
                 <ul className="space-y-2.5 text-zinc-400">
                   <li><Link href="/store" className="hover:text-primary transition-colors flex items-center gap-1">Tüm Koleksiyon <ArrowUpRight size={12}/></Link></li>
                   <li><Link href="/store?category=sale" className="hover:text-primary transition-colors flex items-center gap-1">Fırsat & İndirimler <ArrowUpRight size={12}/></Link></li>
-                  <li><Link href="/community" className="hover:text-primary transition-colors flex items-center gap-1">Etkinlik Takvimi <ArrowUpRight size={12}/></Link></li>
                   <li><Link href="/hakkimizda" className="hover:text-primary transition-colors">Hakkımızda</Link></li>
                 </ul>
               </div>
