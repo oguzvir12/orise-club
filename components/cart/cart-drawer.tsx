@@ -115,7 +115,6 @@ export function CartDrawer() {
       const { error: ordError } = await supabase.from('orders').insert([orderPayload])
       if (ordError) throw ordError
 
-      // Sipariş başarıyla oluşturulduğu an sepeti sıfırla
       if (typeof clearCart === 'function') {
         clearCart()
       }
@@ -175,9 +174,29 @@ export function CartDrawer() {
                     <p className="text-xs font-bold text-white line-clamp-2">{item.name}</p>
                     <button type="button" onClick={() => removeItem(item.id)} className="text-zinc-500 hover:text-red-400 cursor-pointer"><Trash2 className="h-4 w-4" /></button>
                   </div>
-                  <div className="flex items-center justify-between">
+                  
+                  {/* Adet Artırma ve Azaltma Butonları Net Görünüm */}
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="inline-flex items-center rounded-xl border border-white/15 bg-black/80 px-1 py-0.5">
+                      <button 
+                        type="button" 
+                        onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)} 
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/10 hover:text-white cursor-pointer transition-colors"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <span className="w-8 text-center text-xs font-bold text-white tabular-nums">{item.quantity || 1}</span>
+                      <button 
+                        type="button" 
+                        onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)} 
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/10 hover:text-white cursor-pointer transition-colors"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </div>
                     <span className="text-xs font-black text-primary">{formatTL(item.price * (item.quantity || 1))}</span>
                   </div>
+
                 </div>
               </li>
             ))}
@@ -185,7 +204,7 @@ export function CartDrawer() {
         )}
 
         {items.length > 0 && (
-          <div className="space-y-4 border-t border-white/10 bg-zinc-950 px-6 py-6">
+          <div className="space-y-4 border-t border-white/10 bg-zinc-950 px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
             <div className="space-y-1.5 font-mono">
               <div className="flex items-center justify-between text-xs text-zinc-400">
                 <span>Ara Toplam (KDV Dahil)</span>
@@ -213,7 +232,6 @@ export function CartDrawer() {
                 {loading ? 'İşleniyor...' : 'İyzico ile Güvenli Ödeme Yap'}
               </button>
               
-              {/* İyzico Güvenli Ödeme Logoları Geri Getirildi */}
               <div className="flex items-center justify-center gap-3 pt-2 opacity-80">
                 <span className="text-[10px] font-mono text-zinc-500 uppercase">İyzico Güvencesiyle:</span>
                 <span className="text-[10px] font-bold font-mono text-zinc-300">Mastercard / VISA / Troy</span>
