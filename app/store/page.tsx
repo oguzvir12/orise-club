@@ -16,7 +16,8 @@ import {
   Truck,
   HelpCircle,
   MessageSquare,
-  Ruler
+  Ruler,
+  X
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -100,15 +101,12 @@ function StoreContent() {
   }, [productParam, products])
 
   const fetchProductInteractions = async (productId: string) => {
-    // Soruları Çek
     const { data: qData } = await supabase.from('product_questions').select('*').eq('product_id', productId).order('created_at', { ascending: false })
     if (qData) setQuestions(qData)
 
-    // Yorumları Çek
     const { data: rData } = await supabase.from('product_reviews').select('*').eq('product_id', productId).order('created_at', { ascending: false })
     if (rData) setReviews(rData)
 
-    // Kullanıcının bu ürünü satın alıp almadığını kontrol et
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
       const { data: ordersData } = await supabase.from('orders').select('*').eq('user_id', session.user.id)
@@ -310,7 +308,7 @@ function StoreContent() {
                         </div>
                       )}
 
-                      {/* 8 Beden Seçimi Listesi (XS'den 4XL'e) */}
+                      {/* 8 Beden Seçimi Listesi */}
                       <div className="mt-6 space-y-2">
                         <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi & Stok Durumu</div>
                         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
@@ -357,10 +355,9 @@ function StoreContent() {
 
                 </div>
 
-                {/* ÜRÜN SORU & CEVAP VE DOĞRULANMIŞ YORUMLAR SEKSİYONU */}
+                {/* Soru Sorma & Yorumlar Bölümü */}
                 <div className="mt-20 border-t border-white/10 pt-16 grid grid-cols-1 lg:grid-cols-2 gap-16">
                   
-                  {/* Soru Sor / Cevaplar */}
                   <div className="space-y-6">
                     <h3 className="text-base font-bold uppercase tracking-wider flex items-center gap-2">
                       <HelpCircle className="text-primary" size={18} /> Ürüne Soru Sor ({questions.length})
@@ -381,7 +378,7 @@ function StoreContent() {
 
                     <div className="space-y-4 pt-4 max-h-80 overflow-y-auto">
                       {questions.length === 0 ? (
-                        <p className="text-xs text-zinc-500 font-mono">Henüz soru sorulmamış. İlk soruyu sen sor!</p>
+                        <p className="text-xs text-zinc-500 font-mono">Henüz soru sorulmamış.</p>
                       ) : (
                         questions.map((q) => (
                           <div key={q.id} className="p-4 rounded-2xl border border-white/10 bg-zinc-950 space-y-2 text-xs">
@@ -403,7 +400,6 @@ function StoreContent() {
                     </div>
                   </div>
 
-                  {/* Doğrulanmış Yorumlar */}
                   <div className="space-y-6">
                     <h3 className="text-base font-bold uppercase tracking-wider flex items-center gap-2">
                       <MessageSquare className="text-primary" size={18} /> Doğrulanmış Müşteri Yorumları ({reviews.length})
@@ -588,13 +584,13 @@ function StoreContent() {
         )}
       </div>
 
-      {/* BEDEN ÖLÇÜ TABLOSU MODALI (GÖNDERDİĞİN TABLOLAR) */}
+      {/* BEDEN ÖLÇÜ TABLOSU MODALI */}
       {isSizeTableOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setIsSizeTableOpen(false)}>
           <div className="relative w-full max-w-3xl rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto text-white" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <h3 className="text-lg font-black uppercase text-primary tracking-wider">
-                {selectedProduct?.gender === 'kadin' ? '' : ''} Ölçü Tablosu ({selectedProduct?.gender === 'kadin' ? 'KADIN' : 'ERKEK'})
+                {selectedProduct?.gender === 'kadin' ? 'KADIN BEDEN TABLOSU' : 'ERKEK BEDEN TABLOSU'} Ölçü Tablosu
               </h3>
               <button type="button" onClick={() => setIsSizeTableOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
@@ -635,7 +631,7 @@ function StoreContent() {
                 </tbody>
               </table>
             </div>
-            <p className="text-[10px] text-zinc-500 font-mono text-center">Tüm ölçüler santimetre (cm) cinsinden verilmiştir. Üretim toleransı ±1 cm'dir.</p>
+            <p className="text-[10px] text-zinc-500 font-mono text-center">Tüm ölçüler santimetre (cm) cinsinden verilmiştir.</p>
           </div>
         </div>
       )}
