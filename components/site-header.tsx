@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Settings, X, Upload, MessageCircle, Send, Loader2, Calendar } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Settings, X, Upload, MessageCircle, Send, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -79,7 +79,6 @@ export function SiteHeader() {
   const [user, setUser] = useState<any>(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isAuthOpen, setIsAuthOpen] = useState(false)
-  const [isCommunityDropdownOpen, setIsCommunityDropdownOpen] = useState(false)
   
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -193,7 +192,7 @@ export function SiteHeader() {
         address: address, 
         billing_address: billingAddress, 
         title: title, 
-        avatar_url: avatarUrl
+        avatar_url: avatarUrl 
       }
 
       const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
@@ -215,35 +214,6 @@ export function SiteHeader() {
           
           <div className="flex items-center gap-6">
             <Link href="/store" aria-label="ORISE STORE"><Logo /></Link>
-            
-            <div className="relative">
-              <button 
-                onClick={() => setIsCommunityDropdownOpen(!isCommunityDropdownOpen)}
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-zinc-300 hover:text-primary transition-colors cursor-pointer bg-zinc-900/80 border border-white/10 px-4 py-2 rounded-full"
-              >
-                <Calendar className="h-3.5 w-3.5 text-primary" />
-                <span>Topluluk & Etkinlikler</span>
-              </button>
-
-              {isCommunityDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-72 rounded-2xl border border-white/15 bg-zinc-950 p-4 shadow-2xl z-50 space-y-3">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                    <span className="text-xs font-bold text-primary uppercase">Haftalık Kulüp Takvimi</span>
-                    <button onClick={() => setIsCommunityDropdownOpen(false)} className="text-zinc-400 hover:text-white text-xs">✕</button>
-                  </div>
-                  <p className="text-[11px] text-zinc-300 leading-relaxed">
-                    Koşu, yoga, voleybol ve açık hava antrenman programlarımıza göz atın.
-                  </p>
-                  <Link 
-                    href="/community" 
-                    onClick={() => setIsCommunityDropdownOpen(false)}
-                    className="block w-full text-center rounded-xl bg-primary py-2 text-[11px] font-black uppercase tracking-widest text-black hover:opacity-90"
-                  >
-                    Etkinlik Takvimine Git →
-                  </Link>
-                </div>
-              )}
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -331,7 +301,7 @@ export function SiteHeader() {
                   myOrders.map((ord) => (
                     <div key={ord.id} className="p-3 rounded-xl bg-zinc-900 border border-white/5 flex justify-between items-center text-xs">
                       <span>Sipariş #{ord.id.slice(0, 6)}</span>
-                      <span className="text-primary font-bold">₺{ord.total_profile || ord.total_price}</span>
+                      <span className="text-primary font-bold">₺{ord.total_price}</span>
                     </div>
                   ))
                 )}
