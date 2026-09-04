@@ -66,8 +66,6 @@ export function CartDrawer() {
 
   const discountAmount = (subtotal * appliedDiscount) / 100
   const discountedSubtotal = subtotal - discountAmount
-  
-  // 2000 TL altı için 60 TL kargo ücreti, üstü için ücretsiz kargo
   const isFreeShipping = discountedSubtotal >= FREE_SHIPPING_THRESHOLD
   const shippingFee = isFreeShipping ? 0 : STANDARD_SHIPPING_FEE
   const finalTotal = discountedSubtotal + shippingFee
@@ -97,7 +95,7 @@ export function CartDrawer() {
         return
       }
 
-      // Doğru Akış: Ödeme İyzico'da başarıyla tamamlandığında sipariş "Ödeme Onaylandı" olarak kaydedilir
+      // Ödeme simülasyonu başarılı olunca sipariş onayı kaydedilir
       const orderPayload = {
         user_id: session.user.id,
         customer_name: profile.full_name,
@@ -112,7 +110,7 @@ export function CartDrawer() {
         discount: discountAmount,
         shipping_fee: shippingFee,
         total_price: finalTotal,
-        status: 'Ödeme Onaylandı' // Ödeme simülasyonu başarılı sayıldığı için direkt onaylı düşer
+        status: 'Ödeme Onaylandı'
       }
 
       const { error: ordError } = await supabase.from('orders').insert([orderPayload])
@@ -127,7 +125,7 @@ export function CartDrawer() {
         alert('İyzico ile güvenli ödeme başarıyla tamamlandı! Siparişiniz onaylanmıştır.')
         closeCart()
         window.location.href = '/profile'
-      }, 1000)
+      }, 800)
 
     } catch (err: any) {
       setValidationError('Hata: ' + err.message)
@@ -181,21 +179,9 @@ export function CartDrawer() {
                   
                   <div className="flex items-center justify-between pt-1">
                     <div className="inline-flex items-center rounded-xl border border-white/15 bg-black/80 px-1 py-0.5">
-                      <button 
-                        type="button" 
-                        onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)} 
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/10 hover:text-white cursor-pointer transition-colors"
-                      >
-                        <Minus className="h-3 w-3" />
-                      </button>
+                      <button type="button" onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/10 hover:text-white cursor-pointer"><Minus className="h-3 w-3" /></button>
                       <span className="w-8 text-center text-xs font-bold text-white tabular-nums">{item.quantity || 1}</span>
-                      <button 
-                        type="button" 
-                        onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)} 
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/10 hover:text-white cursor-pointer transition-colors"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
+                      <button type="button" onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/10 hover:text-white cursor-pointer"><Plus className="h-3 w-3" /></button>
                     </div>
                     <span className="text-xs font-black text-primary">{formatTL(item.price * (item.quantity || 1))}</span>
                   </div>
@@ -208,6 +194,30 @@ export function CartDrawer() {
 
         {items.length > 0 && (
           <div className="space-y-4 border-t border-white/10 bg-zinc-950 px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+            
+            {/* Fatura Adresi Seçeneği Korundu */}
+            <div className="space-y-2 pt-2 border-b border-white/10 pb-4">
+              <label className="flex items-center gap-2 text-xs font-mono text-zinc-300 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={sameAsShipping} 
+                  onChange={(e) => setSameAsShipping(e.target.checked)}
+                  className="rounded border-zinc-700 bg-black text-primary focus:ring-primary h-4 w-4"
+                />
+                <span>Fatura adresim teslimat adresimle aynı</span>
+              </label>
+
+              {!sameAsShipping && (
+                <input
+                  type="text"
+                  placeholder="Farklı fatura adresi girin..."
+                  value={billingAddressInput}
+                  onChange={(e) => setBillingAddressInput(e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-white"
+                />
+              )}
+            </div>
+
             <div className="space-y-1.5 font-mono">
               <div className="flex items-center justify-between text-xs text-zinc-400">
                 <span>Ara Toplam</span>
@@ -236,7 +246,7 @@ export function CartDrawer() {
                 onClick={handleCheckout} 
                 className="w-full rounded-full bg-primary py-4 text-xs font-black uppercase tracking-widest text-black shadow-lg cursor-pointer disabled:opacity-50"
               >
-                {loading ? 'Ödeme Alınıyor...' : 'İyzico ile Güvenli Ödeme Yap'}
+                {loading ? 'İşleniyor...' : 'İyzico ile Güvenli Ödeme Yap'}
               </button>
               
               <div className="flex items-center justify-center gap-3 pt-2 opacity-80">
