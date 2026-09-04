@@ -295,11 +295,15 @@ function StoreContent() {
                         </div>
                       )}
 
+                      {/* Seçilen Renge Göre Dinamik Beden Stok Kontrolü */}
                       <div className="mt-6 space-y-2">
-                        <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi</div>
+                        <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi ({selectedColor})</div>
                         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
                           {['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'].map((s) => {
-                            const sizeStock = selectedProduct.sizes?.[s] ?? 0
+                            // Eğer sizes matrisi renk bazlı ise seçili renginkini al, değilse direkt objeyi al
+                            const rawSizes = selectedProduct.sizes || {}
+                            const colorStockMap = rawSizes[selectedColor] || (typeof rawSizes.XS === 'number' ? rawSizes : {})
+                            const sizeStock = colorStockMap[s] ?? 0
                             const isSizeOut = sizeStock <= 0
 
                             return (
@@ -314,6 +318,7 @@ function StoreContent() {
                                 }`}
                               >
                                 {s}
+                                <span className="block text-[8px] font-mono opacity-70">{sizeStock}stk</span>
                               </button>
                             )
                           })}
@@ -416,7 +421,12 @@ function StoreContent() {
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredProducts.map((product) => {
                     const productImages = product.image_urls && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '/placeholder.svg']
-                    const totalStock = product.sizes ? Object.values(product.sizes as Record<string, number>).reduce((a: any, b: any) => a + b, 0) : (product.stock ?? 0)
+                    const totalStock = product.sizes ? Object.values(product.sizes as Record<string, any>).reduce((acc: number, curr: any) => {
+                      if (typeof curr === 'object' && curr !== null) {
+                        return acc + Object.values(curr).reduce((a: any, b: any) => a + Number(b || 0), 0)
+                      }
+                      return acc + Number(curr || 0)
+                    }, 0) : 0
                     const isSoldOut = totalStock <= 0
 
                     return (
@@ -458,7 +468,7 @@ function StoreContent() {
         )}
       </div>
 
-      {/* Beden Ölçü Tablosu Modal (TÜM ÖLÇÜLER EKSİKSİZ VE SEKME SEÇENEKLİ) */}
+      {/* Beden Ölçü Tablosu Modal */}
       {isSizeTableOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setIsSizeTableOpen(false)}>
           <div className="relative w-full max-w-4xl rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 text-white max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
