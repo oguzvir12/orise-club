@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
-import { ArrowLeft, ShoppingBag, Phone, CreditCard, MapPin, User, Save, Upload, Trash2, Truck, RefreshCw, FileText } from 'lucide-react'
+import { ArrowLeft, ShoppingBag, Phone, CreditCard, MapPin, User, Save, Truck, RefreshCw, FileText, Ban, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function ProfilePage() {
@@ -12,13 +11,11 @@ export default function ProfilePage() {
   const [myOrders, setMyOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [tcNo, setTcNo] = useState('')
   const [address, setAddress] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
 
   const router = useRouter()
 
@@ -49,7 +46,6 @@ export default function ProfilePage() {
         setPhone(prof.phone || '')
         setTcNo(prof.tc_no || '')
         setAddress(prof.address || '')
-        setAvatarUrl(prof.avatar_url || '')
       }
 
       const { data: ords } = await supabase.from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
@@ -61,11 +57,35 @@ export default function ProfilePage() {
     }
   }
 
+  // Müşteri Siparişi İptal Etsin (Eğer henüz kargolanmadıysa)
+  const handleUserCancelOrder = async (orderId: string) => {
+    if (!confirm('Bu siparişi iptal etmek istediğinize emin misiniz?')) return
+    const { error } = await supabase.from('orders').update({ status: 'İptal Edildi', cancelled_at: new Date().toISOString() }).eq('id', orderId)
+    if (!error) {
+      alert('Siparişiniz iptal edildi.')
+      loadUserProfileAndData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
+
+  // Müşteri Teslim Aldım İşaretlesin
+  const handleMarkAsDelivered = async (orderId: string) => {
+    const { error } = await supabase.from('orders').update({ status: 'Teslim Edildi' }).eq('id', orderId)
+    if (!error) {
+      alert('Siparişiniz teslim edildi olarak işaretlendi! Artık ürüne puan verip yorum yapabilirsiniz.')
+      loadUserProfileAndData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
+
+  // Müşteri İade Talebi Başlatabilsin (Teslim Edilen Ürünler İçin)
   const handleReturnRequest = async (orderId: string) => {
-    if (!confirm('Bu sipariş için iade talebi başlatmak istiyor musunuz?')) return
+    if (!confirm('Bu sipariş için iade/değişim talebi başlatmak istiyor musunuz?')) return
     const { error } = await supabase.from('orders').update({ status: 'İade Talep Edildi' }).eq('id', orderId)
     if (!error) {
-      alert('İade talebiniz başarıyla oluşturuldu.')
+      alert('İade talebiniz başarıyla oluşturuldu. Operasyon ekibimiz inceleyecektir.')
       loadUserProfileAndData()
     } else {
       alert('Hata: ' + error.message)
@@ -109,46 +129,58 @@ export default function ProfilePage() {
           <span className="text-xs font-mono text-primary uppercase">MÜŞTERİ HESAP & SİPARİŞ MERKEZİ</span>
         </div>
 
-        {/* PROFİL BİLGİLERİ */}
+        {/* KİŞİSEL & FATURA BİLGİLERİ */}
         <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6 sm:p-8 shadow-xl space-y-6">
           <form onSubmit={handleUpdateProfile} className="space-y-4">
-            <h3 className="text-xs font-mono uppercase tracking-widest text-primary">Kişisel & Fatura Bilgileri</h3>
+            <h3 className="text-xs font-mono uppercase tracking-widest text-primary">Kişisel & Fatura Bilgileri (İyzico Uyumlu)</h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad (Zorunlu)</label>
-                <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <div className="relative">
+                  <User className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                  <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white pl-10 focus:border-primary focus:outline-none" />
+                </div>
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası (05...)</label>
-                <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon Numarası (05XXXXXXXXX)</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                  <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white pl-10 focus:border-primary focus:outline-none" />
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">TC Kimlik No (Fatura İçin 11 Haneli)</label>
-                <input type="text" maxLength={11} value={tcNo} onChange={(e) => setTcNo(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">TC Kimlik No (11 Haneli Fatura İçin)</label>
+                <div className="relative">
+                  <CreditCard className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                  <input type="text" maxLength={11} value={tcNo} onChange={(e) => setTcNo(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white pl-10 focus:border-primary focus:outline-none" />
+                </div>
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat Adresi</label>
-                <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat & Fatura Adresi</label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
+                  <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white pl-10 focus:border-primary focus:outline-none" />
+                </div>
               </div>
             </div>
 
             <div className="pt-2 flex justify-end">
-              <button type="submit" disabled={saving} className="rounded-full bg-primary px-6 py-3 text-xs font-bold uppercase text-black cursor-pointer">
-                {saving ? 'Kaydediliyor...' : 'Bilgileri Güncelle'}
+              <button type="submit" disabled={saving} className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-bold uppercase tracking-widest text-black hover:scale-105 transition-transform cursor-pointer disabled:opacity-50">
+                <Save className="h-4 w-4" /> <span>{saving ? 'Kaydediliyor...' : 'Bilgileri Güncelle'}</span>
               </button>
             </div>
           </form>
         </div>
 
-        {/* SİPARİŞ GEÇMİŞİ & FATURALAR & İADE */}
+        {/* AKTİF VE GEÇMİŞ SİPARİŞLER MERKEZİ */}
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <h2 className="text-lg font-bold flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-primary" /> <span>Geçmiş & Aktif Siparişlerim</span>
+              <ShoppingBag className="h-5 w-5 text-primary" /> <span>Sipariş Geçmişim & Kargo Takibi</span>
             </h2>
             <span className="text-xs font-mono text-zinc-500">[{myOrders.length} SİPARİŞ]</span>
           </div>
@@ -160,13 +192,17 @@ export default function ProfilePage() {
           ) : (
             <div className="space-y-4">
               {myOrders.map((ord) => (
-                <div key={ord.id} className="rounded-2xl border border-white/10 bg-zinc-950 p-6 space-y-4 font-mono">
+                <div key={ord.id} className="rounded-2xl border border-white/10 bg-zinc-950 p-6 space-y-4 font-mono shadow-xl">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
                     <div>
                       <span className="text-[10px] text-zinc-500 uppercase">Sipariş ID: #{ord.id.slice(0, 8)}</span>
                       <div className="text-xs text-primary font-bold">{new Date(ord.created_at).toLocaleString('tr-TR')}</div>
                     </div>
-                    <span className="px-3 py-1 rounded-full text-[10px] uppercase font-bold bg-primary/20 text-primary border border-primary/30">
+                    <span className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold border ${
+                      ord.status === 'İptal Edildi' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                      ord.status === 'Teslim Edildi' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                      'bg-primary/20 text-primary border-primary/30'
+                    }`}>
                       {ord.status}
                     </span>
                   </div>
@@ -186,8 +222,7 @@ export default function ProfilePage() {
                       <span>Kargo Takip No: <strong>{ord.tracking_number || 'Henüz kargolanmadı'}</strong></span>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      {/* E-Fatura Görüntüleme Butonu */}
+                    <div className="flex flex-wrap items-center gap-3">
                       <button
                         type="button"
                         onClick={() => alert('e-Arşiv Faturanız PDF olarak hazırlanıyor... Paraşüt / Logo entegrasyonu aktif olduğunda fatura direkt indirilecektir.')}
@@ -196,13 +231,36 @@ export default function ProfilePage() {
                         <FileText size={13} /> Faturayı Görüntüle (PDF)
                       </button>
 
+                      {/* Kargolanmamış siparişi iptal et */}
+                      {ord.status === 'Ödeme Bekliyor' && (
+                        <button
+                          type="button"
+                          onClick={() => handleUserCancelOrder(ord.id)}
+                          className="inline-flex items-center gap-1 rounded-full bg-red-500/10 border border-red-500/30 px-3 py-1.5 text-[11px] text-red-400 hover:bg-red-500/20 cursor-pointer"
+                        >
+                          <Ban size={12} /> Siparişi İptal Et
+                        </button>
+                      )}
+
+                      {/* Kargoda olan ürünü teslim aldım işaretle */}
                       {ord.status === 'Kargolandı' && (
+                        <button
+                          type="button"
+                          onClick={() => handleMarkAsDelivered(ord.id)}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-4 py-1.5 text-[11px] text-emerald-400 hover:bg-emerald-500/20 cursor-pointer"
+                        >
+                          <CheckCircle2 size={13} /> Ürünü Teslim Aldım
+                        </button>
+                      )}
+
+                      {/* Teslim edilen ürünler için iade talebi */}
+                      {ord.status === 'Teslim Edildi' && (
                         <button
                           type="button"
                           onClick={() => handleReturnRequest(ord.id)}
                           className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 border border-red-500/30 px-4 py-1.5 text-[11px] text-red-400 hover:bg-red-500/20 cursor-pointer"
                         >
-                          <RefreshCw className="h-3 w-3" /> İade Talebi Oluştur
+                          <RefreshCw className="h-3 w-3" /> İade / Değişim Talebi
                         </button>
                       )}
                     </div>
