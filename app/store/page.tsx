@@ -47,7 +47,7 @@ function StoreContent() {
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
 
   const [selectedColor, setSelectedColor] = useState<string>('')
-  const [selectedSize, setSelectedSize] = useState<string>('') // Başlangıçta boş (seçim zorunlu)
+  const [selectedSize, setSelectedSize] = useState<string>('')
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
   const [hoveredImageIdx, setHoveredImageIdx] = useState<{ [key: string]: number }>({})
   const [isAdded, setIsAdded] = useState<boolean>(false)
@@ -89,9 +89,8 @@ function StoreContent() {
       if (match) {
         setSelectedProduct(match)
         const colors = match.colors || []
-        const initialColor = colors[0] || ''
-        setSelectedColor(initialColor)
-        setSelectedSize('') // Beden seçimi sıfırlanır, müşteri seçmek zorunda
+        setSelectedColor(colors[0] || '')
+        setSelectedSize('')
         setActiveImageIdx(0)
         if (match.gender) setActiveTabTable(match.gender)
         fetchProductInteractions(match.id)
@@ -161,7 +160,7 @@ function StoreContent() {
     setSelectedProduct(product)
     const colors = product.colors || []
     setSelectedColor(colors[0] || '')
-    setSelectedSize('') // Beden seçimi zorunlu kılındı
+    setSelectedSize('')
     setActiveImageIdx(0)
     setIsAdded(false)
     if (product.gender) setActiveTabTable(product.gender)
@@ -177,8 +176,6 @@ function StoreContent() {
 
   const handleAddToCart = () => {
     if (!selectedProduct) return
-    
-    // Beden seçimi kontrolü
     if (!selectedSize) {
       alert('Lütfen sepete eklemeden önce bir beden seçiniz!')
       return
@@ -312,7 +309,7 @@ function StoreContent() {
                         </div>
                       )}
 
-                      {/* Seçilen Renge Göre Dinamik Beden Matrisi (Stoklar Dahil) */}
+                      {/* Müşteri Gözünden Stok Rakamları Gizlendi ("Mevcut" veya "Tükendi") */}
                       <div className="mt-6 space-y-2">
                         <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi ({selectedColor}) *Zorunlu</div>
                         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
@@ -334,7 +331,7 @@ function StoreContent() {
                                 }`}
                               >
                                 <span>{s}</span>
-                                <span className="text-[9px] font-mono opacity-80">{isSizeOut ? 'Tükendi' : `${sizeStock} stk`}</span>
+                                <span className="text-[9px] font-mono opacity-80">{isSizeOut ? 'Tükendi' : 'Mevcut'}</span>
                               </button>
                             )
                           })}
