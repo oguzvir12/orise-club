@@ -57,7 +57,6 @@ export default function AdminPage() {
   const [selectedColors, setSelectedColors] = useState<string[]>(['Siyah'])
   const [gender, setGender] = useState('erkek')
   
-  // Renk Bazlı Stok Matrisi: { Siyah: {XS: 5, S: 10...}, Beyaz: {XS: 0...} }
   const [colorSizesMap, setColorSizesMap] = useState<{ [color: string]: { [size: string]: number } }>({
     'Siyah': { XS: 0, S: 10, M: 20, L: 20, XL: 10, '2XL': 0, '3XL': 0, '4XL': 0 }
   })
@@ -66,7 +65,7 @@ export default function AdminPage() {
   const [description, setDescription] = useState('')
   const [imageList, setImageList] = useState<string[]>([])
 
-  // Ürün Düzenleme Modal
+  // Ürün Düzenleme Modal (Kategori eklendi)
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editSubtitle, setEditSubtitle] = useState('')
@@ -76,6 +75,7 @@ export default function AdminPage() {
   const [editColorSizesMap, setEditColorSizesMap] = useState<{ [color: string]: { [size: string]: number } }>({})
   const [editActiveColorTab, setEditActiveColorTab] = useState<string>('')
   const [editCategory, setEditCategory] = useState('tank')
+  const [editCategoryLabel, setEditCategoryLabel] = useState('KOŞU ATLETİ')
   const [editGender, setEditGender] = useState('erkek')
   const [editDescription, setEditDescription] = useState('')
   const [editImages, setEditImages] = useState<string[]>([])
@@ -127,6 +127,15 @@ export default function AdminPage() {
     window.location.href = '/'
   }
 
+  const handleDeleteQuestion = async (qId: string) => {
+    if (!confirm('Bu soruyu silmek istediğinize emin misiniz?')) return
+    const { error } = await supabase.from('product_questions').delete().eq('id', qId)
+    if (!error) {
+      alert('Soru silindi.')
+      fetchData()
+    }
+  }
+
   const toggleColorSelection = (colorName: string, isEdit: boolean = false) => {
     if (isEdit) {
       let updatedColors = [...editColors]
@@ -139,7 +148,6 @@ export default function AdminPage() {
       if (!updatedColors.includes(editActiveColorTab) && updatedColors.length > 0) {
         setEditActiveColorTab(updatedColors[0])
       }
-      // Eksik renk için boş matris oluştur
       const newMap = { ...editColorSizesMap }
       if (!newMap[colorName]) {
         newMap[colorName] = { XS: 0, S: 0, M: 0, L: 0, XL: 0, '2XL': 0, '3XL': 0, '4XL': 0 }
@@ -211,7 +219,6 @@ export default function AdminPage() {
     e.preventDefault()
     if (!title || !price) return
 
-    // Tüm renklerin toplam stoğunu hesapla
     let totalStock = 0
     Object.values(colorSizesMap).forEach(sizesObj => {
       totalStock += Object.values(sizesObj).reduce((a: any, b: any) => a + b, 0)
@@ -223,7 +230,7 @@ export default function AdminPage() {
       price: Number(price),
       compare_at_price: comparePrice ? Number(comparePrice) : null,
       stock: totalStock,
-      sizes: colorSizesMap, // Renk bazlı bağımsız matris yapısı
+      sizes: colorSizesMap,
       colors: selectedColors,
       gender: gender,
       category: category,
@@ -234,7 +241,7 @@ export default function AdminPage() {
     }])
 
     if (!error) {
-      alert('Ürün ve renk bazlı stok matrisi başarıyla eklendi!')
+      alert('Ürün başarıyla eklendi!')
       setTitle(''); setSubtitle(''); setPrice(''); setComparePrice(''); setDescription(''); setImageList([])
       fetchData()
     } else {
@@ -259,7 +266,6 @@ export default function AdminPage() {
     setEditColors(colors)
     setEditActiveColorTab(colors[0] || 'Siyah')
 
-    // Eğer sizes alanı düz obje ise (eski format) renk matrisine uyarla
     let sizesStructure = prod.sizes || {}
     if (sizesStructure && typeof sizesStructure === 'object' && !sizesStructure[colors[0]]) {
       const converted: any = {}
@@ -269,6 +275,7 @@ export default function AdminPage() {
     setEditColorSizesMap(sizesStructure)
 
     setEditCategory(prod.category || 'tank')
+    setEditCategoryLabel(prod.category_label || 'KOŞU ATLETİ')
     setEditGender(prod.gender || 'erkek')
     setEditDescription(prod.description || '')
     setEditImages(prod.image_urls || (prod.image_url ? [prod.image_url] : []))
@@ -294,13 +301,14 @@ export default function AdminPage() {
       sizes: editColorSizesMap,
       colors: editColors,
       category: editCategory,
+      category_label: editCategoryLabel,
       gender: editGender,
       description: editDescription,
       image_urls: editImages
     }).eq('id', editingProduct.id)
 
     if (!error) {
-      alert('Ürün ve renk stokları güncellendi!')
+      alert('Ürün ve kategori başarıyla güncellendi!')
       setEditingProduct(null)
       fetchData()
     } else {
@@ -395,9 +403,12 @@ export default function AdminPage() {
               ) : (
                 questions.map((q) => (
                   <div key={q.id} className="p-4 rounded-2xl border border-white/10 bg-black/60 space-y-3 text-xs">
-                    <div className="flex justify-between font-mono text-[10px] text-zinc-400">
+                    <div className="flex justify-between items-center font-mono text-[10px] text-zinc-400">
                       <span>Müşteri: <strong className="text-white">{q.user_name}</strong></span>
-                      <span>{new Date(q.created_at).toLocaleString('tr-TR')}</span>
+                      <div className="flex items-center gap-3">
+                        <span>{new Date(q.created_at).toLocaleString('tr-TR')}</span>
+                        <button type="button" onClick={() => handleDeleteQuestion(q.id)} className="text-red-400 hover:text-red-300 font-bold cursor-pointer" title="Soruyu Sil">Sil</button>
+                      </div>
                     </div>
                     <p className="font-bold text-white">Soru: {q.question}</p>
                     
@@ -533,7 +544,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* YENİ ÜRÜN EKLEME (Renk Bazlı Bağımsız Stok Matrisi İle) */}
+            {/* YENİ ÜRÜN EKLEME */}
             <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
               <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Renk Bazlı Bağımsız Stok Matrisi)</span></h2>
               <form onSubmit={handleAddProduct} className="space-y-4">
@@ -548,7 +559,17 @@ export default function AdminPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
+                  <select value={category} onChange={(e) => {
+                    const val = e.target.value
+                    setCategory(val)
+                    if (val === 'tank') setCategoryLabel('KOŞU ATLETİ')
+                    else if (val === 'sweatshirt') setCategoryLabel('SWEATSHIRT')
+                    else if (val === 'shorts') setCategoryLabel('ŞORT')
+                    else if (val === 'leggings') setCategoryLabel('TAYT')
+                    else if (val === 'socks') setCategoryLabel('PERFORMANS ÇORAP')
+                    else if (val === 'hat') setCategoryLabel('ŞAPKA')
+                    else if (val === 'equipment') setCategoryLabel('TERMOS & MATARA')
+                  }} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
                     <option value="tank">Koşu Atleti</option>
                     <option value="sweatshirt">Sweatshirt</option>
                     <option value="shorts">Şort</option>
@@ -565,9 +586,8 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Yuvarlak Renk Seçici Paleti */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block">Ürün Renk Seçenekleri (Seçtiğiniz renkler için ayrı stok girebilirsiniz)</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block">Ürün Renk Seçenekleri</label>
                   <div className="flex flex-wrap gap-3">
                     {PRESET_COLORS.map((col) => {
                       const isSelected = selectedColors.includes(col.name)
@@ -591,7 +611,6 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Renk Sekmeleri ve Bağımsız Stok Matrisi */}
                 {selectedColors.length > 0 && (
                   <div className="rounded-2xl border border-white/10 bg-black/50 p-4 space-y-4">
                     <div className="flex items-center gap-2 border-b border-white/10 pb-2">
@@ -659,7 +678,7 @@ export default function AdminPage() {
                       </div>
                       <div>
                         <h4 className="font-bold text-xs text-white">{prod.title}</h4>
-                        <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | Renkler: {prod.colors?.join(', ') || 'Yok'}</div>
+                        <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | Kategori: {prod.category}</div>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -675,18 +694,38 @@ export default function AdminPage() {
 
       </div>
 
-      {/* ÜRÜN DÜZENLEME MODALI (Renk Bazlı Bağımsız Stok Düzenleme) */}
+      {/* ÜRÜN DÜZENLEME MODALI (Kategori Seçimi Eklendi) */}
       {editingProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Ürünü ve Renk Stok Matrisini Düzenle</h3>
+              <h3 className="font-bold text-base text-white">Ürünü, Kategoriyi ve Matrisi Düzenle</h3>
               <button type="button" onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleUpdateProduct} className="space-y-4">
               <input type="text" required value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              <div className="grid grid-cols-2 gap-4">
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <input type="number" required value={editPrice} onChange={(e) => setEditPrice(e.target.value)} placeholder="Fiyat" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <select value={editCategory} onChange={(e) => {
+                  const val = e.target.value
+                  setEditCategory(val)
+                  if (val === 'tank') setEditCategoryLabel('KOŞU ATLETİ')
+                  else if (val === 'sweatshirt') setEditCategoryLabel('SWEATSHIRT')
+                  else if (val === 'shorts') setEditCategoryLabel('ŞORT')
+                  else if (val === 'leggings') setEditCategoryLabel('TAYT')
+                  else if (val === 'socks') setEditCategoryLabel('PERFORMANS ÇORAP')
+                  else if (val === 'hat') setEditCategoryLabel('ŞAPKA')
+                  else if (val === 'equipment') setEditCategoryLabel('TERMOS & MATARA')
+                }} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
+                  <option value="tank">Koşu Atleti</option>
+                  <option value="sweatshirt">Sweatshirt</option>
+                  <option value="shorts">Şort</option>
+                  <option value="leggings">Tayt</option>
+                  <option value="socks">Performans Çorap</option>
+                  <option value="hat">Şapka</option>
+                  <option value="equipment">Termos & Matara</option>
+                </select>
                 <select value={editGender} onChange={(e) => setEditGender(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
                   <option value="erkek">Erkek</option>
                   <option value="kadin">Kadın</option>
