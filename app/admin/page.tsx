@@ -47,7 +47,7 @@ export default function AdminPage() {
   const [questions, setQuestions] = useState<any[]>([])
   const [answerInputs, setAnswerInputs] = useState<{ [key: string]: string }>({})
 
-  // Yeni Ürün Ekleme (Renk Paleti İkonları ile)
+  // Yeni Ürün Ekleme
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
@@ -57,14 +57,12 @@ export default function AdminPage() {
   const [selectedColors, setSelectedColors] = useState<string[]>(['Siyah'])
   const [gender, setGender] = useState('erkek')
   
-  const [sizeXS, setSizeXS] = useState('5')
-  const [sizeS, setSizeS] = useState('10')
-  const [sizeM, setSizeM] = useState('15')
-  const [sizeL, setSizeL] = useState('15')
-  const [sizeXL, setSizeXL] = useState('10')
-  const [size2XL, setSize2XL] = useState('5')
-  const [size3XL, setSize3XL] = useState('5')
-  const [size4XL, setSize4XL] = useState('5')
+  // Renk Bazlı Stok Matrisi: { Siyah: {XS: 5, S: 10...}, Beyaz: {XS: 0...} }
+  const [colorSizesMap, setColorSizesMap] = useState<{ [color: string]: { [size: string]: number } }>({
+    'Siyah': { XS: 0, S: 10, M: 20, L: 20, XL: 10, '2XL': 0, '3XL': 0, '4XL': 0 }
+  })
+  const [activeColorTab, setActiveColorTab] = useState<string>('Siyah')
+
   const [description, setDescription] = useState('')
   const [imageList, setImageList] = useState<string[]>([])
 
@@ -75,16 +73,10 @@ export default function AdminPage() {
   const [editPrice, setEditPrice] = useState('')
   const [editComparePrice, setEditComparePrice] = useState('')
   const [editColors, setEditColors] = useState<string[]>([])
+  const [editColorSizesMap, setEditColorSizesMap] = useState<{ [color: string]: { [size: string]: number } }>({})
+  const [editActiveColorTab, setEditActiveColorTab] = useState<string>('')
   const [editCategory, setEditCategory] = useState('tank')
   const [editGender, setEditGender] = useState('erkek')
-  const [editSizeXS, setEditSizeXS] = useState(0)
-  const [editSizeS, setEditSizeS] = useState(0)
-  const [editSizeM, setEditSizeM] = useState(0)
-  const [editSizeL, setEditSizeL] = useState(0)
-  const [editSizeXL, setEditSizeXL] = useState(0)
-  const [editSize2XL, setEditSize2XL] = useState(0)
-  const [editSize3XL, setEditSize3XL] = useState(0)
-  const [editSize4XL, setEditSize4XL] = useState(0)
   const [editDescription, setEditDescription] = useState('')
   const [editImages, setEditImages] = useState<string[]>([])
 
@@ -137,17 +129,59 @@ export default function AdminPage() {
 
   const toggleColorSelection = (colorName: string, isEdit: boolean = false) => {
     if (isEdit) {
-      if (editColors.includes(colorName)) {
-        setEditColors(editColors.filter(c => c !== colorName))
+      let updatedColors = [...editColors]
+      if (updatedColors.includes(colorName)) {
+        updatedColors = updatedColors.filter(c => c !== colorName)
       } else {
-        setEditColors([...editColors, colorName])
+        updatedColors.push(colorName)
       }
+      setEditColors(updatedColors)
+      if (!updatedColors.includes(editActiveColorTab) && updatedColors.length > 0) {
+        setEditActiveColorTab(updatedColors[0])
+      }
+      // Eksik renk için boş matris oluştur
+      const newMap = { ...editColorSizesMap }
+      if (!newMap[colorName]) {
+        newMap[colorName] = { XS: 0, S: 0, M: 0, L: 0, XL: 0, '2XL': 0, '3XL': 0, '4XL': 0 }
+      }
+      setEditColorSizesMap(newMap)
     } else {
-      if (selectedColors.includes(colorName)) {
-        setSelectedColors(selectedColors.filter(c => c !== colorName))
+      let updatedColors = [...selectedColors]
+      if (updatedColors.includes(colorName)) {
+        updatedColors = updatedColors.filter(c => c !== colorName)
       } else {
-        setSelectedColors([...selectedColors, colorName])
+        updatedColors.push(colorName)
       }
+      setSelectedColors(updatedColors)
+      if (!updatedColors.includes(activeColorTab) && updatedColors.length > 0) {
+        setActiveColorTab(updatedColors[0])
+      }
+      const newMap = { ...colorSizesMap }
+      if (!newMap[colorName]) {
+        newMap[colorName] = { XS: 0, S: 0, M: 0, L: 0, XL: 0, '2XL': 0, '3XL': 0, '4XL': 0 }
+      }
+      setColorSizesMap(newMap)
+    }
+  }
+
+  const handleSizeChange = (sizeKey: string, value: string, isEdit: boolean = false) => {
+    const val = Number(value) || 0
+    if (isEdit) {
+      setEditColorSizesMap(prev => ({
+        ...prev,
+        [editActiveColorTab]: {
+          ...(prev[editActiveColorTab] || {}),
+          [sizeKey]: val
+        }
+      }))
+    } else {
+      setColorSizesMap(prev => ({
+        ...prev,
+        [activeColorTab]: {
+          ...(prev[activeColorTab] || {}),
+          [sizeKey]: val
+        }
+      }))
     }
   }
 
@@ -177,11 +211,11 @@ export default function AdminPage() {
     e.preventDefault()
     if (!title || !price) return
 
-    const sizesObj = { 
-      XS: Number(sizeXS) || 0, S: Number(sizeS) || 0, M: Number(sizeM) || 0, L: Number(sizeL) || 0, 
-      XL: Number(sizeXL) || 0, '2XL': Number(size2XL) || 0, '3XL': Number(size3XL) || 0, '4XL': Number(size4XL) || 0
-    }
-    const totalStock = Object.values(sizesObj).reduce((a: any, b: any) => a + b, 0)
+    // Tüm renklerin toplam stoğunu hesapla
+    let totalStock = 0
+    Object.values(colorSizesMap).forEach(sizesObj => {
+      totalStock += Object.values(sizesObj).reduce((a: any, b: any) => a + b, 0)
+    })
 
     const { error } = await supabase.from('products').insert([{
       title,
@@ -189,7 +223,7 @@ export default function AdminPage() {
       price: Number(price),
       compare_at_price: comparePrice ? Number(comparePrice) : null,
       stock: totalStock,
-      sizes: sizesObj,
+      sizes: colorSizesMap, // Renk bazlı bağımsız matris yapısı
       colors: selectedColors,
       gender: gender,
       category: category,
@@ -200,7 +234,7 @@ export default function AdminPage() {
     }])
 
     if (!error) {
-      alert('Ürün başarıyla eklendi!')
+      alert('Ürün ve renk bazlı stok matrisi başarıyla eklendi!')
       setTitle(''); setSubtitle(''); setPrice(''); setComparePrice(''); setDescription(''); setImageList([])
       fetchData()
     } else {
@@ -220,17 +254,22 @@ export default function AdminPage() {
     setEditSubtitle(prod.subtitle || '')
     setEditPrice(prod.price || '')
     setEditComparePrice(prod.compare_at_price || '')
-    setEditColors(prod.colors || ['Siyah'])
+    
+    const colors = prod.colors || ['Siyah']
+    setEditColors(colors)
+    setEditActiveColorTab(colors[0] || 'Siyah')
+
+    // Eğer sizes alanı düz obje ise (eski format) renk matrisine uyarla
+    let sizesStructure = prod.sizes || {}
+    if (sizesStructure && typeof sizesStructure === 'object' && !sizesStructure[colors[0]]) {
+      const converted: any = {}
+      colors.forEach((c: string) => { converted[c] = sizesStructure })
+      sizesStructure = converted
+    }
+    setEditColorSizesMap(sizesStructure)
+
     setEditCategory(prod.category || 'tank')
     setEditGender(prod.gender || 'erkek')
-    setEditSizeXS(prod.sizes?.XS ?? 0)
-    setEditSizeS(prod.sizes?.S ?? 0)
-    setEditSizeM(prod.sizes?.M ?? 0)
-    setEditSizeL(prod.sizes?.L ?? 0)
-    setEditSizeXL(prod.sizes?.XL ?? 0)
-    setEditSize2XL(prod.sizes?.['2XL'] ?? 0)
-    setEditSize3XL(prod.sizes?.['3XL'] ?? 0)
-    setEditSize4XL(prod.sizes?.['4XL'] ?? 0)
     setEditDescription(prod.description || '')
     setEditImages(prod.image_urls || (prod.image_url ? [prod.image_url] : []))
   }
@@ -239,11 +278,12 @@ export default function AdminPage() {
     e.preventDefault()
     if (!editingProduct) return
 
-    const sizesObj = { 
-      XS: Number(editSizeXS) || 0, S: Number(editSizeS) || 0, M: Number(editSizeM) || 0, L: Number(editSizeL) || 0, 
-      XL: Number(editSizeXL) || 0, '2XL': Number(editSize2XL) || 0, '3XL': Number(editSize3XL) || 0, '4XL': Number(editSize4XL) || 0
-    }
-    const totalStock = Object.values(sizesObj).reduce((a: any, b: any) => a + b, 0)
+    let totalStock = 0
+    Object.values(editColorSizesMap).forEach(sizesObj => {
+      if (sizesObj) {
+        totalStock += Object.values(sizesObj).reduce((a: any, b: any) => a + Number(b || 0), 0)
+      }
+    })
 
     const { error } = await supabase.from('products').update({
       title: editTitle,
@@ -251,7 +291,7 @@ export default function AdminPage() {
       price: Number(editPrice),
       compare_at_price: editComparePrice ? Number(editComparePrice) : null,
       stock: totalStock,
-      sizes: sizesObj,
+      sizes: editColorSizesMap,
       colors: editColors,
       category: editCategory,
       gender: editGender,
@@ -260,7 +300,7 @@ export default function AdminPage() {
     }).eq('id', editingProduct.id)
 
     if (!error) {
-      alert('Ürün güncellendi!')
+      alert('Ürün ve renk stokları güncellendi!')
       setEditingProduct(null)
       fetchData()
     } else {
@@ -269,7 +309,6 @@ export default function AdminPage() {
   }
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string, currentStatus: string) => {
-    // İptal edilen veya iade edilen siparişin statüsü değiştirilemez!
     if (currentStatus === 'İptal Edildi' || currentStatus === 'İade Edildi') {
       alert('İptal edilmiş veya iade edilmiş siparişlerin statüsü değiştirilemez!')
       return
@@ -284,8 +323,6 @@ export default function AdminPage() {
     if (!error) {
       alert('Sipariş statüsü güncellendi!')
       fetchData()
-    } else {
-      alert('Hata: ' + error.message)
     }
   }
 
@@ -301,8 +338,6 @@ export default function AdminPage() {
     if (!error) {
       alert(`Sipariş başarıyla ${statusText.toLowerCase()}!`)
       fetchData()
-    } else {
-      alert('Hata: ' + error.message)
     }
   }
 
@@ -498,9 +533,9 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* YENİ ÜRÜN EKLEME (Yuvarlak Renk Paleti İkonları İle) */}
+            {/* YENİ ÜRÜN EKLEME (Renk Bazlı Bağımsız Stok Matrisi İle) */}
             <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Renk & Beden Matrisi)</span></h2>
+              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Renk Bazlı Bağımsız Stok Matrisi)</span></h2>
               <form onSubmit={handleAddProduct} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
@@ -532,7 +567,7 @@ export default function AdminPage() {
 
                 {/* Yuvarlak Renk Seçici Paleti */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block">Ürün Renk Seçenekleri (Tıklayarak Seçin)</label>
+                  <label className="text-[10px] font-mono uppercase text-zinc-400 block">Ürün Renk Seçenekleri (Seçtiğiniz renkler için ayrı stok girebilirsiniz)</label>
                   <div className="flex flex-wrap gap-3">
                     {PRESET_COLORS.map((col) => {
                       const isSelected = selectedColors.includes(col.name)
@@ -540,7 +575,10 @@ export default function AdminPage() {
                         <button
                           key={col.name}
                           type="button"
-                          onClick={() => toggleColorSelection(col.name, false)}
+                          onClick={() => {
+                            toggleColorSelection(col.name, false)
+                            if (!selectedColors.includes(col.name)) setActiveColorTab(col.name)
+                          }}
                           className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold cursor-pointer transition-all ${
                             isSelected ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-black text-zinc-400'
                           }`}
@@ -553,6 +591,46 @@ export default function AdminPage() {
                   </div>
                 </div>
 
+                {/* Renk Sekmeleri ve Bağımsız Stok Matrisi */}
+                {selectedColors.length > 0 && (
+                  <div className="rounded-2xl border border-white/10 bg-black/50 p-4 space-y-4">
+                    <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+                      <span className="text-[10px] font-mono text-zinc-400 uppercase">Stok Girdiğiniz Renk:</span>
+                      <div className="flex gap-2">
+                        {selectedColors.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setActiveColorTab(c)}
+                            className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer ${
+                              activeColorTab === c ? 'bg-primary text-black' : 'bg-zinc-900 text-zinc-300'
+                            }`}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono uppercase text-primary">[{activeColorTab}] Rengi İçin Beden Stokları</label>
+                      <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                        {['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'].map((sz) => (
+                          <div key={sz}>
+                            <span className="text-[9px] text-zinc-500">{sz}</span>
+                            <input
+                              type="number"
+                              value={colorSizesMap[activeColorTab]?.[sz] ?? 0}
+                              onChange={(e) => handleSizeChange(sz, e.target.value, false)}
+                              className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {imageList.length > 0 && (
                   <div className="flex items-center gap-3 overflow-x-auto pb-2">
                     {imageList.map((imgUrl, imgIdx) => (
@@ -564,26 +642,12 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                <div className="space-y-1">
-                  <label className="text-[10px] font-mono uppercase text-zinc-400">Beden Stok Matrisi</label>
-                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                    <div><span className="text-[9px] text-zinc-500">XS</span><input type="number" value={sizeXS} onChange={(e) => setSizeXS(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                    <div><span className="text-[9px] text-zinc-500">S</span><input type="number" value={sizeS} onChange={(e) => setSizeS(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                    <div><span className="text-[9px] text-zinc-500">M</span><input type="number" value={sizeM} onChange={(e) => setSizeM(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                    <div><span className="text-[9px] text-zinc-500">L</span><input type="number" value={sizeL} onChange={(e) => setSizeL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                    <div><span className="text-[9px] text-zinc-500">XL</span><input type="number" value={sizeXL} onChange={(e) => setSizeXL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                    <div><span className="text-[9px] text-zinc-500">2XL</span><input type="number" value={size2XL} onChange={(e) => setSize2XL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                    <div><span className="text-[9px] text-zinc-500">3XL</span><input type="number" value={size3XL} onChange={(e) => setSize3XL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                    <div><span className="text-[9px] text-zinc-500">4XL</span><input type="number" value={size4XL} onChange={(e) => setSize4XL(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  </div>
-                </div>
-
                 <textarea rows={3} placeholder="Ürün Açıklaması (HTML destekler)" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
                 <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Ürünü Yayınla</button>
               </form>
             </div>
 
-            {/* YÜKLÜ ÜRÜNLER (Düzenleme Butonu Düzeltildi) */}
+            {/* YÜKLÜ ÜRÜNLER */}
             <div className="space-y-4">
               <h2 className="text-base font-bold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /><span>Yüklü Ürünler ({products.length})</span></h2>
               <div className="space-y-3">
@@ -595,7 +659,7 @@ export default function AdminPage() {
                       </div>
                       <div>
                         <h4 className="font-bold text-xs text-white">{prod.title}</h4>
-                        <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | Kategori: {prod.category}</div>
+                        <div className="text-[10px] text-zinc-400 font-mono">₺{prod.price} | Renkler: {prod.colors?.join(', ') || 'Yok'}</div>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -611,12 +675,12 @@ export default function AdminPage() {
 
       </div>
 
-      {/* ÜRÜN DÜZENLEME MODALI */}
+      {/* ÜRÜN DÜZENLEME MODALI (Renk Bazlı Bağımsız Stok Düzenleme) */}
       {editingProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="font-bold text-base text-white">Ürünü ve Matrisi Düzenle</h3>
+              <h3 className="font-bold text-base text-white">Ürünü ve Renk Stok Matrisini Düzenle</h3>
               <button type="button" onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleUpdateProduct} className="space-y-4">
@@ -639,7 +703,10 @@ export default function AdminPage() {
                       <button
                         key={col.name}
                         type="button"
-                        onClick={() => toggleColorSelection(col.name, true)}
+                        onClick={() => {
+                          toggleColorSelection(col.name, true)
+                          if (!editColors.includes(col.name)) setEditActiveColorTab(col.name)
+                        }}
                         className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold cursor-pointer ${
                           isSelected ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-black text-zinc-400'
                         }`}
@@ -652,19 +719,45 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase text-zinc-400">8 Beden Stok Matrisi</label>
-                <div className="grid grid-cols-4 gap-2">
-                  <div><span className="text-[9px] text-zinc-500">XS</span><input type="number" value={editSizeXS} onChange={(e) => setEditSizeXS(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">S</span><input type="number" value={editSizeS} onChange={(e) => setEditSizeS(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">M</span><input type="number" value={editSizeM} onChange={(e) => setEditSizeM(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">L</span><input type="number" value={editSizeL} onChange={(e) => setEditSizeL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">XL</span><input type="number" value={editSizeXL} onChange={(e) => setEditSizeXL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">2XL</span><input type="number" value={editSize2XL} onChange={(e) => setEditSize2XL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">3XL</span><input type="number" value={editSize3XL} onChange={(e) => setEditSize3XL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
-                  <div><span className="text-[9px] text-zinc-500">4XL</span><input type="number" value={editSize4XL} onChange={(e) => setEditSize4XL(Number(e.target.value))} className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center" /></div>
+              {/* Düzenleme Renk Bazlı Stok Sekmeleri */}
+              {editColors.length > 0 && (
+                <div className="rounded-2xl border border-white/10 bg-black/50 p-4 space-y-4">
+                  <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+                    <span className="text-[10px] font-mono text-zinc-400 uppercase">Stok Düzenlenen Renk:</span>
+                    <div className="flex gap-2">
+                      {editColors.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setEditActiveColorTab(c)}
+                          className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer ${
+                            editActiveColorTab === c ? 'bg-primary text-black' : 'bg-zinc-900 text-zinc-300'
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-mono uppercase text-primary">[{editActiveColorTab}] Rengi İçin Beden Stokları</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'].map((sz) => (
+                        <div key={sz}>
+                          <span className="text-[9px] text-zinc-500">{sz}</span>
+                          <input
+                            type="number"
+                            value={editColorSizesMap[editActiveColorTab]?.[sz] ?? 0}
+                            onChange={(e) => handleSizeChange(sz, e.target.value, true)}
+                            className="w-full rounded-xl border border-white/10 bg-black px-2 py-2 text-xs text-white text-center"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <textarea rows={3} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
               <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase text-black cursor-pointer shadow-lg">Değişiklikleri Kaydet</button>
