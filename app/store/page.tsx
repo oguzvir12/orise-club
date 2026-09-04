@@ -47,7 +47,7 @@ function StoreContent() {
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
 
   const [selectedColor, setSelectedColor] = useState<string>('')
-  const [selectedSize, setSelectedSize] = useState<string>('M')
+  const [selectedSize, setSelectedSize] = useState<string>('') // Başlangıçta boş (seçim zorunlu)
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
   const [hoveredImageIdx, setHoveredImageIdx] = useState<{ [key: string]: number }>({})
   const [isAdded, setIsAdded] = useState<boolean>(false)
@@ -89,8 +89,9 @@ function StoreContent() {
       if (match) {
         setSelectedProduct(match)
         const colors = match.colors || []
-        setSelectedColor(colors[0] || '')
-        setSelectedSize('M')
+        const initialColor = colors[0] || ''
+        setSelectedColor(initialColor)
+        setSelectedSize('') // Beden seçimi sıfırlanır, müşteri seçmek zorunda
         setActiveImageIdx(0)
         if (match.gender) setActiveTabTable(match.gender)
         fetchProductInteractions(match.id)
@@ -160,7 +161,7 @@ function StoreContent() {
     setSelectedProduct(product)
     const colors = product.colors || []
     setSelectedColor(colors[0] || '')
-    setSelectedSize('M')
+    setSelectedSize('') // Beden seçimi zorunlu kılındı
     setActiveImageIdx(0)
     setIsAdded(false)
     if (product.gender) setActiveTabTable(product.gender)
@@ -176,11 +177,27 @@ function StoreContent() {
 
   const handleAddToCart = () => {
     if (!selectedProduct) return
+    
+    // Beden seçimi kontrolü
+    if (!selectedSize) {
+      alert('Lütfen sepete eklemeden önce bir beden seçiniz!')
+      return
+    }
+
+    const rawSizes = selectedProduct.sizes || {}
+    const colorStockMap = rawSizes[selectedColor] || (typeof rawSizes.XS === 'number' ? rawSizes : {})
+    const stockCount = colorStockMap[selectedSize] ?? 0
+
+    if (stockCount <= 0) {
+      alert(`Seçtiğiniz ${selectedSize} beden (${selectedColor}) stokta bulunmuyor!`)
+      return
+    }
+
     const image = selectedProduct.image_urls?.[0] || selectedProduct.image_url || '/placeholder.svg'
 
     addItem({
       id: `${selectedProduct.id}-${selectedColor}-${selectedSize}`,
-      name: `${selectedProduct.title} ${selectedColor ? `(${selectedColor})` : ''} - [${selectedSize}]`,
+      name: `${selectedProduct.title} (${selectedColor}) - [${selectedSize}]`,
       price: selectedProduct.price,
       image: image,
       type: 'product',
@@ -287,7 +304,7 @@ function StoreContent() {
                           <div className="text-xs font-mono text-zinc-400 uppercase">Renk Seçimi: <strong className="text-white">{selectedColor}</strong></div>
                           <div className="flex gap-2">
                             {selectedProduct.colors.map((col: string) => (
-                              <button key={col} type="button" onClick={() => setSelectedColor(col)} className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${selectedColor === col ? 'border-primary bg-primary/20 text-primary' : 'border-white/10 bg-zinc-900 text-zinc-400'}`}>
+                              <button key={col} type="button" onClick={() => { setSelectedColor(col); setSelectedSize(''); }} className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${selectedColor === col ? 'border-primary bg-primary/20 text-primary' : 'border-white/10 bg-zinc-900 text-zinc-400'}`}>
                                 {col}
                               </button>
                             ))}
@@ -295,12 +312,11 @@ function StoreContent() {
                         </div>
                       )}
 
-                      {/* Seçilen Renge Göre Dinamik Beden Stok Kontrolü */}
+                      {/* Seçilen Renge Göre Dinamik Beden Matrisi (Stoklar Dahil) */}
                       <div className="mt-6 space-y-2">
-                        <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi ({selectedColor})</div>
+                        <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi ({selectedColor}) *Zorunlu</div>
                         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
                           {['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'].map((s) => {
-                            // Eğer sizes matrisi renk bazlı ise seçili renginkini al, değilse direkt objeyi al
                             const rawSizes = selectedProduct.sizes || {}
                             const colorStockMap = rawSizes[selectedColor] || (typeof rawSizes.XS === 'number' ? rawSizes : {})
                             const sizeStock = colorStockMap[s] ?? 0
@@ -312,13 +328,13 @@ function StoreContent() {
                                 type="button" 
                                 disabled={isSizeOut}
                                 onClick={() => setSelectedSize(s)} 
-                                className={`relative rounded-xl py-2 text-xs font-bold transition-all ${
-                                  isSizeOut ? 'bg-zinc-950 border border-white/5 text-zinc-600 line-through cursor-not-allowed' :
-                                  selectedSize === s ? 'border border-primary bg-primary text-black font-black cursor-pointer' : 'border border-white/10 bg-zinc-900 text-zinc-300 hover:border-white/30 cursor-pointer'
+                                className={`relative rounded-xl py-2.5 text-xs font-bold transition-all flex flex-col items-center justify-center ${
+                                  isSizeOut ? 'bg-zinc-950 border border-white/5 text-zinc-700 line-through cursor-not-allowed' :
+                                  selectedSize === s ? 'border-2 border-primary bg-primary text-black font-black cursor-pointer shadow-lg' : 'border border-white/10 bg-zinc-900 text-zinc-300 hover:border-white/30 cursor-pointer'
                                 }`}
                               >
-                                {s}
-                                <span className="block text-[8px] font-mono opacity-70">{sizeStock}stk</span>
+                                <span>{s}</span>
+                                <span className="text-[9px] font-mono opacity-80">{isSizeOut ? 'Tükendi' : `${sizeStock} stk`}</span>
                               </button>
                             )
                           })}
