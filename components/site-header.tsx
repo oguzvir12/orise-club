@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Settings, X, Upload, MessageCircle, Send, Loader2 } from 'lucide-react'
+import { ShoppingBag, User, LogOut, MessageCircle, Send, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -77,40 +77,17 @@ export function SiteHeader() {
   const { count, openCart } = useCart()
   const [scrolled, setScrolled] = useState(false)
   const [user, setUser] = useState<any>(null)
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   
   const [fullName, setFullName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [instagram, setInstagram] = useState('')
-  const [address, setAddress] = useState('')
-  const [billingAddress, setBillingAddress] = useState('')
-  const [title, setTitle] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
 
-  const [uploading, setUploading] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [successMsg, setSuccessMsg] = useState('')
-  
-  const [myOrders, setMyOrders] = useState<any[]>([])
-
-  const fetchProfile = async (userId: string, userEmail?: string) => {
+  const fetchProfile = async (userId: string) => {
     try {
       const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
-
       if (data) {
         setFullName(data.full_name || '')
-        setPhone(data.phone || '')
-        setInstagram(data.instagram || '')
-        setAddress(data.address || data.adres || '')
-        setBillingAddress(data.billing_address || '')
-        setTitle(data.title || '')
         setAvatarUrl(data.avatar_url || '')
-      }
-
-      if (userEmail) {
-        const { data: ordData } = await supabase.from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-        if (ordData) setMyOrders(ordData)
       }
     } catch (err) {
       console.error('Profil çekme hatası:', err)
@@ -129,7 +106,7 @@ export function SiteHeader() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setUser(session.user)
-        await fetchProfile(session.user.id, session.user.email)
+        await fetchProfile(session.user.id)
       }
     }
     checkUser()
@@ -137,9 +114,9 @@ export function SiteHeader() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        await fetchProfile(session.user.id, session.user.email)
+        await fetchProfile(session.user.id)
       } else {
-        setFullName(''); setPhone(''); setInstagram(''); setAddress(''); setBillingAddress(''); setTitle(''); setAvatarUrl(''); setMyOrders([])
+        setFullName(''); setAvatarUrl('')
       }
     })
     return () => subscription.unsubscribe()
@@ -149,62 +126,6 @@ export function SiteHeader() {
     await supabase.auth.signOut()
     setUser(null)
     window.location.reload()
-  }
-
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = e.target.files?.[0]
-      if (!file || !user) return
-
-      setUploading(true)
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`
-
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file)
-      if (uploadError) { alert('Yükleme hatası: ' + uploadError.message); return }
-
-      const { data } = supabase.storage.from('avatars').getPublicUrl(fileName)
-      if (data?.publicUrl) {
-        setAvatarUrl(data.publicUrl)
-        alert('Profil fotoğrafı yüklendi! Kaydetmeyi unutmayın.')
-      }
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user) return
-
-    setLoading(true)
-    setSuccessMsg('')
-
-    try {
-      const payload = { 
-        id: user.id, 
-        email: user.email, 
-        full_name: fullName, 
-        phone: phone, 
-        instagram: instagram, 
-        address: address, 
-        billing_address: billingAddress, 
-        title: title, 
-        avatar_url: avatarUrl 
-      }
-
-      const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' })
-      if (error) throw error
-
-      setSuccessMsg('Fatura ve teslimat bilgileriniz güncellendi!')
-      setTimeout(() => { setSuccessMsg(''); window.location.reload() }, 1000)
-    } catch (err: any) {
-      alert('Kayıt Hatası: ' + err.message)
-    } finally {
-      setLoading(false)
-    }
   }
 
   return (
@@ -224,14 +145,15 @@ export function SiteHeader() {
 
             {user ? (
               <div className="flex items-center gap-2">
-                <button onClick={() => setIsProfileOpen(true)} className="flex items-center gap-2 rounded-full border border-white/15 bg-black/60 px-4 py-2 text-xs font-mono text-zinc-300 backdrop-blur-md hover:border-primary hover:text-white transition-all cursor-pointer">
+                {/* Modal açmak yerine direkt profesyonel /profile sayfasına yönlendirir */}
+                <Link href="/profile" className="flex items-center gap-2 rounded-full border border-white/15 bg-black/60 px-4 py-2 text-xs font-mono text-zinc-300 backdrop-blur-md hover:border-primary hover:text-white transition-all cursor-pointer">
                   {avatarUrl ? (
                     <div className="relative h-5 w-5 rounded-full overflow-hidden"><Image src={avatarUrl} alt="Avatar" fill className="object-cover" /></div>
                   ) : (
                     <User className="h-3.5 w-3.5 text-primary" />
                   )}
                   <span className="truncate max-w-[120px]">{fullName || user.email}</span>
-                </button>
+                </Link>
                 <button onClick={handleLogout} className="flex items-center justify-center h-10 w-10 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all cursor-pointer" title="Çıkış Yap">
                   <LogOut className="h-4 w-4" />
                 </button>
@@ -245,71 +167,6 @@ export function SiteHeader() {
           </div>
         </div>
       </header>
-
-      {isProfileOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto" onClick={() => setIsProfileOpen(false)}>
-          <div className="relative w-full max-w-xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 text-white my-8 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4 text-primary" />
-                <h3 className="font-bold text-sm uppercase tracking-wider">Müşteri & Fatura Bilgileri</h3>
-              </div>
-              <button type="button" onClick={() => setIsProfileOpen(false)} className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"><X className="h-4 w-4" /></button>
-            </div>
-
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
-              <div className="flex items-center gap-4 py-2">
-                <div className="relative h-16 w-16 rounded-full overflow-hidden border border-white/20 bg-zinc-900 flex-shrink-0">
-                  <Image src={avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop'} alt="Avatar" fill className="object-cover" />
-                </div>
-                <div>
-                  <label className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-bold text-white hover:bg-white/10 cursor-pointer">
-                    <Upload className="h-3.5 w-3.5 text-primary" />
-                    <span>{uploading ? 'Yükleniyor...' : 'Fotoğraf Seç'}</span>
-                    <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-                  </label>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
-                  <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon</label>
-                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Teslimat ve Fatura Adresi</label>
-                <textarea rows={3} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Mahalle, Cadde, No, İlçe / İl" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-              </div>
-
-              {successMsg && <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-xs text-emerald-400 text-center font-mono">{successMsg}</div>}
-
-              <button type="submit" disabled={loading} className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg cursor-pointer">Bilgileri Güncelle</button>
-            </form>
-
-            <div className="border-t border-white/10 pt-4 space-y-4">
-              <h4 className="text-xs font-bold text-primary uppercase">Sipariş Geçmişim ({myOrders.length})</h4>
-              <div className="space-y-3 max-h-40 overflow-y-auto">
-                {myOrders.length === 0 ? (
-                  <p className="text-xs text-zinc-500 font-mono">Henüz siparişiniz bulunmuyor.</p>
-                ) : (
-                  myOrders.map((ord) => (
-                    <div key={ord.id} className="p-3 rounded-xl bg-zinc-900 border border-white/5 flex justify-between items-center text-xs">
-                      <span>Sipariş #{ord.id.slice(0, 6)}</span>
-                      <span className="text-primary font-bold">₺{ord.total_price}</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={() => window.location.reload()} />
       <AiChatButton />
