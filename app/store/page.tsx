@@ -14,6 +14,9 @@ import {
   ArrowUpDown,
   Sparkles,
   Truck,
+  HelpCircle,
+  MessageSquare,
+  Ruler
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -44,8 +47,19 @@ function StoreContent() {
   const [selectedSize, setSelectedSize] = useState<string>('M')
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
   const [hoveredImageIdx, setHoveredImageIdx] = useState<{ [key: string]: number }>({})
-  const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false)
   const [isAdded, setIsAdded] = useState<boolean>(false)
+
+  // Beden Tablosu Modal
+  const [isSizeTableOpen, setIsSizeTableOpen] = useState(false)
+
+  // Soru sorma ve Yorum state'leri
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [questions, setQuestions] = useState<any[]>([])
+  const [newQuestion, setNewQuestion] = useState('')
+  const [reviews, setReviews] = useState<any[]>([])
+  const [newReviewComment, setNewReviewComment] = useState('')
+  const [newReviewRating, setNewReviewRating] = useState('5')
+  const [hasPurchased, setHasPurchased] = useState(false)
 
   const fetchProducts = async () => {
     const { data } = await supabase
@@ -59,7 +73,15 @@ function StoreContent() {
 
   useEffect(() => {
     fetchProducts()
+    checkAuthAndInteractions()
   }, [])
+
+  const checkAuthAndInteractions = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user) {
+      setCurrentUser(session.user)
+    }
+  }
 
   useEffect(() => {
     if (productParam && products.length > 0) {
@@ -70,11 +92,79 @@ function StoreContent() {
         setSelectedColor(colors[0] || '')
         setSelectedSize('M')
         setActiveImageIdx(0)
+        fetchProductInteractions(match.id)
       }
     } else {
       setSelectedProduct(null)
     }
   }, [productParam, products])
+
+  const fetchProductInteractions = async (productId: string) => {
+    // Soruları Çek
+    const { data: qData } = await supabase.from('product_questions').select('*').eq('product_id', productId).order('created_at', { ascending: false })
+    if (qData) setQuestions(qData)
+
+    // Yorumları Çek
+    const { data: rData } = await supabase.from('product_reviews').select('*').eq('product_id', productId).order('created_at', { ascending: false })
+    if (rData) setReviews(rData)
+
+    // Kullanıcının bu ürünü satın alıp almadığını kontrol et
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user) {
+      const { data: ordersData } = await supabase.from('orders').select('*').eq('user_id', session.user.id)
+      if (ordersData) {
+        const purchased = ordersData.some(ord => {
+          const isDelivered = ord.status === 'Kargolandı' || ord.status === 'Ödeme Onaylandı'
+          const hasItem = ord.items?.some((i: any) => i.id?.includes(productId) || i.name?.toLowerCase().includes(selectedProduct?.title?.toLowerCase()))
+          return isDelivered && hasItem
+        })
+        setHasPurchased(purchased)
+      }
+    }
+  }
+
+  const handleSendQuestion = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!currentUser) { alert('Soru sormak için giriş yapmalısınız.'); return }
+    if (!newQuestion.trim()) return
+
+    const { error } = await supabase.from('product_questions').insert([{
+      product_id: selectedProduct.id,
+      user_id: currentUser.id,
+      user_name: currentUser.user_metadata?.full_name || currentUser.email,
+      question: newQuestion
+    }])
+
+    if (!error) {
+      alert('Sorunuz satıcıya iletildi!')
+      setNewQuestion('')
+      fetchProductInteractions(selectedProduct.id)
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
+
+  const handleSendReview = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!currentUser) { alert('Yorum yapmak için giriş yapmalısınız.'); return }
+    if (!hasPurchased) { alert('Bu ürüne yorum yapabilmek için ürünü satın almış olmanız ve teslim sürecinde olmanız gerekmektedir.'); return }
+
+    const { error } = await supabase.from('product_reviews').insert([{
+      product_id: selectedProduct.id,
+      user_id: currentUser.id,
+      user_name: currentUser.user_metadata?.full_name || currentUser.email,
+      rating: Number(newReviewRating),
+      comment: newReviewComment
+    }])
+
+    if (!error) {
+      alert('Yorumunuz başarıyla yayınlandı!')
+      setNewReviewComment('')
+      fetchProductInteractions(selectedProduct.id)
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
 
   const openProductDetail = (product: any) => {
     const totalStock = product.sizes ? Object.values(product.sizes as Record<string, number>).reduce((a: any, b: any) => a + b, 0) : (product.stock ?? 0)
@@ -88,6 +178,7 @@ function StoreContent() {
     setIsAdded(false)
     router.push(`/store?product=${product.id}`, { scroll: false })
     window.scrollTo({ top: 0, behavior: 'smooth' })
+    fetchProductInteractions(product.id)
   }
 
   const closeProductDetail = () => {
@@ -99,7 +190,7 @@ function StoreContent() {
     if (!selectedProduct) return
     const image = selectedProduct.image_urls?.[0] || selectedProduct.image_url || '/placeholder.svg'
 
-    const sizes = selectedProduct.sizes || { S: 10, M: 10, L: 10, XL: 10 }
+    const sizes = selectedProduct.sizes || {}
     if (sizes[selectedSize] <= 0) {
       alert(`Üzgünüz, seçtiğiniz ${selectedSize} beden tükenmiştir!`)
       return
@@ -161,14 +252,8 @@ function StoreContent() {
                 <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
                   
                   <div className="lg:col-span-7 space-y-4">
-                    <div onClick={() => setIsLightboxOpen(true)} className="group relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 flex items-center justify-center cursor-zoom-in">
+                    <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 flex items-center justify-center">
                       <Image src={currentImages[activeImageIdx]} alt={selectedProduct.title} fill priority className="object-contain p-2 transition-transform duration-500 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-black/80 border border-white/20 px-4 py-2 text-xs font-bold uppercase text-white backdrop-blur-md">
-                          <Maximize2 className="h-4 w-4 text-primary" />
-                          <span>Fotoğrafı Büyüt</span>
-                        </span>
-                      </div>
                     </div>
 
                     {currentImages.length > 1 && (
@@ -184,8 +269,11 @@ function StoreContent() {
 
                   <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-between">
                         <span className="text-xs font-mono tracking-widest text-primary uppercase">{selectedProduct.category_label || 'ÖZEL DROP'}</span>
+                        <button type="button" onClick={() => setIsSizeTableOpen(true)} className="inline-flex items-center gap-1.5 text-xs text-primary underline font-mono hover:text-white cursor-pointer">
+                          <Ruler size={14} /> Beden Ölçü Tablosu
+                        </button>
                       </div>
 
                       <h1 className="mt-2 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl">{selectedProduct.title}</h1>
@@ -203,7 +291,7 @@ function StoreContent() {
                         </div>
                       </div>
 
-                      {/* Şekilli / HTML Destekli Ürün Açıklaması */}
+                      {/* HTML Açıklama */}
                       <div 
                         className="mt-6 text-sm leading-relaxed text-zinc-300 space-y-2 bg-zinc-950/60 p-5 rounded-2xl border border-white/10 font-sans"
                         dangerouslySetInnerHTML={{ __html: selectedProduct.description }}
@@ -222,10 +310,11 @@ function StoreContent() {
                         </div>
                       )}
 
+                      {/* 8 Beden Seçimi Listesi (XS'den 4XL'e) */}
                       <div className="mt-6 space-y-2">
                         <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi & Stok Durumu</div>
-                        <div className="grid grid-cols-4 gap-2">
-                          {['S', 'M', 'L', 'XL'].map((s) => {
+                        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                          {['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'].map((s) => {
                             const sizeStock = selectedProduct.sizes?.[s] ?? 0
                             const isSizeOut = sizeStock <= 0
 
@@ -235,13 +324,12 @@ function StoreContent() {
                                 type="button" 
                                 disabled={isSizeOut}
                                 onClick={() => setSelectedSize(s)} 
-                                className={`relative rounded-xl py-3 text-xs font-bold transition-all ${
+                                className={`relative rounded-xl py-2 text-xs font-bold transition-all ${
                                   isSizeOut ? 'bg-zinc-950 border border-white/5 text-zinc-600 line-through cursor-not-allowed' :
                                   selectedSize === s ? 'border border-primary bg-primary text-black font-black cursor-pointer' : 'border border-white/10 bg-zinc-900 text-zinc-300 hover:border-white/30 cursor-pointer'
                                 }`}
                               >
                                 {s}
-                                <span className="block text-[9px] font-mono opacity-75">{isSizeOut ? 'Tükendi' : `${sizeStock} adet`}</span>
                               </button>
                             )
                           })}
@@ -268,6 +356,108 @@ function StoreContent() {
                   </div>
 
                 </div>
+
+                {/* ÜRÜN SORU & CEVAP VE DOĞRULANMIŞ YORUMLAR SEKSİYONU */}
+                <div className="mt-20 border-t border-white/10 pt-16 grid grid-cols-1 lg:grid-cols-2 gap-16">
+                  
+                  {/* Soru Sor / Cevaplar */}
+                  <div className="space-y-6">
+                    <h3 className="text-base font-bold uppercase tracking-wider flex items-center gap-2">
+                      <HelpCircle className="text-primary" size={18} /> Ürüne Soru Sor ({questions.length})
+                    </h3>
+
+                    <form onSubmit={handleSendQuestion} className="space-y-3">
+                      <textarea
+                        rows={3}
+                        value={newQuestion}
+                        onChange={(e) => setNewQuestion(e.target.value)}
+                        placeholder="Ürün hakkında aklınıza takılanları sorun..."
+                        className="w-full rounded-2xl border border-white/10 bg-zinc-950 p-4 text-xs text-white focus:border-primary focus:outline-none resize-none"
+                      />
+                      <button type="submit" className="rounded-full bg-zinc-800 px-6 py-2.5 text-xs font-bold uppercase hover:bg-primary hover:text-black transition-colors cursor-pointer">
+                        Soru Gönder
+                      </button>
+                    </form>
+
+                    <div className="space-y-4 pt-4 max-h-80 overflow-y-auto">
+                      {questions.length === 0 ? (
+                        <p className="text-xs text-zinc-500 font-mono">Henüz soru sorulmamış. İlk soruyu sen sor!</p>
+                      ) : (
+                        questions.map((q) => (
+                          <div key={q.id} className="p-4 rounded-2xl border border-white/10 bg-zinc-950 space-y-2 text-xs">
+                            <div className="flex justify-between text-zinc-500 font-mono text-[10px]">
+                              <span>{q.user_name}</span>
+                              <span>{new Date(q.created_at).toLocaleDateString('tr-TR')}</span>
+                            </div>
+                            <p className="font-bold text-white">S: {q.question}</p>
+                            {q.answer ? (
+                              <p className="text-primary bg-primary/10 p-3 rounded-xl border border-primary/20">
+                                <strong>Satıcı Yanıtı:</strong> {q.answer}
+                              </p>
+                            ) : (
+                              <p className="text-zinc-500 italic">Satıcı henüz yanıtlamadı.</p>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Doğrulanmış Yorumlar */}
+                  <div className="space-y-6">
+                    <h3 className="text-base font-bold uppercase tracking-wider flex items-center gap-2">
+                      <MessageSquare className="text-primary" size={18} /> Doğrulanmış Müşteri Yorumları ({reviews.length})
+                    </h3>
+
+                    {hasPurchased ? (
+                      <form onSubmit={handleSendReview} className="space-y-3 p-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-emerald-400">✓ Bu ürünü satın aldınız, değerlendirebilirsiniz:</span>
+                          <select value={newReviewRating} onChange={(e) => setNewReviewRating(e.target.value)} className="bg-black border border-white/20 rounded-lg px-2 py-1 text-xs">
+                            <option value="5">⭐⭐⭐⭐⭐ (5 Puan)</option>
+                            <option value="4">⭐⭐⭐⭐ (4 Puan)</option>
+                            <option value="3">⭐⭐⭐ (3 Puan)</option>
+                            <option value="2">⭐⭐ (2 Puan)</option>
+                            <option value="1">⭐ (1 Puan)</option>
+                          </select>
+                        </div>
+                        <textarea
+                          rows={2}
+                          value={newReviewComment}
+                          onChange={(e) => setNewReviewComment(e.target.value)}
+                          placeholder="Ürün hakkındaki deneyimleriniz..."
+                          className="w-full rounded-xl border border-white/10 bg-black p-3 text-xs text-white focus:border-primary focus:outline-none resize-none"
+                        />
+                        <button type="submit" className="rounded-full bg-emerald-500 text-black font-bold px-6 py-2 text-xs uppercase cursor-pointer">
+                          Yorumu Gönder
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="p-4 rounded-xl border border-white/10 bg-zinc-950 text-xs text-zinc-500 font-mono">
+                        🔒 Bu ürüne yalnızca <strong>ürünü satın almış ve teslim edilmiş</strong> üyelerimiz yorum yapabilir.
+                      </div>
+                    )}
+
+                    <div className="space-y-4 max-h-80 overflow-y-auto">
+                      {reviews.length === 0 ? (
+                        <p className="text-xs text-zinc-500 font-mono">Bu ürün için henüz onaylı yorum bulunmuyor.</p>
+                      ) : (
+                        reviews.map((r) => (
+                          <div key={r.id} className="p-4 rounded-2xl border border-white/10 bg-zinc-950 space-y-2 text-xs font-mono">
+                            <div className="flex justify-between items-center">
+                              <span className="font-bold text-white">{r.user_name}</span>
+                              <span className="text-amber-400">{'⭐'.repeat(r.rating)}</span>
+                            </div>
+                            <p className="text-zinc-300 font-sans">{r.comment}</p>
+                            <span className="text-[10px] text-zinc-500 block">{new Date(r.created_at).toLocaleDateString('tr-TR')}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+
               </div>
             </section>
           </div>
@@ -333,78 +523,4 @@ function StoreContent() {
                     const totalStock = product.sizes ? Object.values(product.sizes as Record<string, number>).reduce((a: any, b: any) => a + b, 0) : (product.stock ?? 0)
                     const isSoldOut = totalStock <= 0
 
-                    const currentHoverIdx = hoveredImageIdx[product.id] || 0
-
-                    return (
-                      <div 
-                        key={product.id} 
-                        onClick={() => openProductDetail(product)} 
-                        onMouseEnter={() => productImages.length > 1 && setHoveredImageIdx({ ...hoveredImageIdx, [product.id]: 1 })}
-                        onMouseLeave={() => setHoveredImageIdx({ ...hoveredImageIdx, [product.id]: 0 })}
-                        className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all duration-300 hover:scale-[1.01] ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-primary/60 cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
-                      >
-                        <div>
-                          <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950 flex items-center justify-center">
-                            {isSoldOut ? (
-                              <div className="absolute inset-0 z-20 bg-black/75 flex items-center justify-center">
-                                <span className="rounded-xl bg-zinc-900 border border-white/20 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-zinc-300 shadow-2xl">
-                                  TÜKENDİ (SOLD OUT)
-                                </span>
-                              </div>
-                            ) : (
-                              <>
-                                {hasDiscount && (
-                                  <span className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-[10px] font-black uppercase text-white shadow-lg">
-                                    <Flame className="h-3 w-3" /> FIRSAT
-                                  </span>
-                                )}
-                              </>
-                            )}
-                            
-                            <Image 
-                              src={productImages[currentHoverIdx] || productImages[0]} 
-                              alt={product.title} 
-                              fill 
-                              className="object-contain p-2 transition-transform duration-700 group-hover:scale-105" 
-                            />
-                          </div>
-
-                          <div className="mt-5 space-y-1.5">
-                            <div className="text-[10px] font-mono text-primary uppercase">{product.category_label || 'ÖZEL DROP'}</div>
-                            <h3 className="font-sans text-lg font-bold text-white group-hover:text-primary transition-colors">{product.title}</h3>
-                            <p className="text-xs text-zinc-400 line-clamp-1">{product.subtitle}</p>
-                          </div>
-                        </div>
-
-                        <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
-                          <div className="flex items-center gap-2">
-                            <div className="text-lg font-black text-white">₺{Number(product.price).toLocaleString('tr-TR')}</div>
-                            {hasDiscount && (
-                              <div className="text-xs text-zinc-500 line-through font-mono">₺{Number(product.compare_at_price).toLocaleString('tr-TR')}</div>
-                            )}
-                          </div>
-                          <div className={`inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase transition-all ${isSoldOut ? 'bg-zinc-900 text-zinc-600' : 'bg-zinc-800/80 text-zinc-200 group-hover:bg-primary group-hover:text-black'}`}>
-                            <span>{isSoldOut ? 'Tükendi' : 'İncele'}</span>
-                            {!isSoldOut && <ArrowUpRight className="h-3.5 w-3.5" />}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </section>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
-
-export default function StorePage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-black" />}>
-      <StoreContent />
-    </Suspense>
-  )
-}
+                    const currentHoverIdx
