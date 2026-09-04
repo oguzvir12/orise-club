@@ -53,6 +53,8 @@ function StoreContent() {
   const [isAdded, setIsAdded] = useState<boolean>(false)
 
   const [isSizeTableOpen, setIsSizeTableOpen] = useState(false)
+  const [activeTabTable, setActiveTabTable] = useState<'erkek' | 'kadin'>('erkek')
+
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [questions, setQuestions] = useState<any[]>([])
   const [newQuestion, setNewQuestion] = useState('')
@@ -90,6 +92,7 @@ function StoreContent() {
         setSelectedColor(colors[0] || '')
         setSelectedSize('M')
         setActiveImageIdx(0)
+        if (match.gender) setActiveTabTable(match.gender)
         fetchProductInteractions(match.id)
       }
     } else {
@@ -108,10 +111,7 @@ function StoreContent() {
     if (session?.user) {
       const { data: ordersData } = await supabase.from('orders').select('*').eq('user_id', session.user.id)
       if (ordersData) {
-        const purchased = ordersData.some(ord => {
-          const isDelivered = ord.status === 'Kargolandı' || ord.status === 'Ödeme Onaylandı'
-          return isDelivered
-        })
+        const purchased = ordersData.some(ord => ord.status === 'Kargolandı' || ord.status === 'Teslim Edildi' || ord.status === 'Ödeme Onaylandı')
         setHasPurchased(purchased)
       }
     }
@@ -163,6 +163,7 @@ function StoreContent() {
     setSelectedSize('M')
     setActiveImageIdx(0)
     setIsAdded(false)
+    if (product.gender) setActiveTabTable(product.gender)
     router.push(`/store?product=${product.id}`, { scroll: false })
     window.scrollTo({ top: 0, behavior: 'smooth' })
     fetchProductInteractions(product.id)
@@ -189,7 +190,6 @@ function StoreContent() {
     setTimeout(() => setIsAdded(false), 2000)
   }
 
-  // Dinamik Kategori Filtreleme: Yalnızca sistemde ürünü olan kategorileri listele
   const availableCategories = ['all', 'sale']
   products.forEach(p => {
     if (p.category && !availableCategories.includes(p.category)) {
@@ -277,7 +277,6 @@ function StoreContent() {
                         </div>
                       </div>
 
-                      {/* HTML Açıklama */}
                       <div 
                         className="mt-6 text-sm leading-relaxed text-zinc-300 space-y-2 bg-zinc-950/60 p-5 rounded-2xl border border-white/10 font-sans"
                         dangerouslySetInnerHTML={{ __html: selectedProduct.description }}
@@ -296,7 +295,6 @@ function StoreContent() {
                         </div>
                       )}
 
-                      {/* Beden Seçimi */}
                       <div className="mt-6 space-y-2">
                         <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi</div>
                         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
@@ -387,7 +385,6 @@ function StoreContent() {
               </div>
             </section>
 
-            {/* DİNAMİK KATEGORİ FİLTRE ÇUBUĞU */}
             <div id="collection"></div>
             <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-30 backdrop-blur-xl">
               <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
@@ -419,7 +416,6 @@ function StoreContent() {
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredProducts.map((product) => {
                     const productImages = product.image_urls && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '/placeholder.svg']
-                    const hasDiscount = product.compare_at_price && product.compare_at_price > product.price
                     const totalStock = product.sizes ? Object.values(product.sizes as Record<string, number>).reduce((a: any, b: any) => a + b, 0) : (product.stock ?? 0)
                     const isSoldOut = totalStock <= 0
 
@@ -462,30 +458,73 @@ function StoreContent() {
         )}
       </div>
 
-      {/* Beden Ölçü Tablosu Modal */}
+      {/* Beden Ölçü Tablosu Modal (TÜM ÖLÇÜLER EKSİKSİZ VE SEKME SEÇENEKLİ) */}
       {isSizeTableOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setIsSizeTableOpen(false)}>
-          <div className="relative w-full max-w-3xl rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 text-white" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-4xl rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 text-white max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="text-lg font-black uppercase text-primary tracking-wider">
-                {selectedProduct?.gender === 'kadin' ? 'KADIN BEDEN TABLOSU' : 'ERKEK BEDEN TABLOSU'} Ölçü Tablosu
-              </h3>
+              <div className="flex items-center gap-3">
+                <h3 className="text-base font-black uppercase tracking-wider text-white">ÖLÇÜ TABLOSU</h3>
+                <div className="flex bg-black rounded-full p-1 border border-white/10">
+                  <button type="button" onClick={() => setActiveTabTable('erkek')} className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase cursor-pointer ${activeTabTable === 'erkek' ? 'bg-primary text-black' : 'text-zinc-400'}`}>Erkek Tablosu</button>
+                  <button type="button" onClick={() => setActiveTabTable('kadin')} className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase cursor-pointer ${activeTabTable === 'kadin' ? 'bg-primary text-black' : 'text-zinc-400'}`}>Kadın Tablosu</button>
+                </div>
+              </div>
               <button type="button" onClick={() => setIsSizeTableOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary"><X className="h-4 w-4" /></button>
             </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-center text-xs font-mono border border-white/10">
                 <thead className="bg-zinc-900 text-primary">
                   <tr>
-                    <th className="p-3 border border-white/10 text-left">Ölçüm Yeri / Beden</th>
-                    <th className="p-3 border border-white/10">XS</th><th className="p-3 border border-white/10">S</th><th className="p-3 border border-white/10">M</th><th className="p-3 border border-white/10">L</th><th className="p-3 border border-white/10">XL</th><th className="p-3 border border-white/10">2XL</th><th className="p-3 border border-white/10">3XL</th>
+                    <th className="p-3 border border-white/10 text-left">ÖLÇÜM YERİ / BEDEN</th>
+                    <th className="p-3 border border-white/10">XS</th>
+                    <th className="p-3 border border-white/10">S</th>
+                    <th className="p-3 border border-white/10">M</th>
+                    <th className="p-3 border border-white/10">L</th>
+                    <th className="p-3 border border-white/10">XL</th>
+                    <th className="p-3 border border-white/10">2XL</th>
+                    <th className="p-3 border border-white/10">3XL</th>
+                    {activeTabTable === 'erkek' && <th className="p-3 border border-white/10">4XL</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10 text-zinc-300">
-                  <tr><td className="p-2.5 border border-white/10 text-left">Omuzdan Boy</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td></tr>
-                  <tr><td className="p-2.5 border border-white/10 text-left">Göğüs</td><td>48</td><td>50</td><td>52</td><td>54</td><td>56</td><td>58</td><td>60</td></tr>
+                  {activeTabTable === 'kadin' ? (
+                    <>
+                      <tr><td className="p-2.5 border border-white/10 text-left">OMUZDAN BOY</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">GÖĞÜS</td><td>48</td><td>50</td><td>52</td><td>54</td><td>56</td><td>58</td><td>60</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">ETEK</td><td>48</td><td>50</td><td>52</td><td>54</td><td>56</td><td>58</td><td>60</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">OMUZDAN OMUZA</td><td>45</td><td>47</td><td>49</td><td>51</td><td>53</td><td>55</td><td>57</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">YAKA AÇIKLIĞI</td><td>17.5</td><td>18</td><td>18.5</td><td>19</td><td>19.5</td><td>20</td><td>20.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>8.75</td><td>9</td><td>9.25</td><td>9.5</td><td>9.75</td><td>10</td><td>10.25</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">KOLEVİ OMUZDAN DİK</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td><td>29.5</td><td>30.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">KOL BOYU</td><td>15.25</td><td>16</td><td>16.75</td><td>17.5</td><td>18.25</td><td>19</td><td>19.75</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">PAZU</td><td>18.5</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">KOL AĞZI</td><td>16.25</td><td>17</td><td>17.75</td><td>18.5</td><td>19.25</td><td>20</td><td>20.75</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">YAKA YÜKSEKLİĞİ</td><td>1.5</td><td>1.5</td><td>1.5</td><td>1.5</td><td>1.5</td><td>1.5</td><td>1.5</td></tr>
+                    </>
+                  ) : (
+                    <>
+                      <tr><td className="p-2.5 border border-white/10 text-left">OMUZDAN ÖN BOY</td><td>68</td><td>70</td><td>72</td><td>74</td><td>76</td><td>78</td><td>80</td><td>82</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">OMUZDAN ARKA BOY</td><td>69</td><td>71</td><td>73</td><td>75</td><td>77</td><td>79</td><td>81</td><td>83</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">GÖĞÜS</td><td>54</td><td>56</td><td>58</td><td>60</td><td>62</td><td>64</td><td>66</td><td>68</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">ETEK</td><td>54</td><td>56</td><td>58</td><td>60</td><td>62</td><td>64</td><td>66</td><td>—</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">OMUZDAN OMUZA</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td><td>68</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">YAKA AÇIKLIĞI</td><td>19</td><td>19.5</td><td>20</td><td>20.5</td><td>21</td><td>21.5</td><td>22</td><td>22.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>10.5</td><td>10.75</td><td>11</td><td>11.25</td><td>11.5</td><td>11.75</td><td>12</td><td>12.25</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">KOLEVİ OMUZDAN DİK</td><td>29</td><td>30</td><td>31</td><td>32</td><td>33</td><td>34</td><td>35</td><td>36</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">KOL AĞZI</td><td>19.5</td><td>20.25</td><td>21</td><td>21.75</td><td>22.5</td><td>23.25</td><td>24</td><td>24.75</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">YAKA YÜKSEKLİĞİ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
+                    </>
+                  )}
                 </tbody>
               </table>
             </div>
+            <p className="text-[10px] text-zinc-500 font-mono text-center">Tüm ölçüler santimetre (cm) cinsinden verilmiştir. Model: ORISE CLUB Ölçü Standardı (27.08.2026).</p>
           </div>
         </div>
       )}
