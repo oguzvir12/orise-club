@@ -67,11 +67,9 @@ export function CartDrawer() {
   const discountAmount = (subtotal * appliedDiscount) / 100
   const discountedSubtotal = subtotal - discountAmount
   
-  // 2000 TL üstü ücretsiz kargo hesaplaması
   const isFreeShipping = discountedSubtotal >= FREE_SHIPPING_THRESHOLD
   const shippingFee = isFreeShipping ? 0 : STANDARD_SHIPPING_FEE
   const finalTotal = discountedSubtotal + shippingFee
-
   const remainingForFreeShipping = FREE_SHIPPING_THRESHOLD - discountedSubtotal
 
   const validateCustomerProfile = (profile: any) => {
@@ -84,7 +82,7 @@ export function CartDrawer() {
 
     const nameParts = fullName.split(' ')
     if (nameParts.length < 2 || fullName.toLowerCase().includes('asd') || fullName.toLowerCase().includes('qwe')) {
-      return 'Lütfen geçerli bir Ad ve Soyad giriniz (Örn: Ahmet Yılmaz).'
+      return 'Lütfen geçerli bir Ad ve Soyad giriniz.'
     }
 
     const cleanPhone = phone.replace(/\D/g, '')
@@ -96,12 +94,8 @@ export function CartDrawer() {
       return 'Fatura ve yasal süreçler için 11 haneli geçerli bir TCKN girmelisiniz.'
     }
 
-    if (address.length < 10 || address.toLowerCase().includes('asd')) {
+    if (address.length < 10) {
       return 'Lütfen geçerli ve açık bir teslimat adresi belirtiniz.'
-    }
-
-    if (!sameAsShipping && (!billingAddressInput || billingAddressInput.length < 10)) {
-      return 'Lütfen geçerli bir ayrı fatura adresi belirtiniz.'
     }
 
     return null
@@ -140,6 +134,7 @@ export function CartDrawer() {
 
       const finalBillingAddr = sameAsShipping ? profile.address : billingAddressInput
 
+      // Profesyonel E-Ticaret Akışı: Ödeme alınana kadar sipariş 'Ödeme Bekliyor (Pending)' kaydedilir
       const orderPayload = {
         user_id: session.user.id,
         customer_name: profile.full_name,
@@ -160,9 +155,10 @@ export function CartDrawer() {
       const { error: ordError } = await supabase.from('orders').insert([orderPayload])
       if (ordError) throw ordError
 
+      // Burada gerçek canlı iyzico API başlatma endpoint'ine (örn: /api/payment/iyzico) yönlendirme yapılır.
       setTimeout(() => {
         setLoading(false)
-        alert('Siparişiniz oluşturuldu! İyzico güvenli ödeme sayfasına yönlendiriliyorsunuz.')
+        alert('Ödeme sayfasına yönlendiriliyorsunuz. Güvenli ödeme tamamlandığında siparişiniz onaylanacaktır.')
       }, 800)
 
     } catch (err: any) {
@@ -187,7 +183,6 @@ export function CartDrawer() {
           </button>
         </div>
 
-        {/* Ücretsiz Kargo İlerleme / Bilgi Çubuğu */}
         {items.length > 0 && (
           <div className="bg-zinc-900/80 border-b border-white/10 px-6 py-2.5 text-[11px] font-mono text-zinc-300 flex items-center justify-between">
             {isFreeShipping ? (
@@ -243,7 +238,6 @@ export function CartDrawer() {
         {items.length > 0 && (
           <div className="space-y-4 border-t border-white/10 bg-zinc-950 px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
             
-            {/* Fatura Adresi Tercihi */}
             <div className="space-y-2 pb-2 border-b border-white/5">
               <label className="flex items-center gap-2 cursor-pointer text-xs text-zinc-300">
                 <input 
@@ -300,7 +294,7 @@ export function CartDrawer() {
 
             <div className="space-y-1.5 pt-2 border-t border-white/5 font-mono">
               <div className="flex items-center justify-between text-xs text-zinc-400">
-                <span>Ara Toplam</span>
+                <span>Ara Toplam (KDV Dahil)</span>
                 <span>{formatTL(subtotal)}</span>
               </div>
               {appliedDiscount > 0 && (
@@ -338,16 +332,6 @@ export function CartDrawer() {
               >
                 {loading ? 'Bilgiler Kontrol Ediliyor...' : 'İyzico ile Güvenli Ödeme Yap'}
               </button>
-              
-              <div className="flex items-center justify-center pt-1">
-                <Image 
-                  src="/images/logo_band_white.svg" 
-                  alt="iyzico ile Öde" 
-                  width={110} 
-                  height={22} 
-                  className="object-contain h-4 w-auto opacity-80" 
-                />
-              </div>
             </div>
           </div>
         )}
