@@ -24,7 +24,6 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-// Genişletilmiş ve Akıllı Küfür / Argo Filtre Listesi
 const BAD_WORDS = [
   'orospu', 'oç', 'amk', 'aq', 'sik', 'yarrak', 'piç', 'pezevenk', 'kahpe', 
   'göt', 'andeaval', 'salak', 'mal', 'gerizekalı', 'aptal', 'ibne', 'götveren'
@@ -59,7 +58,21 @@ const CATEGORY_OPTIONS = [
   { id: 'equipment', label: 'Termos & Matara', group: 'Aksesuar & Ekipman' },
 ]
 
-const EVENT_BRANCHES = ['KOŞU', 'YOGA & MOBILITY', 'TENİS', 'VOLEYBOL', 'YELKEN']
+// Akla gelebilecek tüm spor branşları eklendi
+const EVENT_BRANCHES = [
+  'KOŞU', 
+  'BİSİKLET', 
+  'YOGA & MOBILITY', 
+  'TENİS', 
+  'VOLEYBOL', 
+  'YELKEN', 
+  'YÜZME', 
+  'FONKSİYONEL ANTRENMAN', 
+  'PİLATES', 
+  'FITNESS',
+  'YÜRÜYÜŞ',
+  'KAMP & DOĞA'
+]
 
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -556,7 +569,7 @@ export default function AdminPage() {
               <h3 className="text-sm font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-4 w-4" /><span>Yeni Etkinlik Oluştur</span></h3>
               <form onSubmit={handleAddEvent} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <input type="text" placeholder="Etkinlik Başlığı (Örn: Haftalık Ritim Koşusu)" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  <input type="text" placeholder="Etkinlik Başlığı (Örn: Sahil Bisiklet Turu)" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   <select value={evtBranch} onChange={(e) => setEvtBranch(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
                     {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
@@ -564,7 +577,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <input type="text" placeholder="Konum (Örn: Beylikdüzü Sahil)" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  <input type="text" placeholder="Konum (Örn: Caddebostan Sahil)" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   <input type="text" placeholder="Eğitmen / Lider (İsteğe bağlı)" value={evtInstructor} onChange={(e) => setEvtInstructor(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
                     <span className="text-xs text-zinc-400 truncate">{eventUploading ? 'Yükleniyor...' : evtImageUrl ? '✓ Afiş Seçildi' : 'Etkinlik Afişi Seç'}</span>
