@@ -238,7 +238,6 @@ export default function CommunityPage() {
     }
   }
 
-  // Tarihi geçen etkinlikleri otomatik filtrele
   const now = new Date()
   const upcomingEvents = events.filter((e) => new Date(e.date) >= now)
 
@@ -680,7 +679,7 @@ export default function CommunityPage() {
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed">6698 sayılı KVKK uyarınca bilgileriniz işlenmektedir ve medya izinleriniz onaylanmaktadır.</p>
             <div className="text-right">
-              <button type="button" onClick={() => { setKeyAccepted(true); setIsKvkkModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer font-bold">Anladım / Onayla</button>
+              <button type="button" onClick={() => { setKvkkAccepted(true); setIsKvkkModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer font-bold">Anladım / Onayla</button>
             </div>
           </div>
         </div>
