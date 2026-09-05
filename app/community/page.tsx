@@ -220,14 +220,19 @@ export default function CommunityPage() {
     }
   }
 
-  // Sadece aktif etkinliklerde bulunan branşları dinamik olarak filtre listesine ekle
-  const activeBranches = Array.from(new Set(events.map((e) => (e.branch || 'GENEL').toUpperCase())))
+  // 1. Tarihi geçen etkinlikleri otomatik ele (Sadece bugünden ileri veya eşit olanlar kalır)
+  const now = new Date()
+  const upcomingEvents = events.filter((e) => new Date(e.date) >= now)
+
+  // 2. Sadece aktif ve gelecek etkinliklerde bulunan branşları dinamik olarak filtre listesine ekle
+  const activeBranches = Array.from(new Set(upcomingEvents.map((e) => (e.branch || 'GENEL').toUpperCase())))
   const availableBranches = ['TÜMÜ', ...activeBranches]
 
+  // 3. Seçilen branşa göre filtrele
   const filteredEvents =
     selectedBranch === 'TÜMÜ'
-      ? events
-      : events.filter((e) => e.branch?.toUpperCase() === selectedBranch)
+      ? upcomingEvents
+      : upcomingEvents.filter((e) => e.branch?.toUpperCase() === selectedBranch)
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
