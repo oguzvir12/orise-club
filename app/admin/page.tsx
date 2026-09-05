@@ -365,7 +365,7 @@ export default function AdminPage() {
 
     if (!error) {
       alert('Etkinlik başarıyla eklendi!')
-      setEvtTitle(''); setEvtDate(''); setEvtLocation(''); setEvtInstructor(''); setEvtDesc(''); setEvtImageUrl('')
+      setEvtTitle(''); setEvtDate(''); setEvtLocation(''); setEvtCapacity('30'); setEvtInstructor(''); setEvtDesc(''); setEvtImageUrl('')
       fetchData()
     } else {
       alert('Hata: ' + error.message)
@@ -382,7 +382,6 @@ export default function AdminPage() {
     setEditingEvent(evt)
     setEditEvtTitle(evt.title || '')
     setEditEvtBranch(evt.branch || 'KOŞU')
-    // datetime-local için formatlama (YYYY-MM-DDTHH:mm)
     if (evt.date) {
       const d = new Date(evt.date)
       const isoLocal = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
@@ -617,28 +616,29 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ */}
+        {/* ETKİNLİK YÖNETİMİ & KONTENJAN */}
         {(isSuperAdmin || isStoreAdmin) && (
           <div className="space-y-12 border-t border-white/10 pt-12">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Topluluk & Etkinlik Yönetimi</span></h2>
+              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Topluluk & Etkinlik Yönetimi (Kontenjan Destekli)</span></h2>
             </div>
 
             {/* Yeni Etkinlik Ekleme Formu */}
             <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
               <h3 className="text-sm font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-4 w-4" /><span>Yeni Etkinlik Oluştur</span></h3>
               <form onSubmit={handleAddEvent} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <input type="text" placeholder="Etkinlik Başlığı (Örn: Sahil Bisiklet Turu)" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <input type="text" placeholder="Etkinlik Başlığı" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   <select value={evtBranch} onChange={(e) => setEvtBranch(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
                     {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
                   <input type="datetime-local" required value={evtDate} onChange={(e) => setEvtDate(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white font-mono" />
+                  <input type="number" placeholder="Kontenjan (Kişi Sınırı)" required value={evtCapacity} onChange={(e) => setEvtCapacity(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white font-mono" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <input type="text" placeholder="Konum (Örn: Caddebostan Sahil)" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  <input type="text" placeholder="Eğitmen / Lider (İsteğe bağlı)" value={evtInstructor} onChange={(e) => setEvtInstructor(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  <input type="text" placeholder="Konum" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  <input type="text" placeholder="Eğitmen / Lider" value={evtInstructor} onChange={(e) => setEvtInstructor(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
                   <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
                     <span className="text-xs text-zinc-400 truncate">{eventUploading ? 'Yükleniyor...' : evtImageUrl ? '✓ Afiş Seçildi' : 'Etkinlik Afişi Seç'}</span>
                     <Upload className="h-4 w-4 text-primary" />
@@ -646,18 +646,19 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <textarea rows={2} placeholder="Etkinlik Açıklaması (HTML / Şekilli yazılar destekler)..." value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
+                <textarea rows={2} placeholder="Etkinlik Açıklaması..." value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
                 <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Etkinliği Yayınla</button>
               </form>
             </div>
 
             {/* Etkinlik Listesi ve Katılımcılar */}
             <div className="space-y-6">
-              <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ve Gelen Katılım Talepleri ({events.length})</span></h3>
+              <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ve Kontenjan Durumları ({events.length})</span></h3>
               
               <div className="grid grid-cols-1 gap-6">
                 {events.map((evt) => {
                   const evtRegs = registrations.filter((r: any) => r.event_id === evt.id)
+                  const approvedCount = evtRegs.filter((r: any) => r.status === 'approved').length
 
                   return (
                     <div key={evt.id} className="rounded-3xl border border-white/10 bg-zinc-950 p-6 space-y-4">
@@ -665,7 +666,7 @@ export default function AdminPage() {
                         <div>
                           <span className="text-[10px] font-mono uppercase text-primary font-bold">{evt.branch} · {new Date(evt.date).toLocaleString('tr-TR')}</span>
                           <h4 className="font-bold text-sm text-white">{evt.title}</h4>
-                          <span className="text-[11px] text-zinc-400">📍 {evt.location}</span>
+                          <span className="text-[11px] text-zinc-400">📍 {evt.location} | 👥 Kontenjan: <strong className="text-primary">{approvedCount} / {evt.capacity || 30}</strong> Onaylı</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <button type="button" onClick={() => openEditEventModal(evt)} className="px-3.5 py-1.5 bg-primary/20 text-primary border border-primary/40 rounded-xl text-xs font-bold hover:bg-primary/30 cursor-pointer inline-flex items-center gap-1.5"><Edit3 size={13} /> Düzenle</button>
@@ -721,7 +722,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* MAĞAZA SİPARİŞLERİ & TEMİZLEME */}
+        {/* MAĞAZA SİPARİŞLERİ & İPTAL / İADE */}
         {(isSuperAdmin || isStoreAdmin) && (
           <div className="space-y-12 border-t border-white/10 pt-12">
             <div className="space-y-6">
@@ -997,9 +998,10 @@ export default function AdminPage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white font-mono" />
                 <input type="text" value={editEvtLocation} onChange={(e) => setEditEvtLocation(e.target.value)} placeholder="Konum" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <input type="number" required value={editEvtCapacity} onChange={(e) => setEditEvtCapacity(e.target.value)} placeholder="Kontenjan" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white font-mono" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
