@@ -20,7 +20,9 @@ import {
   CheckCircle2,
   AlertTriangle,
   Calendar,
-  Users
+  Users,
+  Shield,
+  UserCheck
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -84,6 +86,7 @@ export default function AdminPage() {
   const [questions, setQuestions] = useState<any[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [registrations, setRegistrations] = useState<any[]>([])
+  const [profiles, setProfiles] = useState<any[]>([])
   const [answerInputs, setAnswerInputs] = useState<{ [key: string]: string }>({})
 
   // Yeni Ürün Ekleme
@@ -152,9 +155,17 @@ export default function AdminPage() {
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
-      if (profile && ['admin', 'super_admin', 'store_admin'].includes(profile.role)) {
+      // Super admin veya e-posta eşleşmesi ile tam yetki garantisi
+      if (profile && ['super_admin', 'admin', 'store_admin', 'community_admin', 'branch_leader'].includes(profile.role) || session.user.email === 'oguzvir12@gmail.com') {
         setIsLoggedIn(true)
-        setAdminProfile(profile)
+        // Eğer oguzvir12@gmail.com ise ve rolü super_admin değilse otomatik super_admin yapalım
+        if (session.user.email === 'oguzvir12@gmail.com' && (!profile || profile.role !== 'super_admin')) {
+          await supabase.from('profiles').update({ role: 'super_admin' }).eq('id', session.user.id)
+          const { data: updatedProf } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
+          setAdminProfile(updatedProf)
+        } else {
+          setAdminProfile(profile)
+        }
         fetchData()
       }
     }
@@ -180,12 +191,29 @@ export default function AdminPage() {
       const { data: evtData } = await supabase.from('events').select('*').order('date', { ascending: true })
       if (evtData) setEvents(evtData)
 
-      const { data: regData } = await supabase.from('event_registrations').select('*, events(title)').order('created_at', { ascending: false })
+      const { data: regData } = await supabase.from('event_registrations').select('*, events(title, branch)').order('created_at', { ascending: false })
       if (regData) setRegistrations(regData)
+
+      const { data: profData } = await supabase.from('profiles').select('*').order('full_name', { ascending: true })
+      if (profData) setProfiles(profData)
     } catch (e) {
       console.error(e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleUpdateUserRole = async (userId: string, newRole: string, newBranch: string | null) => {
+    const { error } = await supabase.from('profiles').update({ 
+      role: newRole,
+      assigned_branch: newRole === 'branch_leader' ? newBranch : null
+    }).eq('id', userId)
+
+    if (!error) {
+      alert('Kullanıcı yetkisi başarıyla güncellendi!')
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
     }
   }
 
@@ -544,9 +572,21 @@ export default function AdminPage() {
     }
   }
 
-  const role = adminProfile?.role
-  const isSuperAdmin = role === 'super_admin' || role === 'admin'
-  const isStoreAdmin = role === 'store_admin'
+  const role = adminProfile?.role || 'user'
+  const isSuperAdmin = role === 'super_admin' || role === 'admin' || adminProfile?.email === 'oguzvir12@gmail.com'
+  const isStoreAdmin = isSuperAdmin || role === 'store_admin'
+  const isCommunityAdmin = isSuperAdmin || role === 'community_admin'
+  const isBranchLeader = role === 'branch_leader'
+  const assignedBranch = adminProfile?.assigned_branch
+
+  // Branş lideri ise sadece kendi branşındaki etkinlikleri görür
+  const visibleEvents = isBranchLeader 
+    ? events.filter(e => e.branch?.toUpperCase() === assignedBranch?.toUpperCase())
+    : events
+
+  const visibleRegistrations = isBranchLeader
+    ? registrations.filter((r: any) => visibleEvents.some(e => e.id === r.event_id))
+    : registrations
 
   if (!isLoggedIn) {
     return (
@@ -565,15 +605,90 @@ export default function AdminPage() {
       <div className="mx-auto max-w-7xl flex items-center justify-between border-b border-white/10 pb-6 mb-8">
         <div>
           <h1 className="text-xl font-black text-white">ORISE Kontrol Paneli</h1>
-          <p className="text-xs font-mono text-primary uppercase">Rol: {role}</p>
+          <p className="text-xs font-mono text-primary uppercase">
+            Rol: {role} {assignedBranch ? `(${assignedBranch} Lideri)` : ''}
+          </p>
         </div>
         <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-400 cursor-pointer"><LogOut className="h-3.5 w-3.5" /> Çıkış</button>
       </div>
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
-        {/* MÜŞTERİ SORU & CEVAP */}
-        {(isSuperAdmin || isStoreAdmin) && (
+        {/* SÜPER ADMIN: KULLANICI VE YETKİLENDİRME YÖNETİMİ */}
+        {isSuperAdmin && (
+          <div className="space-y-6 rounded-3xl border border-primary/40 bg-zinc-950 p-6 sm:p-8 shadow-2xl">
+            <h2 className="text-base font-bold flex items-center gap-2 text-primary">
+              <Shield className="h-5 w-5" /><span>Kullanıcı Rol ve Yetki Yönetimi (Super Admin)</span>
+            </h2>
+            <p className="text-xs text-zinc-400">Üyelere Store Admin, Community Admin veya Branş Lideri yetkileri atayabilirsiniz.</p>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="border-b border-white/10 bg-black/60 text-zinc-500 uppercase">
+                  <tr>
+                    <th className="p-3">Ad Soyad / E-posta</th>
+                    <th className="p-3">Mevcut Rol</th>
+                    <th className="p-3">Branş (Eğer Liderse)</th>
+                    <th className="p-3 text-right">Yetki Güncelle</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-zinc-300">
+                  {profiles.map((prof) => {
+                    const [tempRole, setTempRole] = useState(prof.role || 'user')
+                    const [tempBranch, setTempBranch] = useState(prof.assigned_branch || 'KOŞU')
+
+                    return (
+                      <tr key={prof.id} className="hover:bg-zinc-900/40">
+                        <td className="p-3">
+                          <div className="font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</div>
+                          <div className="text-[10px] text-zinc-400">{prof.email}</div>
+                        </td>
+                        <td className="p-3">
+                          <select
+                            id={`role-select-${prof.id}`}
+                            defaultValue={prof.role || 'user'}
+                            className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                          >
+                            <option value="user">Standart Üye</option>
+                            <option value="store_admin">Mağaza Admin</option>
+                            <option value="community_admin">Topluluk Admin</option>
+                            <option value="branch_leader">Branş Lideri</option>
+                            <option value="super_admin">Süper Admin</option>
+                          </select>
+                        </td>
+                        <td className="p-3">
+                          <select
+                            id={`branch-select-${prof.id}`}
+                            defaultValue={prof.assigned_branch || 'KOŞU'}
+                            className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                          >
+                            {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                          </select>
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const r = (document.getElementById(`role-select-${prof.id}`) as HTMLSelectElement).value
+                              const b = (document.getElementById(`branch-select-${prof.id}`) as HTMLSelectElement).value
+                              handleUpdateUserRole(prof.id, r, b)
+                            }}
+                            className="px-3 py-1.5 bg-primary text-black rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <UserCheck size={12} /> Kaydet
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* MÜŞTERİ SORU & CEVAP (Store & Super Admin) */}
+        {isStoreAdmin && (
           <div className="space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><HelpCircle className="h-5 w-5" /><span>Müşteri Ürün Soruları</span></h2>
             <div className="rounded-3xl border border-white/10 bg-zinc-950 p-6 space-y-4">
@@ -616,48 +731,55 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ETKİNLİK YÖNETİMİ & KONTENJAN */}
-        {(isSuperAdmin || isStoreAdmin) && (
+        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ (Community Admin & Branch Leader) */}
+        {(isCommunityAdmin || isBranchLeader) && (
           <div className="space-y-12 border-t border-white/10 pt-12">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Topluluk & Etkinlik Yönetimi (Kontenjan Destekli)</span></h2>
+              <h2 className="text-base font-bold flex items-center gap-2 text-primary">
+                <Calendar className="h-5 w-5" />
+                <span>
+                  {isBranchLeader ? `${assignedBranch} Branşı Etkinlik & Katılımcı Paneli` : 'Topluluk & Etkinlik Yönetimi'}
+                </span>
+              </h2>
             </div>
 
-            {/* Yeni Etkinlik Ekleme Formu */}
-            <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-4 w-4" /><span>Yeni Etkinlik Oluştur</span></h3>
-              <form onSubmit={handleAddEvent} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  <input type="text" placeholder="Etkinlik Başlığı" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  <select value={evtBranch} onChange={(e) => setEvtBranch(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
-                    {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
-                  </select>
-                  <input type="datetime-local" required value={evtDate} onChange={(e) => setEvtDate(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white font-mono" />
-                  <input type="number" placeholder="Kontenjan (Kişi Sınırı)" required value={evtCapacity} onChange={(e) => setEvtCapacity(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white font-mono" />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <input type="text" placeholder="Konum" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  <input type="text" placeholder="Eğitmen / Lider" value={evtInstructor} onChange={(e) => setEvtInstructor(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
-                  <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
-                    <span className="text-xs text-zinc-400 truncate">{eventUploading ? 'Yükleniyor...' : evtImageUrl ? '✓ Afiş Seçildi' : 'Etkinlik Afişi Seç'}</span>
-                    <Upload className="h-4 w-4 text-primary" />
-                    <input type="file" accept="image/*" onChange={(e) => handleEventImageUpload(e, 'new')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+            {/* Sadece Community Admin yeni etkinlik oluşturabilir veya Super Admin */}
+            {isCommunityAdmin && (
+              <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
+                <h3 className="text-sm font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-4 w-4" /><span>Yeni Etkinlik Oluştur</span></h3>
+                <form onSubmit={handleAddEvent} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <input type="text" placeholder="Etkinlik Başlığı" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                    <select value={evtBranch} onChange={(e) => setEvtBranch(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
+                      {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                    <input type="datetime-local" required value={evtDate} onChange={(e) => setEvtDate(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white font-mono" />
+                    <input type="number" placeholder="Kontenjan" required value={evtCapacity} onChange={(e) => setEvtCapacity(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white font-mono" />
                   </div>
-                </div>
 
-                <textarea rows={2} placeholder="Etkinlik Açıklaması..." value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
-                <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Etkinliği Yayınla</button>
-              </form>
-            </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <input type="text" placeholder="Konum" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                    <input type="text" placeholder="Eğitmen / Lider" value={evtInstructor} onChange={(e) => setEvtInstructor(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                    <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
+                      <span className="text-xs text-zinc-400 truncate">{eventUploading ? 'Yükleniyor...' : evtImageUrl ? '✓ Afiş Seçildi' : 'Etkinlik Afişi Seç'}</span>
+                      <Upload className="h-4 w-4 text-primary" />
+                      <input type="file" accept="image/*" onChange={(e) => handleEventImageUpload(e, 'new')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                    </div>
+                  </div>
+
+                  <textarea rows={2} placeholder="Etkinlik Açıklaması..." value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
+                  <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Etkinliği Yayınla</button>
+                </form>
+              </div>
+            )}
 
             {/* Etkinlik Listesi ve Katılımcılar */}
             <div className="space-y-6">
-              <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ve Kontenjan Durumları ({events.length})</span></h3>
+              <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ve Gelen Katılım Talepleri ({visibleEvents.length})</span></h3>
               
               <div className="grid grid-cols-1 gap-6">
-                {events.map((evt) => {
-                  const evtRegs = registrations.filter((r: any) => r.event_id === evt.id)
+                {visibleEvents.map((evt) => {
+                  const evtRegs = visibleRegistrations.filter((r: any) => r.event_id === evt.id)
                   const approvedCount = evtRegs.filter((r: any) => r.status === 'approved').length
 
                   return (
@@ -670,7 +792,9 @@ export default function AdminPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <button type="button" onClick={() => openEditEventModal(evt)} className="px-3.5 py-1.5 bg-primary/20 text-primary border border-primary/40 rounded-xl text-xs font-bold hover:bg-primary/30 cursor-pointer inline-flex items-center gap-1.5"><Edit3 size={13} /> Düzenle</button>
-                          <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 cursor-pointer">Etkinliği Sil</button>
+                          {isCommunityAdmin && (
+                            <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 cursor-pointer">Etkinliği Sil</button>
+                          )}
                         </div>
                       </div>
 
@@ -722,8 +846,8 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* MAĞAZA SİPARİŞLERİ & İPTAL / İADE */}
-        {(isSuperAdmin || isStoreAdmin) && (
+        {/* MAĞAZA SİPARİŞLERİ & ÜRÜN YÖNETİMİ (Store Admin) */}
+        {isStoreAdmin && (
           <div className="space-y-12 border-t border-white/10 pt-12">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
