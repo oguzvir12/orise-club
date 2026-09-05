@@ -14,6 +14,7 @@ import {
   Filter,
   MapPin,
   Sparkles,
+  Info,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SiteHeader } from '@/components/site-header'
@@ -35,7 +36,10 @@ export default function CommunityPage() {
   const [events, setEvents] = useState<EventItem[]>([])
   const [selectedBranch, setSelectedBranch] = useState<string>('TÜMÜ')
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  
+  // Modallar
+  const [isModalOpen, setIsModalOpen] = useState(false) // Başvuru Modalı
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false) // Detay / Büyütme Modalı
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
   const [isKvkkModalOpen, setIsKvkkModalOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
@@ -131,7 +135,8 @@ export default function CommunityPage() {
     }
   }
 
-  const openRegisterModal = async (evt: EventItem) => {
+  const openRegisterModal = (evt: EventItem, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
     if (!userEmail) {
       setIsAuthModalOpen(true)
       return
@@ -142,16 +147,15 @@ export default function CommunityPage() {
       return
     }
 
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user) {
-      setUserId(session.user.id)
-      await fetchUserData(session.user.id)
-    }
-
     setSelectedEvent(evt)
     setIsModalOpen(true)
     setSuccess(false)
     setErrorMsg('')
+  }
+
+  const openDetailModal = (evt: EventItem) => {
+    setSelectedEvent(evt)
+    setIsDetailModalOpen(true)
   }
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
@@ -220,6 +224,7 @@ export default function CommunityPage() {
     }
   }
 
+  // Tarihi geçen etkinlikleri otomatik filtrele
   const now = new Date()
   const upcomingEvents = events.filter((e) => new Date(e.date) >= now)
 
@@ -276,6 +281,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
+      {/* DİNAMİK FİLTRELEME ÇUBUĞU */}
       <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-40 backdrop-blur-2xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -308,6 +314,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
+      {/* ETKİNLİK KARTLARI */}
       <section className="bg-gradient-to-b from-black via-zinc-950/60 to-black py-20">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
           <div className="mb-12 flex items-center justify-between border-b border-white/10 pb-4">
@@ -333,7 +340,8 @@ export default function CommunityPage() {
               return (
                 <div
                   key={evt.id}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur-xl transition-all duration-500 hover:border-primary/60 hover:bg-zinc-900/80 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                  onClick={() => openDetailModal(evt)}
+                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur-xl transition-all duration-500 hover:border-primary/60 hover:bg-zinc-900/80 shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-pointer"
                 >
                   <div className="space-y-5">
                     <div className="flex items-center gap-4">
@@ -365,11 +373,14 @@ export default function CommunityPage() {
                         </p>
                       )}
                       
-                      {/* HTML Açıklama Desteği */}
+                      {/* Metin çakışmasını önleyen temiz içerik alanı */}
                       <div 
-                        className="text-xs leading-relaxed text-zinc-400 line-clamp-3 prose prose-invert"
+                        className="text-xs text-zinc-300 leading-relaxed line-clamp-3 overflow-hidden"
                         dangerouslySetInnerHTML={{ __html: evt.description }}
                       />
+                      <span className="text-[10px] font-mono text-primary inline-flex items-center gap-1 pt-1">
+                        <Info size={12} /> Detayları Gör / Büyüt
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-2 rounded-xl bg-black/50 p-3 border border-white/5 text-xs font-mono text-zinc-300">
@@ -378,7 +389,7 @@ export default function CommunityPage() {
                     </div>
                   </div>
 
-                  <div className="mt-8 pt-5 border-t border-white/10 space-y-3">
+                  <div className="mt-8 pt-5 border-t border-white/10 space-y-3" onClick={(e) => e.stopPropagation()}>
                     {alreadyJoined ? (
                       <div className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 py-3.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
                         <Check className="h-4 w-4" />
@@ -387,7 +398,7 @@ export default function CommunityPage() {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => openRegisterModal(evt)}
+                        onClick={(e) => openRegisterModal(evt, e)}
                         className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] transition-all hover:scale-[1.02] hover:bg-orange-500 cursor-pointer"
                       >
                         <span>Katılım Talebi Gönder</span>
@@ -411,6 +422,83 @@ export default function CommunityPage() {
         </div>
       </section>
 
+      {/* ETKİNLİK DETAY / BÜYÜTME MODALI */}
+      {isDetailModalOpen && selectedEvent && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn"
+          onClick={() => setIsDetailModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-2xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <span className="text-[10px] font-mono uppercase text-primary tracking-widest block font-bold">
+                  {selectedEvent.branch}
+                </span>
+                <h3 className="font-sans text-2xl font-black text-white mt-1">
+                  {selectedEvent.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDetailModalOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-zinc-900 border border-white/10">
+              <Image
+                src={selectedEvent.image_url || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop'}
+                alt={selectedEvent.title}
+                fill
+                className="object-cover"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+              <div className="flex items-center gap-2 rounded-xl bg-black/60 p-3 border border-white/5 text-zinc-300">
+                <Calendar className="h-4 w-4 text-primary shrink-0" />
+                <span>{new Date(selectedEvent.date).toLocaleString('tr-TR')}</span>
+              </div>
+              <div className="flex items-center gap-2 rounded-xl bg-black/60 p-3 border border-white/5 text-zinc-300">
+                <MapPin className="h-4 w-4 text-primary shrink-0" />
+                <span className="truncate">{selectedEvent.location || 'İstanbul'}</span>
+              </div>
+            </div>
+
+            {selectedEvent.instructor_name && (
+              <p className="text-xs font-mono text-primary font-bold">
+                Eğitmen / Lider: {selectedEvent.instructor_name}
+              </p>
+            )}
+
+            {/* Tam ve Kesintisiz Açıklama Alanı */}
+            <div 
+              className="text-sm leading-relaxed text-zinc-300 space-y-3 bg-black/40 p-4 rounded-2xl border border-white/5"
+              dangerouslySetInnerHTML={{ __html: selectedEvent.description }}
+            />
+
+            <div className="pt-4 flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDetailModalOpen(false)
+                  openRegisterModal(selectedEvent)
+                }}
+                className="flex-1 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:bg-orange-500 transition-all cursor-pointer"
+              >
+                Katılım Talebi Gönder
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* KATILIM BAŞVURU MODALI */}
       {isModalOpen && selectedEvent && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn"
