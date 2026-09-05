@@ -220,15 +220,12 @@ export default function CommunityPage() {
     }
   }
 
-  // 1. Tarihi geçen etkinlikleri otomatik ele (Sadece bugünden ileri veya eşit olanlar kalır)
   const now = new Date()
   const upcomingEvents = events.filter((e) => new Date(e.date) >= now)
 
-  // 2. Sadece aktif ve gelecek etkinliklerde bulunan branşları dinamik olarak filtre listesine ekle
   const activeBranches = Array.from(new Set(upcomingEvents.map((e) => (e.branch || 'GENEL').toUpperCase())))
   const availableBranches = ['TÜMÜ', ...activeBranches]
 
-  // 3. Seçilen branşa göre filtrele
   const filteredEvents =
     selectedBranch === 'TÜMÜ'
       ? upcomingEvents
@@ -279,7 +276,6 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* DİNAMİK FİLTRELEME ÇUBUĞU (Sadece etkinliği olan branşlar görünür) */}
       <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-40 backdrop-blur-2xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -368,9 +364,12 @@ export default function CommunityPage() {
                           Eğitmen: {evt.instructor_name}
                         </p>
                       )}
-                      <p className="text-xs leading-relaxed text-zinc-400 line-clamp-2">
-                        {evt.description}
-                      </p>
+                      
+                      {/* HTML Açıklama Desteği */}
+                      <div 
+                        className="text-xs leading-relaxed text-zinc-400 line-clamp-3 prose prose-invert"
+                        dangerouslySetInnerHTML={{ __html: evt.description }}
+                      />
                     </div>
 
                     <div className="flex items-center gap-2 rounded-xl bg-black/50 p-3 border border-white/5 text-xs font-mono text-zinc-300">
