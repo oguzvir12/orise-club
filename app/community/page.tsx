@@ -15,6 +15,8 @@ import {
   MapPin,
   Sparkles,
   Info,
+  Users,
+  Lock
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SiteHeader } from '@/components/site-header'
@@ -34,6 +36,7 @@ interface EventItem {
 
 export default function CommunityPage() {
   const [events, setEvents] = useState<EventItem[]>([])
+  const [registrations, setRegistrations] = useState<any[]>([])
   const [selectedBranch, setSelectedBranch] = useState<string>('TÜMÜ')
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
   
@@ -127,8 +130,11 @@ export default function CommunityPage() {
 
   const fetchEvents = async () => {
     try {
-      const { data } = await supabase.from('events').select('*').order('date', { ascending: true })
-      if (data) setEvents(data)
+      const { data: evtData } = await supabase.from('events').select('*').order('date', { ascending: true })
+      if (evtData) setEvents(evtData)
+
+      const { data: regData } = await supabase.from('event_registrations').select('*')
+      if (regData) setRegistrations(regData)
     } catch (e) {
       console.error(e)
     }
@@ -180,6 +186,15 @@ export default function CommunityPage() {
     setErrorMsg('')
 
     try {
+      // Kontenjan kontrolü
+      const eventRegs = registrations.filter(r => r.event_id === selectedEvent.id && r.status === 'approved')
+      const capacity = selectedEvent.capacity || 30
+      if (eventRegs.length >= capacity) {
+        setErrorMsg('Üzgünüz, bu etkinliğin kontenjanı dolmuştur!')
+        setLoading(false)
+        return
+      }
+
       const { data: existing } = await supabase
         .from('event_registrations')
         .select('id')
@@ -210,6 +225,7 @@ export default function CommunityPage() {
       setHealthAccepted(false)
       setKvkkAccepted(false)
       setWaiverAccepted(false)
+      fetchEvents()
       fetchMyRegistrations(userEmail)
 
       setTimeout(() => {
@@ -335,6 +351,11 @@ export default function CommunityPage() {
               const monthName = eventDate.toLocaleString('tr-TR', { month: 'long' }).toUpperCase()
               const timeStr = eventDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
 
+              // Kontenjan hesaplama
+              const evtRegs = registrations.filter(r => r.event_id === evt.id && r.status === 'approved')
+              const capacity = evt.capacity || 30
+              const isFull = evtRegs.length >= capacity
+
               return (
                 <div
                   key={evt.id}
@@ -362,9 +383,15 @@ export default function CommunityPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <h3 className="font-sans text-xl font-black text-white group-hover:text-primary transition-colors tracking-tight">
-                        {evt.title}
-                      </h3>
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-sans text-xl font-black text-white group-hover:text-primary transition-colors tracking-tight">
+                          {evt.title}
+                        </h3>
+                        <span className="text-[10px] font-mono bg-zinc-800 text-zinc-300 px-2.5 py-1 rounded-full border border-white/10">
+                          👥 {evtRegs.length}/{capacity}
+                        </span>
+                      </div>
+
                       {evt.instructor_name && (
                         <p className="text-xs font-mono text-primary font-bold tracking-wider">
                           Eğitmen: {evt.instructor_name}
@@ -392,6 +419,11 @@ export default function CommunityPage() {
                       <div className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 py-3.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
                         <Check className="h-4 w-4" />
                         <span>Katılım Talebi Gönderildi</span>
+                      </div>
+                    ) : isFull ? (
+                      <div className="flex w-full items-center justify-center gap-2 rounded-full bg-red-500/20 border border-red-500/40 py-3.5 text-xs font-bold uppercase tracking-widest text-red-400">
+                        <Lock className="h-4 w-4" />
+                        <span>Kontenjan Doldu</span>
                       </div>
                     ) : (
                       <button
@@ -481,16 +513,38 @@ export default function CommunityPage() {
             />
 
             <div className="pt-4 flex gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsDetailModalOpen(false)
-                  openRegisterModal(selectedEvent)
-                }}
-                className="flex-1 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:bg-orange-500 transition-all cursor-pointer"
-              >
-                Katılım Talebi Gönder
-              </button>
+              {(() => {
+                const evtRegs = registrations.filter(r => r.event_id === selectedEvent.id && r.status === 'approved')
+                const isFull = evtRegs.length >= (selectedEvent.capacity || 30)
+                const alreadyJoined = myRegisteredEventIds.includes(selectedEvent.id)
+
+                if (alreadyJoined) {
+                  return (
+                    <div className="flex-1 flex items-center justify-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 py-3.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
+                      <Check className="h-4 w-4" /> Katılım Talebi Gönderildi
+                    </div>
+                  )
+                } else if (isFull) {
+                  return (
+                    <div className="flex-1 flex items-center justify-center gap-2 rounded-full bg-red-500/20 border border-red-500/40 py-3.5 text-xs font-bold uppercase tracking-widest text-red-400">
+                      <Lock className="h-4 w-4" /> Kontenjan Doldu
+                    </div>
+                  )
+                } else {
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsDetailModalOpen(false)
+                        openRegisterModal(selectedEvent)
+                      }}
+                      className="flex-1 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:bg-orange-500 transition-all cursor-pointer"
+                    >
+                      Katılım Talebi Gönder
+                    </button>
+                  )
+                }
+              })()}
             </div>
           </div>
         </div>
