@@ -259,6 +259,18 @@ export default function AdminPage() {
     }
   }
 
+  // Etkinliğin tüm başvuru listesini sıfırlama fonksiyonu (Yeni hafta için)
+  const handleClearEventRegistrations = async (eventId: string) => {
+    if (!confirm('Bu etkinliğin mevcut katılımcı listesini sıfırlamak istiyor musunuz? (Geçmiş başvurular silinecektir)')) return
+    const { error } = await supabase.from('event_registrations').delete().eq('event_id', eventId)
+    if (!error) {
+      alert('Katılımcı listesi sıfırlandı! Yeni hafta için temiz bir sayfa açıldı.')
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
+
   const toggleColorSelection = (colorName: string, isEdit: boolean = false) => {
     if (isEdit) {
       let updatedColors = [...editColors]
@@ -595,7 +607,7 @@ export default function AdminPage() {
   const isBranchLeader = role === 'branch_leader'
   const assignedBranch = adminProfile?.assigned_branch
 
-  // Sadece gelecek veya bugünkü (aktif) etkinlikleri göster (Geçmiş etkinlikler admin panelini kirletmesin)
+  // Geçmiş etkinlikleri admin panelinden otomatik gizle (Sadece gelecek veya bugünküler listelenir)
   const now = new Date()
   const activeEvents = events.filter(e => new Date(e.date) >= now)
 
@@ -760,14 +772,14 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ (Sadece Gelecek/Aktif Etkinlikler) */}
+        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ */}
         {(isCommunityAdmin || isBranchLeader) && (
           <div className="space-y-12 border-t border-white/10 pt-12">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold flex items-center gap-2 text-primary">
                 <Calendar className="h-5 w-5" />
                 <span>
-                  {isBranchLeader ? `${assignedBranch} Branşı Aktif Etkinlik & Katılımcı Paneli` : 'Topluluk & Etkinlik Yönetimi (Aktif Etkinlikler)'}
+                  {isBranchLeader ? `${assignedBranch} Branşı Aktif Etkinlikler` : 'Topluluk & Etkinlik Yönetimi (Aktif Etkinlikler)'}
                 </span>
               </h2>
             </div>
@@ -802,7 +814,10 @@ export default function AdminPage() {
             )}
 
             <div className="space-y-6">
-              <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Yaklaşan Aktif Etkinlikler ({visibleEvents.length})</span></h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Yaklaşan Aktif Etkinlikler ({visibleEvents.length})</span></h3>
+                <span className="text-[10px] font-mono text-zinc-500">Geçmiş etkinlikler otomatik gizlenir</span>
+              </div>
               
               <div className="grid grid-cols-1 gap-6">
                 {visibleEvents.map((evt) => {
@@ -817,10 +832,11 @@ export default function AdminPage() {
                           <h4 className="font-bold text-sm text-white">{evt.title}</h4>
                           <span className="text-[11px] text-zinc-400">📍 {evt.location} | 👥 Kontenjan: <strong className="text-primary">{approvedCount} / {evt.capacity || 30}</strong> Onaylı</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => openEditEventModal(evt)} className="px-3.5 py-1.5 bg-primary/20 text-primary border border-primary/40 rounded-xl text-xs font-bold hover:bg-primary/30 cursor-pointer inline-flex items-center gap-1.5"><Edit3 size={13} /> Tarihi / Bilgileri Güncelle</button>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button type="button" onClick={() => handleClearEventRegistrations(evt.id)} className="px-3 py-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold hover:bg-amber-500/20 cursor-pointer" title="Yeni hafta için eski katılımcı listesini sıfırla">Listeyi Sıfırla</button>
+                          <button type="button" onClick={() => openEditEventModal(evt)} className="px-3.5 py-1.5 bg-primary/20 text-primary border border-primary/40 rounded-xl text-xs font-bold hover:bg-primary/30 cursor-pointer inline-flex items-center gap-1.5"><Edit3 size={13} /> Tarihi Güncelle</button>
                           {isCommunityAdmin && (
-                            <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 cursor-pointer">Etkinliği Sil</button>
+                            <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 cursor-pointer">Sil</button>
                           )}
                         </div>
                       </div>
