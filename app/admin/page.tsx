@@ -89,7 +89,6 @@ export default function AdminPage() {
   const [profiles, setProfiles] = useState<any[]>([])
   const [answerInputs, setAnswerInputs] = useState<{ [key: string]: string }>({})
 
-  // Her kullanıcının tablodaki anlık rol ve branş seçimini tutmak için state
   const [userRolesState, setUserRolesState] = useState<{ [key: string]: { role: string, branch: string } }>({})
 
   // Yeni Ürün Ekleme
@@ -596,9 +595,13 @@ export default function AdminPage() {
   const isBranchLeader = role === 'branch_leader'
   const assignedBranch = adminProfile?.assigned_branch
 
+  // Sadece gelecek veya bugünkü (aktif) etkinlikleri göster (Geçmiş etkinlikler admin panelini kirletmesin)
+  const now = new Date()
+  const activeEvents = events.filter(e => new Date(e.date) >= now)
+
   const visibleEvents = isBranchLeader 
-    ? events.filter(e => e.branch?.toUpperCase() === assignedBranch?.toUpperCase())
-    : events
+    ? activeEvents.filter(e => e.branch?.toUpperCase() === assignedBranch?.toUpperCase())
+    : activeEvents
 
   const visibleRegistrations = isBranchLeader
     ? registrations.filter((r: any) => visibleEvents.some(e => e.id === r.event_id))
@@ -757,14 +760,14 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ */}
+        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ (Sadece Gelecek/Aktif Etkinlikler) */}
         {(isCommunityAdmin || isBranchLeader) && (
           <div className="space-y-12 border-t border-white/10 pt-12">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold flex items-center gap-2 text-primary">
                 <Calendar className="h-5 w-5" />
                 <span>
-                  {isBranchLeader ? `${assignedBranch} Branşı Etkinlik & Katılımcı Paneli` : 'Topluluk & Etkinlik Yönetimi'}
+                  {isBranchLeader ? `${assignedBranch} Branşı Aktif Etkinlik & Katılımcı Paneli` : 'Topluluk & Etkinlik Yönetimi (Aktif Etkinlikler)'}
                 </span>
               </h2>
             </div>
@@ -799,7 +802,7 @@ export default function AdminPage() {
             )}
 
             <div className="space-y-6">
-              <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ve Gelen Katılım Talepleri ({visibleEvents.length})</span></h3>
+              <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Yaklaşan Aktif Etkinlikler ({visibleEvents.length})</span></h3>
               
               <div className="grid grid-cols-1 gap-6">
                 {visibleEvents.map((evt) => {
@@ -815,7 +818,7 @@ export default function AdminPage() {
                           <span className="text-[11px] text-zinc-400">📍 {evt.location} | 👥 Kontenjan: <strong className="text-primary">{approvedCount} / {evt.capacity || 30}</strong> Onaylı</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => openEditEventModal(evt)} className="px-3.5 py-1.5 bg-primary/20 text-primary border border-primary/40 rounded-xl text-xs font-bold hover:bg-primary/30 cursor-pointer inline-flex items-center gap-1.5"><Edit3 size={13} /> Düzenle</button>
+                          <button type="button" onClick={() => openEditEventModal(evt)} className="px-3.5 py-1.5 bg-primary/20 text-primary border border-primary/40 rounded-xl text-xs font-bold hover:bg-primary/30 cursor-pointer inline-flex items-center gap-1.5"><Edit3 size={13} /> Tarihi / Bilgileri Güncelle</button>
                           {isCommunityAdmin && (
                             <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 cursor-pointer">Etkinliği Sil</button>
                           )}
