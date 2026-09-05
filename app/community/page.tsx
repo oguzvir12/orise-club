@@ -186,7 +186,6 @@ export default function CommunityPage() {
     setErrorMsg('')
 
     try {
-      // Kontenjan kontrolü
       const eventRegs = registrations.filter(r => r.event_id === selectedEvent.id && r.status === 'approved')
       const capacity = selectedEvent.capacity || 30
       if (eventRegs.length >= capacity) {
@@ -239,6 +238,7 @@ export default function CommunityPage() {
     }
   }
 
+  // Tarihi geçen etkinlikleri otomatik filtrele
   const now = new Date()
   const upcomingEvents = events.filter((e) => new Date(e.date) >= now)
 
@@ -351,7 +351,6 @@ export default function CommunityPage() {
               const monthName = eventDate.toLocaleString('tr-TR', { month: 'long' }).toUpperCase()
               const timeStr = eventDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
 
-              // Kontenjan hesaplama
               const evtRegs = registrations.filter(r => r.event_id === evt.id && r.status === 'approved')
               const capacity = evt.capacity || 30
               const isFull = evtRegs.length >= capacity
@@ -398,7 +397,6 @@ export default function CommunityPage() {
                         </p>
                       )}
                       
-                      {/* Çakışmayı önlemek için sabit yükseklik (h-12) ve overflow-hidden uygulandı */}
                       <div 
                         className="text-xs text-zinc-300 leading-snug h-12 overflow-hidden text-ellipsis [&_*]:text-xs [&_*]:text-zinc-300 [&_*]:m-0"
                         dangerouslySetInnerHTML={{ __html: evt.description }}
@@ -506,7 +504,6 @@ export default function CommunityPage() {
               </p>
             )}
 
-            {/* Tam Açıklama Alanı */}
             <div 
               className="text-sm leading-relaxed text-zinc-300 space-y-3 bg-black/40 p-4 rounded-2xl border border-white/5"
               dangerouslySetInnerHTML={{ __html: selectedEvent.description }}
@@ -683,7 +680,7 @@ export default function CommunityPage() {
             </div>
             <p className="text-xs text-zinc-300 leading-relaxed">6698 sayılı KVKK uyarınca bilgileriniz işlenmektedir ve medya izinleriniz onaylanmaktadır.</p>
             <div className="text-right">
-              <button type="button" onClick={() => { setKvkkAccepted(true); setIsKvkkModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer font-bold">Anladım / Onayla</button>
+              <button type="button" onClick={() => { setKeyAccepted(true); setIsKvkkModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer font-bold">Anladım / Onayla</button>
             </div>
           </div>
         </div>
