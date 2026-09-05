@@ -155,10 +155,8 @@ export default function AdminPage() {
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
-      // Super admin veya e-posta eşleşmesi ile tam yetki garantisi
       if (profile && ['super_admin', 'admin', 'store_admin', 'community_admin', 'branch_leader'].includes(profile.role) || session.user.email === 'oguzvir12@gmail.com') {
         setIsLoggedIn(true)
-        // Eğer oguzvir12@gmail.com ise ve rolü super_admin değilse otomatik super_admin yapalım
         if (session.user.email === 'oguzvir12@gmail.com' && (!profile || profile.role !== 'super_admin')) {
           await supabase.from('profiles').update({ role: 'super_admin' }).eq('id', session.user.id)
           const { data: updatedProf } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
@@ -579,7 +577,6 @@ export default function AdminPage() {
   const isBranchLeader = role === 'branch_leader'
   const assignedBranch = adminProfile?.assigned_branch
 
-  // Branş lideri ise sadece kendi branşındaki etkinlikleri görür
   const visibleEvents = isBranchLeader 
     ? events.filter(e => e.branch?.toUpperCase() === assignedBranch?.toUpperCase())
     : events
@@ -633,61 +630,56 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
-                  {profiles.map((prof) => {
-                    const [tempRole, setTempRole] = useState(prof.role || 'user')
-                    const [tempBranch, setTempBranch] = useState(prof.assigned_branch || 'KOŞU')
-
-                    return (
-                      <tr key={prof.id} className="hover:bg-zinc-900/40">
-                        <td className="p-3">
-                          <div className="font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</div>
-                          <div className="text-[10px] text-zinc-400">{prof.email}</div>
-                        </td>
-                        <td className="p-3">
-                          <select
-                            id={`role-select-${prof.id}`}
-                            defaultValue={prof.role || 'user'}
-                            className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
-                          >
-                            <option value="user">Standart Üye</option>
-                            <option value="store_admin">Mağaza Admin</option>
-                            <option value="community_admin">Topluluk Admin</option>
-                            <option value="branch_leader">Branş Lideri</option>
-                            <option value="super_admin">Süper Admin</option>
-                          </select>
-                        </td>
-                        <td className="p-3">
-                          <select
-                            id={`branch-select-${prof.id}`}
-                            defaultValue={prof.assigned_branch || 'KOŞU'}
-                            className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
-                          >
-                            {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
-                          </select>
-                        </td>
-                        <td className="p-3 text-right">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const r = (document.getElementById(`role-select-${prof.id}`) as HTMLSelectElement).value
-                              const b = (document.getElementById(`branch-select-${prof.id}`) as HTMLSelectElement).value
-                              handleUpdateUserRole(prof.id, r, b)
-                            }}
-                            className="px-3 py-1.5 bg-primary text-black rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1"
-                          >
-                            <UserCheck size={12} /> Kaydet
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })}
+                  {profiles.map((prof) => (
+                    <tr key={prof.id} className="hover:bg-zinc-900/40">
+                      <td className="p-3">
+                        <div className="font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</div>
+                        <div className="text-[10px] text-zinc-400">{prof.email}</div>
+                      </td>
+                      <td className="p-3">
+                        <select
+                          id={`role-select-${prof.id}`}
+                          defaultValue={prof.role || 'user'}
+                          className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                        >
+                          <option value="user">Standart Üye</option>
+                          <option value="store_admin">Mağaza Admin</option>
+                          <option value="community_admin">Topluluk Admin</option>
+                          <option value="branch_leader">Branş Lideri</option>
+                          <option value="super_admin">Süper Admin</option>
+                        </select>
+                      </td>
+                      <td className="p-3">
+                        <select
+                          id={`branch-select-${prof.id}`}
+                          defaultValue={prof.assigned_branch || 'KOŞU'}
+                          className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                        >
+                          {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                        </select>
+                      </td>
+                      <td className="p-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const r = (document.getElementById(`role-select-${prof.id}`) as HTMLSelectElement).value
+                            const b = (document.getElementById(`branch-select-${prof.id}`) as HTMLSelectElement).value
+                            handleUpdateUserRole(prof.id, r, b)
+                          }}
+                          className="px-3 py-1.5 bg-primary text-black rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1"
+                        >
+                          <UserCheck size={12} /> Kaydet
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* MÜŞTERİ SORU & CEVAP (Store & Super Admin) */}
+        {/* MÜŞTERİ SORU & CEVAP */}
         {isStoreAdmin && (
           <div className="space-y-6">
             <h2 className="text-base font-bold flex items-center gap-2 text-primary"><HelpCircle className="h-5 w-5" /><span>Müşteri Ürün Soruları</span></h2>
@@ -731,7 +723,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ (Community Admin & Branch Leader) */}
+        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ */}
         {(isCommunityAdmin || isBranchLeader) && (
           <div className="space-y-12 border-t border-white/10 pt-12">
             <div className="flex items-center justify-between">
@@ -743,7 +735,6 @@ export default function AdminPage() {
               </h2>
             </div>
 
-            {/* Sadece Community Admin yeni etkinlik oluşturabilir veya Super Admin */}
             {isCommunityAdmin && (
               <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
                 <h3 className="text-sm font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-4 w-4" /><span>Yeni Etkinlik Oluştur</span></h3>
@@ -773,7 +764,6 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Etkinlik Listesi ve Katılımcılar */}
             <div className="space-y-6">
               <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ve Gelen Katılım Talepleri ({visibleEvents.length})</span></h3>
               
@@ -846,7 +836,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* MAĞAZA SİPARİŞLERİ & ÜRÜN YÖNETİMİ (Store Admin) */}
+        {/* MAĞAZA SİPARİŞLERİ & ÜRÜN YÖNETİMİ */}
         {isStoreAdmin && (
           <div className="space-y-12 border-t border-white/10 pt-12">
             <div className="space-y-6">
