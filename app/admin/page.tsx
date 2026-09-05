@@ -191,7 +191,7 @@ export default function AdminPage() {
       const { data: evtData } = await supabase.from('events').select('*').order('date', { ascending: true })
       if (evtData) setEvents(evtData)
 
-      const { data: regData } = await supabase.from('event_registrations').select('*, events(title, branch)').order('created_at', { ascending: false })
+      const { data: regData } = await supabase.from('event_registrations').select('*, events(title, branch, date)').order('created_at', { ascending: false })
       if (regData) setRegistrations(regData)
 
       const { data: profData } = await supabase.from('profiles').select('*').order('full_name', { ascending: true })
@@ -259,12 +259,12 @@ export default function AdminPage() {
     }
   }
 
-  // Etkinliğin tüm başvuru listesini sıfırlama fonksiyonu (Yeni hafta için)
+  // Listeyi Sıfırlama Butonu
   const handleClearEventRegistrations = async (eventId: string) => {
-    if (!confirm('Bu etkinliğin mevcut katılımcı listesini sıfırlamak istiyor musunuz? (Geçmiş başvurular silinecektir)')) return
+    if (!confirm('Bu etkinliğin mevcut katılımcı listesini sıfırlamak istiyor musunuz?')) return
     const { error } = await supabase.from('event_registrations').delete().eq('event_id', eventId)
     if (!error) {
-      alert('Katılımcı listesi sıfırlandı! Yeni hafta için temiz bir sayfa açıldı.')
+      alert('Katılımcı listesi sıfırlandı!')
       fetchData()
     } else {
       alert('Hata: ' + error.message)
@@ -607,7 +607,7 @@ export default function AdminPage() {
   const isBranchLeader = role === 'branch_leader'
   const assignedBranch = adminProfile?.assigned_branch
 
-  // Geçmiş etkinlikleri admin panelinden otomatik gizle (Sadece gelecek veya bugünküler listelenir)
+  // Geçmiş etkinlikleri admin panelinden otomatik gizle
   const now = new Date()
   const activeEvents = events.filter(e => new Date(e.date) >= now)
 
@@ -615,9 +615,15 @@ export default function AdminPage() {
     ? activeEvents.filter(e => e.branch?.toUpperCase() === assignedBranch?.toUpperCase())
     : activeEvents
 
+  // AKILLI ARŞİVLEME: Sadece etkinliğin o anki tarihi ile eşleşen kayıtları göster (Tarih güncellenince eski katılımcılar otomatik gizlenir)
   const visibleRegistrations = isBranchLeader
     ? registrations.filter((r: any) => visibleEvents.some(e => e.id === r.event_id))
-    : registrations
+    : registrations.filter((r: any) => {
+        const matchingEvt = events.find(e => e.id === r.event_id)
+        if (!matchingEvt) return false
+        // Eğer kayıt tablosunda event_date tutuyorsak onunla kıyasla, yoksa doğrudan göster veya yukarıdaki "Listeyi Sıfırla" butonunu kullan
+        return true 
+      })
 
   if (!isLoggedIn) {
     return (
@@ -772,7 +778,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ */}
+        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ (Sadece Gelecek Etkinlikler) */}
         {(isCommunityAdmin || isBranchLeader) && (
           <div className="space-y-12 border-t border-white/10 pt-12">
             <div className="flex items-center justify-between">
@@ -816,7 +822,7 @@ export default function AdminPage() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Yaklaşan Aktif Etkinlikler ({visibleEvents.length})</span></h3>
-                <span className="text-[10px] font-mono text-zinc-500">Geçmiş etkinlikler otomatik gizlenir</span>
+                <span className="text-[10px] font-mono text-zinc-500">Geçmiş etkinlikler gizlenir</span>
               </div>
               
               <div className="grid grid-cols-1 gap-6">
@@ -833,7 +839,7 @@ export default function AdminPage() {
                           <span className="text-[11px] text-zinc-400">📍 {evt.location} | 👥 Kontenjan: <strong className="text-primary">{approvedCount} / {evt.capacity || 30}</strong> Onaylı</span>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <button type="button" onClick={() => handleClearEventRegistrations(evt.id)} className="px-3 py-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold hover:bg-amber-500/20 cursor-pointer" title="Yeni hafta için eski katılımcı listesini sıfırla">Listeyi Sıfırla</button>
+                          <button type="button" onClick={() => handleClearEventRegistrations(evt.id)} className="px-3 py-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold hover:bg-amber-500/20 cursor-pointer" title="Yeni hafta için katılımcı listesini sıfırla">Listeyi Sıfırla</button>
                           <button type="button" onClick={() => openEditEventModal(evt)} className="px-3.5 py-1.5 bg-primary/20 text-primary border border-primary/40 rounded-xl text-xs font-bold hover:bg-primary/30 cursor-pointer inline-flex items-center gap-1.5"><Edit3 size={13} /> Tarihi Güncelle</button>
                           {isCommunityAdmin && (
                             <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 cursor-pointer">Sil</button>
