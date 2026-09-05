@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ShoppingBag, Phone, CreditCard, MapPin, User, Save, Truck, RefreshCw, FileText, Ban, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, ShoppingBag, Phone, CreditCard, MapPin, User, Save, Truck, RefreshCw, FileText, Ban, CheckCircle2, Calendar, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null)
   const [myOrders, setMyOrders] = useState<any[]>([])
+  const [myRegistrations, setMyRegistrations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   
@@ -50,6 +51,15 @@ export default function ProfilePage() {
 
       const { data: ords } = await supabase.from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
       if (ords) setMyOrders(ords)
+
+      if (prof?.email) {
+        const { data: regs } = await supabase
+          .from('event_registrations')
+          .select('*, events(title, date, location, branch)')
+          .ilike('email', prof.email.trim())
+          .order('created_at', { ascending: false })
+        if (regs) setMyRegistrations(regs)
+      }
     } catch (e) {
       console.error(e)
     } finally {
@@ -57,7 +67,6 @@ export default function ProfilePage() {
     }
   }
 
-  // Müşteri Siparişi İptal Etsin (Eğer henüz kargolanmadıysa)
   const handleUserCancelOrder = async (orderId: string) => {
     if (!confirm('Bu siparişi iptal etmek istediğinize emin misiniz?')) return
     const { error } = await supabase.from('orders').update({ status: 'İptal Edildi', cancelled_at: new Date().toISOString() }).eq('id', orderId)
@@ -69,23 +78,21 @@ export default function ProfilePage() {
     }
   }
 
-  // Müşteri Teslim Aldım İşaretlesin
   const handleMarkAsDelivered = async (orderId: string) => {
     const { error } = await supabase.from('orders').update({ status: 'Teslim Edildi' }).eq('id', orderId)
     if (!error) {
-      alert('Siparişiniz teslim edildi olarak işaretlendi! Artık ürüne puan verip yorum yapabilirsiniz.')
+      alert('Siparişiniz teslim edildi olarak işaretlendi!')
       loadUserProfileAndData()
     } else {
       alert('Hata: ' + error.message)
     }
   }
 
-  // Müşteri İade Talebi Başlatabilsin (Teslim Edilen Ürünler İçin)
   const handleReturnRequest = async (orderId: string) => {
     if (!confirm('Bu sipariş için iade/değişim talebi başlatmak istiyor musunuz?')) return
     const { error } = await supabase.from('orders').update({ status: 'İade Talep Edildi' }).eq('id', orderId)
     if (!error) {
-      alert('İade talebiniz başarıyla oluşturuldu. Operasyon ekibimiz inceleyecektir.')
+      alert('İade talebiniz başarıyla oluşturuldu.')
       loadUserProfileAndData()
     } else {
       alert('Hata: ' + error.message)
@@ -126,7 +133,24 @@ export default function ProfilePage() {
           <Link href="/store" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 hover:text-white cursor-pointer">
             <ArrowLeft className="h-4 w-4" /> <span>Mağazaya Dön</span>
           </Link>
-          <span className="text-xs font-mono text-primary uppercase">MÜŞTERİ HESAP & SİPARİŞ MERKEZİ</span>
+          <div className="flex items-center gap-4">
+            <Link href="/community" className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 border border-primary/40 px-4 py-2 text-xs font-bold text-primary hover:bg-primary/30 cursor-pointer">
+              <Calendar className="h-3.5 w-3.5" /> <span>Topluluk & Etkinlikler</span>
+            </Link>
+            <span className="text-xs font-mono text-primary uppercase">HESAP & ETKİNLİK MERKEZİ</span>
+          </div>
+        </div>
+
+        {/* ÜYE STATÜ & XP BİLGİSİ */}
+        <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 flex items-center justify-between shadow-xl">
+          <div className="space-y-1">
+            <span className="text-[10px] font-mono text-primary uppercase tracking-widest block">KULÜP ÜYESİ</span>
+            <h3 className="text-xl font-black text-white">{userData?.full_name || 'Sporcu'}</h3>
+          </div>
+          <div className="flex items-center gap-2 rounded-2xl border border-primary/40 bg-primary/10 px-5 py-3 text-primary font-mono text-xs font-bold">
+            <Sparkles className="h-4 w-4" />
+            <span>{userData?.xp || 0} XP Puanı</span>
+          </div>
         </div>
 
         {/* KİŞİSEL & FATURA BİLGİLERİ */}
@@ -176,7 +200,45 @@ export default function ProfilePage() {
           </form>
         </div>
 
-        {/* AKTİF VE GEÇMİŞ SİPARİŞLER MERKEZİ */}
+        {/* ETKİNLİK BAŞVURULARIM VE ONAY DURUMLARI */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" /> <span>Etkinlik Başvurularım & Katılım Durumum</span>
+            </h2>
+            <span className="text-xs font-mono text-zinc-500">[{myRegistrations.length} BAŞVURU]</span>
+          </div>
+
+          {myRegistrations.length === 0 ? (
+            <div className="rounded-3xl border border-white/10 bg-zinc-950 p-8 text-center text-xs text-zinc-400">
+              Henüz herhangi bir etkinlik için katılım talebinde bulunmadınız.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {myRegistrations.map((reg) => (
+                <div key={reg.id} className="rounded-2xl border border-white/10 bg-zinc-950 p-6 space-y-3 font-mono shadow-xl">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-primary uppercase font-bold">{reg.events?.branch || 'KULÜP'}</span>
+                    <span className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold border ${
+                      reg.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                      reg.status === 'rejected' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                      'bg-primary/20 text-primary border-primary/30'
+                    }`}>
+                      {reg.status === 'approved' ? '✓ Onaylandı' : reg.status === 'rejected' ? '✗ Reddedildi' : '⌛ İnceleniyor (Talep Edildi)'}
+                    </span>
+                  </div>
+                  <h4 className="font-sans font-black text-base text-white">{reg.events?.title || 'Etkinlik'}</h4>
+                  <div className="text-[11px] text-zinc-400 space-y-1">
+                    <div>📅 Tarih: {reg.events?.date ? new Date(reg.events.date).toLocaleString('tr-TR') : 'Belirtilmemiş'}</div>
+                    <div>📍 Konum: {reg.events?.location || 'İstanbul'}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* SİPARİŞ GEÇMİŞİ */}
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <h2 className="text-lg font-bold flex items-center gap-2">
@@ -187,7 +249,7 @@ export default function ProfilePage() {
 
           {myOrders.length === 0 ? (
             <div className="rounded-3xl border border-white/10 bg-zinc-950 p-8 text-center text-xs text-zinc-400">
-              Henüz bir siparişiniz bulunmuyor.
+              Henüz bir mağaza siparişiniz bulunmuyor.
             </div>
           ) : (
             <div className="space-y-4">
@@ -219,19 +281,18 @@ export default function ProfilePage() {
                   <div className="pt-3 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
                     <div className="flex items-center gap-2 text-zinc-300">
                       <Truck className="h-4 w-4 text-primary" />
-                      <span>Kargo Takip No: <strong>{ord.tracking_number || 'Henüz kargolanmadı'}</strong></span>
+                      <span>Kargo Takip No: <strong>{ord.tracking_number || 'Henüz kargolandı'}</strong></span>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => alert('e-Arşiv Faturanız PDF olarak hazırlanıyor... Paraşüt / Logo entegrasyonu aktif olduğunda fatura direkt indirilecektir.')}
+                        onClick={() => alert('e-Arşiv Faturanız PDF olarak hazırlanıyor...')}
                         className="inline-flex items-center gap-1.5 rounded-full bg-zinc-800 px-4 py-1.5 text-[11px] text-zinc-200 hover:bg-zinc-700 cursor-pointer"
                       >
                         <FileText size={13} /> Faturayı Görüntüle (PDF)
                       </button>
 
-                      {/* Kargolanmamış siparişi iptal et */}
                       {ord.status === 'Ödeme Bekliyor' && (
                         <button
                           type="button"
@@ -242,7 +303,6 @@ export default function ProfilePage() {
                         </button>
                       )}
 
-                      {/* Kargoda olan ürünü teslim aldım işaretle */}
                       {ord.status === 'Kargolandı' && (
                         <button
                           type="button"
@@ -253,7 +313,6 @@ export default function ProfilePage() {
                         </button>
                       )}
 
-                      {/* Teslim edilen ürünler için iade talebi */}
                       {ord.status === 'Teslim Edildi' && (
                         <button
                           type="button"
