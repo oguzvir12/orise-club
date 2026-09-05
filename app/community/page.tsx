@@ -31,15 +31,6 @@ interface EventItem {
   instructor_name?: string
 }
 
-const BRANCHES = [
-  'TÜMÜ',
-  'KOŞU',
-  'YOGA & MOBILITY',
-  'TENİS',
-  'VOLEYBOL',
-  'YELKEN',
-]
-
 export default function CommunityPage() {
   const [events, setEvents] = useState<EventItem[]>([])
   const [selectedBranch, setSelectedBranch] = useState<string>('TÜMÜ')
@@ -229,6 +220,10 @@ export default function CommunityPage() {
     }
   }
 
+  // Aktif etkinliklerde geçen branşları otomatik topla ve filtre listesini oluştur
+  const activeBranches = Array.from(new Set(events.map((e) => (e.branch || 'GENEL').toUpperCase())))
+  const availableBranches = ['TÜMÜ', ...activeBranches]
+
   const filteredEvents =
     selectedBranch === 'TÜMÜ'
       ? events
@@ -279,12 +274,13 @@ export default function CommunityPage() {
         </div>
       </section>
 
+      {/* DİNAMİK FİLTRELEME ÇUBUĞU (Sadece etkinliği olan branşlar görünür) */}
       <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-40 backdrop-blur-2xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
               <Filter className="h-4 w-4 text-primary shrink-0 mr-2" />
-              {BRANCHES.map((branch) => (
+              {availableBranches.map((branch) => (
                 <button
                   key={branch}
                   onClick={() => setSelectedBranch(branch)}
