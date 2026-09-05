@@ -37,9 +37,8 @@ export default function CommunityPage() {
   const [selectedBranch, setSelectedBranch] = useState<string>('TÜMÜ')
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
   
-  // Modallar
-  const [isModalOpen, setIsModalOpen] = useState(false) // Başvuru Modalı
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false) // Detay / Büyütme Modalı
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false)
   const [isKvkkModalOpen, setIsKvkkModalOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
@@ -224,7 +223,6 @@ export default function CommunityPage() {
     }
   }
 
-  // Tarihi geçen etkinlikleri otomatik filtrele
   const now = new Date()
   const upcomingEvents = events.filter((e) => new Date(e.date) >= now)
 
@@ -281,7 +279,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* DİNAMİK FİLTRELEME ÇUBUĞU */}
+      {/* FİLTRELEME ÇUBUĞU */}
       <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-40 backdrop-blur-2xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -373,12 +371,12 @@ export default function CommunityPage() {
                         </p>
                       )}
                       
-                      {/* Metin çakışmasını önleyen temiz içerik alanı */}
+                      {/* Çakışmayı önlemek için sabit yükseklik (h-12) ve overflow-hidden uygulandı */}
                       <div 
-                        className="text-xs text-zinc-300 leading-relaxed line-clamp-3 overflow-hidden"
+                        className="text-xs text-zinc-300 leading-snug h-12 overflow-hidden text-ellipsis [&_*]:text-xs [&_*]:text-zinc-300 [&_*]:m-0"
                         dangerouslySetInnerHTML={{ __html: evt.description }}
                       />
-                      <span className="text-[10px] font-mono text-primary inline-flex items-center gap-1 pt-1">
+                      <span className="text-[10px] font-mono text-primary inline-flex items-center gap-1 pt-1 font-bold">
                         <Info size={12} /> Detayları Gör / Büyüt
                       </span>
                     </div>
@@ -422,7 +420,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* ETKİNLİK DETAY / BÜYÜTME MODALI */}
+      {/* ETKİNLİK DETAY MODALI */}
       {isDetailModalOpen && selectedEvent && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn"
@@ -476,7 +474,7 @@ export default function CommunityPage() {
               </p>
             )}
 
-            {/* Tam ve Kesintisiz Açıklama Alanı */}
+            {/* Tam Açıklama Alanı */}
             <div 
               className="text-sm leading-relaxed text-zinc-300 space-y-3 bg-black/40 p-4 rounded-2xl border border-white/5"
               dangerouslySetInnerHTML={{ __html: selectedEvent.description }}
