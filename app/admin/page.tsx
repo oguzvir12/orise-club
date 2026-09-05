@@ -58,7 +58,6 @@ const CATEGORY_OPTIONS = [
   { id: 'equipment', label: 'Termos & Matara', group: 'Aksesuar & Ekipman' },
 ]
 
-// Akla gelebilecek tüm spor branşları eklendi
 const EVENT_BRANCHES = [
   'KOŞU', 
   'BİSİKLET', 
@@ -115,6 +114,18 @@ export default function AdminPage() {
   const [evtDesc, setEvtDesc] = useState('')
   const [evtImageUrl, setEvtImageUrl] = useState('')
   const [eventUploading, setEventUploading] = useState(false)
+
+  // Etkinlik Düzenleme Modal State'leri
+  const [editingEvent, setEditingEvent] = useState<any | null>(null)
+  const [editEvtTitle, setEditEvtTitle] = useState('')
+  const [editEvtBranch, setEditEvtBranch] = useState('KOŞU')
+  const [editEvtDate, setEditEvtDate] = useState('')
+  const [editEvtLocation, setEditEvtLocation] = useState('')
+  const [editEvtCapacity, setEditEvtCapacity] = useState('30')
+  const [editEvtInstructor, setEditEvtInstructor] = useState('')
+  const [editEvtDesc, setEditEvtDesc] = useState('')
+  const [editEvtImageUrl, setEditEvtImageUrl] = useState('')
+  const [editEventUploading, setEditEventUploading] = useState(false)
 
   // Ürün Düzenleme Modal
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
@@ -283,18 +294,24 @@ export default function AdminPage() {
     setUploading(false)
   }
 
-  const handleEventImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEventImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'new' | 'edit') => {
     const file = e.target.files?.[0]
     if (!file) return
-    setEventUploading(true)
+    if (target === 'new') setEventUploading(true)
+    else setEditEventUploading(true)
+
     const fileExt = file.name.split('.').pop()
     const fileName = `event-${Date.now()}.${fileExt}`
     const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
     if (!uploadError) {
       const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
-      if (data?.publicUrl) setEvtImageUrl(data.publicUrl)
+      if (data?.publicUrl) {
+        if (target === 'new') setEvtImageUrl(data.publicUrl)
+        else setEditEvtImageUrl(data.publicUrl)
+      }
     }
-    setEventUploading(false)
+    if (target === 'new') setEventUploading(false)
+    else setEditEventUploading(false)
   }
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -359,6 +376,49 @@ export default function AdminPage() {
     if (!confirm('Bu etkinliği silmek istediğinize emin misiniz?')) return
     await supabase.from('events').delete().eq('id', id)
     fetchData()
+  }
+
+  const openEditEventModal = (evt: any) => {
+    setEditingEvent(evt)
+    setEditEvtTitle(evt.title || '')
+    setEditEvtBranch(evt.branch || 'KOŞU')
+    // datetime-local için formatlama (YYYY-MM-DDTHH:mm)
+    if (evt.date) {
+      const d = new Date(evt.date)
+      const isoLocal = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+      setEditEvtDate(isoLocal)
+    } else {
+      setEditEvtDate('')
+    }
+    setEditEvtLocation(evt.location || '')
+    setEditEvtCapacity(String(evt.capacity || 30))
+    setEditEvtInstructor(evt.instructor_name || '')
+    setEditEvtDesc(evt.description || '')
+    setEditEvtImageUrl(evt.image_url || '')
+  }
+
+  const handleUpdateEvent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingEvent) return
+
+    const { error } = await supabase.from('events').update({
+      title: editEvtTitle,
+      branch: editEvtBranch,
+      date: editEvtDate,
+      location: editEvtLocation,
+      capacity: Number(editEvtCapacity) || 30,
+      instructor_name: editEvtInstructor || null,
+      description: editEvtDesc,
+      image_url: editEvtImageUrl
+    }).eq('id', editingEvent.id)
+
+    if (!error) {
+      alert('Etkinlik başarıyla güncellendi!')
+      setEditingEvent(null)
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
   }
 
   const handleUpdateRegistrationStatus = async (regId: string, status: string) => {
@@ -582,11 +642,11 @@ export default function AdminPage() {
                   <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
                     <span className="text-xs text-zinc-400 truncate">{eventUploading ? 'Yükleniyor...' : evtImageUrl ? '✓ Afiş Seçildi' : 'Etkinlik Afişi Seç'}</span>
                     <Upload className="h-4 w-4 text-primary" />
-                    <input type="file" accept="image/*" onChange={handleEventImageUpload} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                    <input type="file" accept="image/*" onChange={(e) => handleEventImageUpload(e, 'new')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
                   </div>
                 </div>
 
-                <textarea rows={2} placeholder="Etkinlik Açıklaması..." value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
+                <textarea rows={2} placeholder="Etkinlik Açıklaması (HTML / Şekilli yazılar destekler)..." value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
                 <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Etkinliği Yayınla</button>
               </form>
             </div>
@@ -607,7 +667,10 @@ export default function AdminPage() {
                           <h4 className="font-bold text-sm text-white">{evt.title}</h4>
                           <span className="text-[11px] text-zinc-400">📍 {evt.location}</span>
                         </div>
-                        <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 cursor-pointer">Etkinliği Sil</button>
+                        <div className="flex items-center gap-2">
+                          <button type="button" onClick={() => openEditEventModal(evt)} className="px-3.5 py-1.5 bg-primary/20 text-primary border border-primary/40 rounded-xl text-xs font-bold hover:bg-primary/30 cursor-pointer inline-flex items-center gap-1.5"><Edit3 size={13} /> Düzenle</button>
+                          <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 cursor-pointer">Etkinliği Sil</button>
+                        </div>
                       </div>
 
                       <div className="space-y-2">
@@ -917,6 +980,43 @@ export default function AdminPage() {
         )}
 
       </div>
+
+      {/* ETKİNLİK DÜZENLEME MODALI */}
+      {editingEvent && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingEvent(null)}>
+          <div className="relative w-full max-w-lg rounded-3xl border border-white/20 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <h3 className="font-bold text-base text-white">Etkinliği Düzenle</h3>
+              <button type="button" onClick={() => setEditingEvent(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black"><X className="h-4 w-4" /></button>
+            </div>
+            <form onSubmit={handleUpdateEvent} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" required value={editEvtTitle} onChange={(e) => setEditEvtTitle(e.target.value)} placeholder="Etkinlik Başlığı" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <select value={editEvtBranch} onChange={(e) => setEditEvtBranch(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
+                  {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="datetime-local" required value={editEvtDate} onChange={(e) => setEditEvtDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white font-mono" />
+                <input type="text" value={editEvtLocation} onChange={(e) => setEditEvtLocation(e.target.value)} placeholder="Konum" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" value={editEvtInstructor} onChange={(e) => setEditEvtInstructor(e.target.value)} placeholder="Eğitmen / Lider" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
+                  <span className="text-xs text-zinc-400 truncate">{editEventUploading ? 'Yükleniyor...' : editEvtImageUrl ? '✓ Afiş Güncellendi' : 'Yeni Afiş Seç'}</span>
+                  <Upload className="h-4 w-4 text-primary" />
+                  <input type="file" accept="image/*" onChange={(e) => handleEventImageUpload(e, 'edit')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                </div>
+              </div>
+
+              <textarea rows={3} value={editEvtDesc} onChange={(e) => setEditEvtDesc(e.target.value)} placeholder="Etkinlik Açıklaması (HTML destekler)" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
+              <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase text-black cursor-pointer shadow-lg">Etkinliği Güncelle</button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ÜRÜN DÜZENLEME MODALI */}
       {editingProduct && (
