@@ -89,6 +89,9 @@ export default function AdminPage() {
   const [profiles, setProfiles] = useState<any[]>([])
   const [answerInputs, setAnswerInputs] = useState<{ [key: string]: string }>({})
 
+  // Her kullanıcının tablodaki anlık rol ve branş seçimini tutmak için state
+  const [userRolesState, setUserRolesState] = useState<{ [key: string]: { role: string, branch: string } }>({})
+
   // Yeni Ürün Ekleme
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
@@ -193,7 +196,17 @@ export default function AdminPage() {
       if (regData) setRegistrations(regData)
 
       const { data: profData } = await supabase.from('profiles').select('*').order('full_name', { ascending: true })
-      if (profData) setProfiles(profData)
+      if (profData) {
+        setProfiles(profData)
+        const roleMap: any = {}
+        profData.forEach((p: any) => {
+          roleMap[p.id] = {
+            role: p.role || 'user',
+            branch: p.assigned_branch || 'KOŞU'
+          }
+        })
+        setUserRolesState(roleMap)
+      }
     } catch (e) {
       console.error(e)
     } finally {
@@ -201,10 +214,16 @@ export default function AdminPage() {
     }
   }
 
-  const handleUpdateUserRole = async (userId: string, newRole: string, newBranch: string | null) => {
+  const handleUpdateUserRole = async (userId: string) => {
+    const currentState = userRolesState[userId]
+    if (!currentState) return
+
+    const newRole = currentState.role
+    const newBranch = newRole === 'branch_leader' ? currentState.branch : null
+
     const { error } = await supabase.from('profiles').update({ 
       role: newRole,
-      assigned_branch: newRole === 'branch_leader' ? newBranch : null
+      assigned_branch: newBranch
     }).eq('id', userId)
 
     if (!error) {
@@ -617,7 +636,7 @@ export default function AdminPage() {
             <h2 className="text-base font-bold flex items-center gap-2 text-primary">
               <Shield className="h-5 w-5" /><span>Kullanıcı Rol ve Yetki Yönetimi (Super Admin)</span>
             </h2>
-            <p className="text-xs text-zinc-400">Üyelere Store Admin, Community Admin veya Branş Lideri yetkileri atayabilirsiniz.</p>
+            <p className="text-xs text-zinc-400">Üyelere Store Admin, Community Admin veya Branş Lideri yetkileri atayabilirsiniz. Sadece &quot;Branş Lideri&quot; seçildiğinde branş seçimi aktiftir.</p>
             
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
@@ -625,54 +644,69 @@ export default function AdminPage() {
                   <tr>
                     <th className="p-3">Ad Soyad / E-posta</th>
                     <th className="p-3">Mevcut Rol</th>
-                    <th className="p-3">Branş (Eğer Liderse)</th>
+                    <th className="p-3">Branş (Sadece Branş Lideri İçin)</th>
                     <th className="p-3 text-right">Yetki Güncelle</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-zinc-300">
-                  {profiles.map((prof) => (
-                    <tr key={prof.id} className="hover:bg-zinc-900/40">
-                      <td className="p-3">
-                        <div className="font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</div>
-                        <div className="text-[10px] text-zinc-400">{prof.email}</div>
-                      </td>
-                      <td className="p-3">
-                        <select
-                          id={`role-select-${prof.id}`}
-                          defaultValue={prof.role || 'user'}
-                          className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
-                        >
-                          <option value="user">Standart Üye</option>
-                          <option value="store_admin">Mağaza Admin</option>
-                          <option value="community_admin">Topluluk Admin</option>
-                          <option value="branch_leader">Branş Lideri</option>
-                          <option value="super_admin">Süper Admin</option>
-                        </select>
-                      </td>
-                      <td className="p-3">
-                        <select
-                          id={`branch-select-${prof.id}`}
-                          defaultValue={prof.assigned_branch || 'KOŞU'}
-                          className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
-                        >
-                          {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
-                        </select>
-                      </td>
-                      <td className="p-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const r = (document.getElementById(`role-select-${prof.id}`) as HTMLSelectElement).value
-                            const b = (document.getElementById(`branch-select-${prof.id}`) as HTMLSelectElement).value
-                            handleUpdateUserRole(prof.id, r, b)
-                          }}
-                          className="px-3 py-1.5 bg-primary text-black rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1"
-                        >
-                          <UserCheck size={12} /> Kaydet
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {profiles.map((prof) => {
+                    const currentData = userRolesState[prof.id] || { role: 'user', branch: 'KOŞU' }
+                    const isLeader = currentData.role === 'branch_leader'
+
+                    return (
+                      <tr key={prof.id} className="hover:bg-zinc-900/40">
+                        <td className="p-3">
+                          <div className="font-bold text-white">{prof.full_name || 'İsimsiz Üye'}</div>
+                          <div className="text-[10px] text-zinc-400">{prof.email}</div>
+                        </td>
+                        <td className="p-3">
+                          <select
+                            value={currentData.role}
+                            onChange={(e) => {
+                              setUserRolesState({
+                                ...userRolesState,
+                                [prof.id]: { ...currentData, role: e.target.value }
+                              })
+                            }}
+                            className="bg-black border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                          >
+                            <option value="user">Standart Üye</option>
+                            <option value="store_admin">Mağaza Admin</option>
+                            <option value="community_admin">Topluluk Admin</option>
+                            <option value="branch_leader">Branş Lideri</option>
+                            <option value="super_admin">Süper Admin</option>
+                          </select>
+                        </td>
+                        <td className="p-3">
+                          {isLeader ? (
+                            <select
+                              value={currentData.branch}
+                              onChange={(e) => {
+                                setUserRolesState({
+                                  ...userRolesState,
+                                  [prof.id]: { ...currentData, branch: e.target.value }
+                                })
+                              }}
+                              className="bg-black border border-primary/50 rounded-lg px-2 py-1.5 text-xs text-white"
+                            >
+                              {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                            </select>
+                          ) : (
+                            <span className="text-zinc-600 italic text-[11px]">Gerekmiyor</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateUserRole(prof.id)}
+                            className="px-3 py-1.5 bg-primary text-black rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <UserCheck size={12} /> Kaydet
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
