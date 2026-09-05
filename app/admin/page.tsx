@@ -18,7 +18,9 @@ import {
   Send,
   Ban,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Calendar,
+  Users
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -31,7 +33,6 @@ const BAD_WORDS = [
 function containsBadWord(text: string): boolean {
   const lower = text.toLowerCase()
   return BAD_WORDS.some(word => {
-    // Kelime bütünlüğünü ve türevlerini yakalamak için kontrol
     const regex = new RegExp(`\\b${word}\\b`, 'i')
     return regex.test(lower) || lower.includes(word)
   })
@@ -58,6 +59,8 @@ const CATEGORY_OPTIONS = [
   { id: 'equipment', label: 'Termos & Matara', group: 'Aksesuar & Ekipman' },
 ]
 
+const EVENT_BRANCHES = ['KOŞU', 'YOGA & MOBILITY', 'TENİS', 'VOLEYBOL', 'YELKEN']
+
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [adminProfile, setAdminProfile] = useState<any>(null)
@@ -67,6 +70,8 @@ export default function AdminPage() {
   const [products, setProducts] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
   const [questions, setQuestions] = useState<any[]>([])
+  const [events, setEvents] = useState<any[]>([])
+  const [registrations, setRegistrations] = useState<any[]>([])
   const [answerInputs, setAnswerInputs] = useState<{ [key: string]: string }>({})
 
   // Yeni Ürün Ekleme
@@ -87,7 +92,18 @@ export default function AdminPage() {
   const [description, setDescription] = useState('')
   const [imageList, setImageList] = useState<string[]>([])
 
-  // Ürün Düzenleme Modal (Kategori seçimi eksiksiz eklendi)
+  // Yeni Etkinlik Ekleme
+  const [evtTitle, setEvtTitle] = useState('')
+  const [evtBranch, setEvtBranch] = useState('KOŞU')
+  const [evtDate, setEvtDate] = useState('')
+  const [evtLocation, setEvtLocation] = useState('')
+  const [evtCapacity, setEvtCapacity] = useState('30')
+  const [evtInstructor, setEvtInstructor] = useState('')
+  const [evtDesc, setEvtDesc] = useState('')
+  const [evtImageUrl, setEvtImageUrl] = useState('')
+  const [eventUploading, setEventUploading] = useState(false)
+
+  // Ürün Düzenleme Modal
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editSubtitle, setEditSubtitle] = useState('')
@@ -136,6 +152,12 @@ export default function AdminPage() {
 
       const { data: qData } = await supabase.from('product_questions').select('*').order('created_at', { ascending: false })
       if (qData) setQuestions(qData)
+
+      const { data: evtData } = await supabase.from('events').select('*').order('date', { ascending: true })
+      if (evtData) setEvents(evtData)
+
+      const { data: regData } = await supabase.from('event_registrations').select('*, events(title)').order('created_at', { ascending: false })
+      if (regData) setRegistrations(regData)
     } catch (e) {
       console.error(e)
     } finally {
@@ -248,6 +270,20 @@ export default function AdminPage() {
     setUploading(false)
   }
 
+  const handleEventImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setEventUploading(true)
+    const fileExt = file.name.split('.').pop()
+    const fileName = `event-${Date.now()}.${fileExt}`
+    const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
+    if (!uploadError) {
+      const { data } = supabase.storage.from('product-images').getPublicUrl(fileName)
+      if (data?.publicUrl) setEvtImageUrl(data.publicUrl)
+    }
+    setEventUploading(false)
+  }
+
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !price) return
@@ -279,6 +315,44 @@ export default function AdminPage() {
       fetchData()
     } else {
       alert('Hata: ' + error.message)
+    }
+  }
+
+  const handleAddEvent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!evtTitle || !evtDate) return
+
+    const { error } = await supabase.from('events').insert([{
+      title: evtTitle,
+      branch: evtBranch,
+      date: evtDate,
+      location: evtLocation || 'İstanbul',
+      capacity: Number(evtCapacity) || 30,
+      instructor_name: evtInstructor || null,
+      description: evtDesc || 'Kulüp buluşması.',
+      image_url: evtImageUrl || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop'
+    }])
+
+    if (!error) {
+      alert('Etkinlik başarıyla eklendi!')
+      setEvtTitle(''); setEvtDate(''); setEvtLocation(''); setEvtInstructor(''); setEvtDesc(''); setEvtImageUrl('')
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
+
+  const handleDeleteEvent = async (id: string) => {
+    if (!confirm('Bu etkinliği silmek istediğinize emin misiniz?')) return
+    await supabase.from('events').delete().eq('id', id)
+    fetchData()
+  }
+
+  const handleUpdateRegistrationStatus = async (regId: string, status: string) => {
+    const { error } = await supabase.from('event_registrations').update({ status }).eq('id', regId)
+    if (!error) {
+      alert('Katılımcı durumu güncellendi!')
+      fetchData()
     }
   }
 
@@ -470,9 +544,110 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* ETKİNLİK YÖNETİMİ & KATILIM TALEPLERİ */}
+        {(isSuperAdmin || isStoreAdmin) && (
+          <div className="space-y-12 border-t border-white/10 pt-12">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold flex items-center gap-2 text-primary"><Calendar className="h-5 w-5" /><span>Topluluk & Etkinlik Yönetimi</span></h2>
+            </div>
+
+            {/* Yeni Etkinlik Ekleme Formu */}
+            <div className="rounded-3xl border border-primary/30 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6">
+              <h3 className="text-sm font-bold flex items-center gap-2 text-primary"><PlusCircle className="h-4 w-4" /><span>Yeni Etkinlik Oluştur</span></h3>
+              <form onSubmit={handleAddEvent} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <input type="text" placeholder="Etkinlik Başlığı (Örn: Haftalık Ritim Koşusu)" required value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  <select value={evtBranch} onChange={(e) => setEvtBranch(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white">
+                    {EVENT_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                  <input type="datetime-local" required value={evtDate} onChange={(e) => setEvtDate(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white font-mono" />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <input type="text" placeholder="Konum (Örn: Beylikdüzü Sahil)" value={evtLocation} onChange={(e) => setEvtLocation(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  <input type="text" placeholder="Eğitmen / Lider (İsteğe bağlı)" value={evtInstructor} onChange={(e) => setEvtInstructor(e.target.value)} className="rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white" />
+                  <div className="relative flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 cursor-pointer">
+                    <span className="text-xs text-zinc-400 truncate">{eventUploading ? 'Yükleniyor...' : evtImageUrl ? '✓ Afiş Seçildi' : 'Etkinlik Afişi Seç'}</span>
+                    <Upload className="h-4 w-4 text-primary" />
+                    <input type="file" accept="image/*" onChange={handleEventImageUpload} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                  </div>
+                </div>
+
+                <textarea rows={2} placeholder="Etkinlik Açıklaması..." value={evtDesc} onChange={(e) => setEvtDesc(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white resize-none" />
+                <button type="submit" className="w-full rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black cursor-pointer">Etkinliği Yayınla</button>
+              </form>
+            </div>
+
+            {/* Etkinlik Listesi ve Katılımcılar */}
+            <div className="space-y-6">
+              <h3 className="text-sm font-bold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /><span>Aktif Etkinlikler ve Gelen Katılım Talepleri ({events.length})</span></h3>
+              
+              <div className="grid grid-cols-1 gap-6">
+                {events.map((evt) => {
+                  const evtRegs = registrations.filter((r: any) => r.event_id === evt.id)
+
+                  return (
+                    <div key={evt.id} className="rounded-3xl border border-white/10 bg-zinc-950 p-6 space-y-4">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                        <div>
+                          <span className="text-[10px] font-mono uppercase text-primary font-bold">{evt.branch} · {new Date(evt.date).toLocaleString('tr-TR')}</span>
+                          <h4 className="font-bold text-sm text-white">{evt.title}</h4>
+                          <span className="text-[11px] text-zinc-400">📍 {evt.location}</span>
+                        </div>
+                        <button type="button" onClick={() => handleDeleteEvent(evt.id)} className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-xl text-xs font-bold hover:bg-red-500/20 cursor-pointer">Etkinliği Sil</button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-mono text-zinc-500 uppercase">Katılım Talepleri ({evtRegs.length}):</span>
+                        {evtRegs.length === 0 ? (
+                          <p className="text-xs text-zinc-500 italic">Henüz başvuran katılımcı yok.</p>
+                        ) : (
+                          <div className="divide-y divide-white/5 overflow-x-auto">
+                            <table className="w-full text-left text-xs font-mono">
+                              <thead>
+                                <tr className="text-zinc-500 text-[10px]">
+                                  <th className="py-2">Ad Soyad</th>
+                                  <th className="py-2">İletişim</th>
+                                  <th className="py-2">Durum</th>
+                                  <th className="py-2 text-right">İşlem</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-white/5 text-zinc-300">
+                                {evtRegs.map((reg: any) => (
+                                  <tr key={reg.id}>
+                                    <td className="py-3 font-bold text-white">{reg.full_name}</td>
+                                    <td className="py-3">{reg.email} <br/><span className="text-[10px] text-zinc-500">{reg.phone}</span></td>
+                                    <td className="py-3">
+                                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                        reg.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'
+                                      }`}>
+                                        {reg.status === 'approved' ? 'Onaylandı' : 'Talep Edildi'}
+                                      </span>
+                                    </td>
+                                    <td className="py-3 text-right space-x-2">
+                                      {reg.status !== 'approved' && (
+                                        <button onClick={() => handleUpdateRegistrationStatus(reg.id, 'approved')} className="px-2.5 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-[10px] font-bold cursor-pointer">Onayla</button>
+                                      )}
+                                      <button onClick={() => handleUpdateRegistrationStatus(reg.id, 'rejected')} className="px-2.5 py-1 bg-red-500/10 text-red-400 rounded-lg text-[10px] font-bold cursor-pointer">Reddet</button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* MAĞAZA SİPARİŞLERİ & TEMİZLEME */}
         {(isSuperAdmin || isStoreAdmin) && (
-          <div className="space-y-12">
+          <div className="space-y-12 border-t border-white/10 pt-12">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-bold flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" /><span>Mağaza Siparişleri & İptal / İade Yönetimi ({orders.length})</span></h2>
