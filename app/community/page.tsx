@@ -220,7 +220,7 @@ export default function CommunityPage() {
     }
   }
 
-  // Aktif etkinliklerde geçen branşları otomatik topla ve filtre listesini oluştur
+  // Sadece aktif etkinliklerde bulunan branşları dinamik olarak filtre listesine ekle
   const activeBranches = Array.from(new Set(events.map((e) => (e.branch || 'GENEL').toUpperCase())))
   const availableBranches = ['TÜMÜ', ...activeBranches]
 
