@@ -78,7 +78,6 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [isAuthOpen, setIsAuthOpen] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   
   const [fullName, setFullName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
@@ -135,20 +134,7 @@ export function SiteHeader() {
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
           
           <div className="flex items-center gap-4">
-            <button 
-              type="button" 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="sm:hidden flex flex-col justify-center gap-1.5 h-10 w-10 rounded-full border border-white/15 bg-zinc-900/80 p-2.5 text-white hover:border-primary transition-all cursor-pointer"
-              aria-label="Menüyü aç"
-            >
-              <span className="block h-0.5 w-full bg-current rounded-full" />
-              <span className="block h-0.5 w-3/4 bg-current rounded-full" />
-              <span className="block h-0.5 w-full bg-current rounded-full" />
-            </button>
-
-            <nav className="hidden sm:flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-zinc-300 font-mono">
-              <Link href="/store" className="hover:text-primary transition-colors">MAĞAZA</Link>
-            </nav>
+            {/* Sol taraf temiz bırakıldı */}
           </div>
 
           <div className="absolute left-1/2 -translate-x-1/2">
@@ -164,7 +150,7 @@ export function SiteHeader() {
             </button>
 
             {user ? (
-              <div className="hidden sm:flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Link href="/profile" className="flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-xs font-mono text-zinc-300 backdrop-blur-md hover:border-primary hover:text-white transition-all cursor-pointer">
                   {avatarUrl ? (
                     <div className="relative h-5 w-5 rounded-full overflow-hidden"><Image src={avatarUrl} alt="Avatar" fill className="object-cover" /></div>
@@ -178,35 +164,13 @@ export function SiteHeader() {
                 </button>
               </div>
             ) : (
-              <button type="button" onClick={() => setIsAuthOpen(true)} className="hidden sm:flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-primary backdrop-blur-md hover:bg-primary/25 hover:border-primary transition-all duration-300 cursor-pointer">
+              <button type="button" onClick={() => setIsAuthOpen(true)} className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-primary backdrop-blur-md hover:bg-primary/25 hover:border-primary transition-all duration-300 cursor-pointer">
                 <User className="h-3.5 w-3.5" />
                 <span>Giriş Yap</span>
               </button>
             )}
           </div>
         </div>
-
-        {mobileMenuOpen && (
-          <div className="sm:hidden absolute top-20 inset-x-0 bg-zinc-950/95 border-b border-white/10 backdrop-blur-2xl p-6 space-y-4 font-mono text-xs uppercase font-bold animate-fadeIn">
-            <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300 hover:text-primary">Mağaza Vitrini</Link>
-            <div className="border-t border-white/10 pt-4 flex flex-col gap-3">
-              {user ? (
-                <>
-                  <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-white">
-                    <User size={14} className="text-primary" /> Hesabım & Siparişler
-                  </Link>
-                  <button onClick={handleLogout} className="flex items-center gap-2 text-red-400 text-left">
-                    <LogOut size={14} /> Çıkış Yap
-                  </button>
-                </>
-              ) : (
-                <button onClick={() => { setMobileMenuOpen(false); setIsAuthOpen(true); }} className="w-full py-3 bg-primary text-black rounded-full font-black">
-                  Giriş Yap / Kayıt Ol
-                </button>
-              )}
-            </div>
-          </div>
-        )}
       </header>
 
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={() => window.location.reload()} />
