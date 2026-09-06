@@ -17,7 +17,8 @@ import {
   HelpCircle,
   MessageSquare,
   Ruler,
-  X
+  X,
+  Send
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -49,7 +50,6 @@ function StoreContent() {
   const [selectedColor, setSelectedColor] = useState<string>('')
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
-  const [hoveredImageIdx, setHoveredImageIdx] = useState<{ [key: string]: number }>({})
   const [isAdded, setIsAdded] = useState<boolean>(false)
 
   const [isSizeTableOpen, setIsSizeTableOpen] = useState(false)
@@ -62,6 +62,10 @@ function StoreContent() {
   const [newReviewComment, setNewReviewComment] = useState('')
   const [newReviewRating, setNewReviewRating] = useState('5')
   const [hasPurchased, setHasPurchased] = useState(false)
+
+  // Bülten Abone State
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false)
 
   const fetchProducts = async () => {
     const { data } = await supabase
@@ -231,13 +235,14 @@ function StoreContent() {
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black flex flex-col justify-between">
       
       <div>
-        <div className="bg-primary text-black py-2 px-4 text-center text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+        {/* Üst Kargo Bandı */}
+        <div className="bg-primary text-black py-2.5 px-4 text-center text-xs font-mono font-black uppercase tracking-widest flex items-center justify-center gap-2 mt-20">
           <Truck size={15} />
           <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz!</span>
         </div>
 
         {selectedProduct && (
-          <div className="absolute top-14 left-6 z-30 sm:left-8">
+          <div className="absolute top-28 left-6 z-30 sm:left-10">
             <button type="button" onClick={closeProductDetail} className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all hover:border-primary cursor-pointer">
               <ArrowLeft className="h-3.5 w-3.5 text-primary" />
               <span>Tüm Koleksiyon</span>
@@ -252,8 +257,8 @@ function StoreContent() {
                 <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
                   
                   <div className="lg:col-span-7 space-y-4">
-                    <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 flex items-center justify-center">
-                      <Image src={currentImages[activeImageIdx]} alt={selectedProduct.title} fill priority className="object-contain p-2 transition-transform duration-500 group-hover:scale-105" />
+                    <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 flex items-center justify-center shadow-2xl">
+                      <Image src={currentImages[activeImageIdx]} alt={selectedProduct.title} fill priority className="object-contain p-4 transition-transform duration-700 group-hover:scale-105" />
                     </div>
 
                     {currentImages.length > 1 && (
@@ -270,19 +275,19 @@ function StoreContent() {
                   <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono tracking-widest text-primary uppercase">{selectedProduct.category_label || 'ÖZEL DROP'}</span>
-                        <button type="button" onClick={() => setIsSizeTableOpen(true)} className="inline-flex items-center gap-1.5 text-xs text-primary underline font-mono hover:text-white cursor-pointer">
+                        <span className="text-xs font-mono tracking-widest text-primary uppercase font-bold">{selectedProduct.category_label || 'ÖZEL DROP'}</span>
+                        <button type="button" onClick={() => setIsSizeTableOpen(true)} className="inline-flex items-center gap-1.5 text-xs text-primary underline font-mono hover:text-white cursor-pointer font-bold">
                           <Ruler size={14} /> Beden Ölçü Tablosu
                         </button>
                       </div>
 
-                      <h1 className="mt-2 font-sans text-3xl font-black tracking-tight text-white sm:text-4xl">{selectedProduct.title}</h1>
-                      <p className="text-sm font-mono text-zinc-400 mt-1">{selectedProduct.subtitle}</p>
+                      <h1 className="mt-2 font-sans text-3xl font-black tracking-tight text-white sm:text-5xl">{selectedProduct.title}</h1>
+                      <p className="text-sm font-mono text-zinc-400 mt-2">{selectedProduct.subtitle}</p>
 
                       <div className="mt-6 flex items-end gap-4">
                         <div>
                           <span className="text-xs font-mono text-zinc-500 uppercase block">Kulüp Fiyatı (KDV Dahil)</span>
-                          <div className="text-3xl font-black text-white flex items-center gap-3">
+                          <div className="text-3xl sm:text-4xl font-black text-white flex items-center gap-3">
                             <span>₺{Number(selectedProduct.price).toLocaleString('tr-TR')}</span>
                             {selectedProduct.compare_at_price && selectedProduct.compare_at_price > selectedProduct.price && (
                               <span className="text-lg text-zinc-500 line-through font-mono">₺{Number(selectedProduct.compare_at_price).toLocaleString('tr-TR')}</span>
@@ -292,7 +297,7 @@ function StoreContent() {
                       </div>
 
                       <div 
-                        className="mt-6 text-sm leading-relaxed text-zinc-300 space-y-2 bg-zinc-950/60 p-5 rounded-2xl border border-white/10 font-sans"
+                        className="mt-6 text-sm leading-relaxed text-zinc-300 space-y-2 bg-zinc-950/60 p-6 rounded-3xl border border-white/10 font-sans shadow-lg"
                         dangerouslySetInnerHTML={{ __html: selectedProduct.description }}
                       />
 
@@ -301,7 +306,7 @@ function StoreContent() {
                           <div className="text-xs font-mono text-zinc-400 uppercase">Renk Seçimi: <strong className="text-white">{selectedColor}</strong></div>
                           <div className="flex gap-2">
                             {selectedProduct.colors.map((col: string) => (
-                              <button key={col} type="button" onClick={() => { setSelectedColor(col); setSelectedSize(''); }} className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${selectedColor === col ? 'border-primary bg-primary/20 text-primary' : 'border-white/10 bg-zinc-900 text-zinc-400'}`}>
+                              <button key={col} type="button" onClick={() => { setSelectedColor(col); setSelectedSize(''); }} className={`px-5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${selectedColor === col ? 'border-primary bg-primary/20 text-primary' : 'border-white/10 bg-zinc-900 text-zinc-400'}`}>
                                 {col}
                               </button>
                             ))}
@@ -309,7 +314,6 @@ function StoreContent() {
                         </div>
                       )}
 
-                      {/* Müşteri Gözünden Stok Rakamları Gizlendi ("Mevcut" veya "Tükendi") */}
                       <div className="mt-6 space-y-2">
                         <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi ({selectedColor}) *Zorunlu</div>
                         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
@@ -325,9 +329,9 @@ function StoreContent() {
                                 type="button" 
                                 disabled={isSizeOut}
                                 onClick={() => setSelectedSize(s)} 
-                                className={`relative rounded-xl py-2.5 text-xs font-bold transition-all flex flex-col items-center justify-center ${
+                                className={`relative rounded-xl py-3 text-xs font-bold transition-all flex flex-col items-center justify-center ${
                                   isSizeOut ? 'bg-zinc-950 border border-white/5 text-zinc-700 line-through cursor-not-allowed' :
-                                  selectedSize === s ? 'border-2 border-primary bg-primary text-black font-black cursor-pointer shadow-lg' : 'border border-white/10 bg-zinc-900 text-zinc-300 hover:border-white/30 cursor-pointer'
+                                  selectedSize === s ? 'border-2 border-primary bg-primary text-black font-black cursor-pointer shadow-lg scale-105' : 'border border-white/10 bg-zinc-900 text-zinc-300 hover:border-white/30 cursor-pointer'
                                 }`}
                               >
                                 <span>{s}</span>
@@ -390,28 +394,37 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            <section className="relative h-[70vh] min-h-[500px] w-full overflow-hidden flex items-end pb-16 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10">
+            {/* Coolpetz Tarzı Büyük Çarpıcı Hero Alanı */}
+            <section className="relative h-[80vh] min-h-[550px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10">
               <div className="absolute inset-0 z-0 overflow-hidden">
                 <Image src="/store-hero.jpeg" alt="Orise Store" fill priority className="object-cover object-center scale-105 brightness-90 contrast-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
               </div>
-              <div className="relative z-10 max-w-3xl space-y-4">
-                <h1 className="font-sans text-5xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-white uppercase leading-none">
-                  RİTMİNİ <br /><span className="text-primary">HİSSET</span>
+              <div className="relative z-10 max-w-4xl space-y-6">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-primary backdrop-blur-md shadow-[0_0_20px_rgba(249,115,22,0.2)]">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Koleksiyon 2026</span>
+                </div>
+                <h1 className="font-sans text-6xl sm:text-8xl lg:text-9xl font-black tracking-tighter text-white uppercase leading-[0.9]">
+                  RİTMİNİ <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">HİSSET.</span>
                 </h1>
-                <p className="text-sm sm:text-base text-zinc-200 font-sans max-w-lg">Yeni nesil teknik spor giyim koleksiyonu.</p>
+                <p className="text-sm sm:text-lg text-zinc-300 font-sans max-w-xl font-normal leading-relaxed">
+                  Yeni nesil teknik spor giyim, kulüp ruhu ve sokak stili bir arada. Sınırları birlikte zorlayın.
+                </p>
               </div>
             </section>
 
             <div id="collection"></div>
-            <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-30 backdrop-blur-xl">
-              <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+            
+            {/* Filtreleme ve Sıralama Çubuğu */}
+            <section className="border-b border-white/10 bg-zinc-950/90 sticky top-20 z-30 backdrop-blur-2xl">
+              <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-5 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
                 <div className="flex items-center gap-2">
                   {availableCategories.map((catKey) => (
                     <button 
                       key={catKey} 
                       onClick={() => setActiveCategory(catKey)} 
-                      className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${activeCategory === catKey ? 'bg-primary text-black font-black' : 'border border-white/10 bg-black/60 text-zinc-400 hover:text-white'}`}
+                      className={`rounded-full px-6 py-2.5 text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${activeCategory === catKey ? 'bg-primary text-black font-black shadow-[0_0_20px_rgba(249,115,22,0.4)]' : 'border border-white/10 bg-black/60 text-zinc-400 hover:text-white'}`}
                     >
                       {ALL_CATEGORIES_MAP[catKey] || catKey.toUpperCase()}
                     </button>
@@ -420,7 +433,7 @@ function StoreContent() {
 
                 <div className="flex items-center gap-2 shrink-0">
                   <ArrowUpDown className="h-4 w-4 text-zinc-400" />
-                  <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-black border border-white/10 rounded-full px-4 py-2 text-xs font-mono text-white focus:outline-none cursor-pointer">
+                  <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-black border border-white/10 rounded-full px-5 py-2.5 text-xs font-mono text-white focus:outline-none cursor-pointer">
                     <option value="default">Önerilen Sıralama</option>
                     <option value="asc">Fiyat: Ucuzdan Pahalıya</option>
                     <option value="desc">Fiyat: Pahalıdan Ucuza</option>
@@ -429,9 +442,10 @@ function StoreContent() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-b from-black via-zinc-950/40 to-black py-16 sm:py-20">
+            {/* Ürün Vitrini (Grid) */}
+            <section className="bg-gradient-to-b from-black via-zinc-950/40 to-black py-20 sm:py-28">
               <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredProducts.map((product) => {
                     const productImages = product.image_urls && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '/placeholder.svg']
                     const totalStock = product.sizes ? Object.values(product.sizes as Record<string, any>).reduce((acc: number, curr: any) => {
@@ -446,27 +460,27 @@ function StoreContent() {
                       <div 
                         key={product.id} 
                         onClick={() => openProductDetail(product)} 
-                        className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-5 backdrop-blur-md transition-all duration-300 ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-primary/60 cursor-pointer shadow-xl'}`}
+                        className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur-xl transition-all duration-500 ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-primary/60 hover:bg-zinc-900/80 cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
                       >
                         <div>
-                          <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950 flex items-center justify-center">
+                          <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-zinc-950 flex items-center justify-center border border-white/5">
                             {isSoldOut && (
                               <div className="absolute inset-0 z-20 bg-black/75 flex items-center justify-center">
                                 <span className="rounded-xl bg-zinc-900 border border-white/20 px-6 py-2.5 text-xs font-black uppercase text-zinc-300">TÜKENDİ</span>
                               </div>
                             )}
-                            <Image src={productImages[0]} alt={product.title} fill className="object-contain p-2" />
+                            <Image src={productImages[0]} alt={product.title} fill className="object-contain p-4 transition-transform duration-700 group-hover:scale-105" />
                           </div>
 
-                          <div className="mt-5 space-y-1.5">
-                            <div className="text-[10px] font-mono text-primary uppercase">{product.category_label || 'ÖZEL DROP'}</div>
-                            <h3 className="font-sans text-lg font-bold text-white group-hover:text-primary transition-colors">{product.title}</h3>
+                          <div className="mt-6 space-y-2">
+                            <div className="text-[10px] font-mono text-primary uppercase font-bold tracking-widest">{product.category_label || 'ÖZEL DROP'}</div>
+                            <h3 className="font-sans text-xl font-bold text-white group-hover:text-primary transition-colors tracking-tight">{product.title}</h3>
                           </div>
                         </div>
 
-                        <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
-                          <div className="text-lg font-black text-white">₺{Number(product.price).toLocaleString('tr-TR')}</div>
-                          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase bg-zinc-800 text-zinc-200 group-hover:bg-primary group-hover:text-black">
+                        <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-5">
+                          <div className="text-xl font-black text-white">₺{Number(product.price).toLocaleString('tr-TR')}</div>
+                          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-xs font-bold uppercase bg-zinc-800 text-zinc-200 group-hover:bg-primary group-hover:text-black transition-all">
                             <span>İncele</span>
                             <ArrowUpRight className="h-3.5 w-3.5" />
                           </div>
@@ -474,6 +488,40 @@ function StoreContent() {
                       </div>
                     )
                   })}
+                </div>
+              </div>
+            </section>
+
+            {/* Coolpetz Tarzı Bülten / Kayıt Alanı (Footer Üstü) */}
+            <section className="border-t border-white/10 bg-zinc-950 py-24 text-center">
+              <div className="mx-auto max-w-xl px-6 space-y-6">
+                <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-primary font-bold">TOPLULUK BÜLTENİ</span>
+                <h2 className="font-sans text-3xl sm:text-4xl font-black text-white tracking-tight">Yeni Koleksiyonlardan Haberdar Ol</h2>
+                <p className="text-xs sm:text-sm text-zinc-400">Yeni drop'lar, sürpriz indirimler ve açık hava buluşmalarından ilk sen haberdar ol.</p>
+                
+                {newsletterSubscribed ? (
+                  <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold">
+                    ✓ Bültenimize başarıyla kaydoldunuz!
+                  </div>
+                ) : (
+                  <form onSubmit={(e) => { e.preventDefault(); if(newsletterEmail) setNewsletterSubscribed(true); }} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2">
+                    <input 
+                      type="email" 
+                      required 
+                      value={newsletterEmail} 
+                      onChange={(e) => setNewsletterEmail(e.target.value)} 
+                      placeholder="E-posta adresiniz..." 
+                      className="flex-1 rounded-full border border-white/15 bg-black px-6 py-4 text-xs text-white focus:border-primary focus:outline-none" 
+                    />
+                    <button type="submit" className="rounded-full bg-primary px-8 py-4 text-xs font-bold uppercase tracking-widest text-black hover:bg-orange-500 transition-all cursor-pointer shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+                      Abone Ol
+                    </button>
+                  </form>
+                )}
+                <div className="pt-2">
+                  <button onClick={() => alert('Teşekkürler!')} className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 underline hover:text-zinc-300 cursor-pointer">
+                    NO THANKS
+                  </button>
                 </div>
               </div>
             </section>
