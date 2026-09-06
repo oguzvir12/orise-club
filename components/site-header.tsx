@@ -2,76 +2,13 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, MessageCircle, Send, Loader2, Menu, X } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
 import AuthModal from './auth-modal'
 import Image from 'next/image'
-
-function AiChatButton() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [msg, setMsg] = useState('')
-  const [response, setResponse] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const sendMessage = async () => {
-    if (!msg.trim()) return
-    setLoading(true)
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg })
-      })
-      const data = await res.json()
-      setResponse(data.response)
-    } catch (e) {
-      setResponse("Bir hata oluştu ama en kısa sürede döneceğiz!")
-    } finally {
-      setLoading(false)
-      setMsg('')
-    }
-  }
-
-  return (
-    <>
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
-        className="fixed bottom-6 left-6 z-[90] h-14 w-14 rounded-full bg-primary text-black shadow-2xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
-        aria-label="Destek Asistanı"
-      >
-        {isOpen ? <X /> : <MessageCircle />}
-      </button>
-
-      {isOpen && (
-        <div className="fixed bottom-24 left-6 z-[90] w-80 h-96 bg-zinc-950 border border-white/10 rounded-3xl shadow-2xl p-4 flex flex-col">
-          <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
-            <span className="text-xs font-bold text-primary uppercase">ORISE STORE DESTEK 🤖</span>
-            <button onClick={() => setIsOpen(false)} className="text-zinc-400 hover:text-white text-xs cursor-pointer">✕</button>
-          </div>
-          <div className="flex-1 overflow-y-auto text-xs text-white space-y-2 p-2">
-            {!response && <p className="text-zinc-500">Selam! Siparişlerin veya koleksiyon hakkında nasıl yardımcı olabilirim?</p>}
-            {response && <p className="bg-zinc-900 p-3 rounded-xl leading-relaxed">{response}</p>}
-          </div>
-          <div className="flex gap-2 pt-2 border-t border-white/5">
-            <input 
-              value={msg} 
-              onChange={(e) => setMsg(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-              className="flex-1 bg-black rounded-full px-3 py-2 text-xs text-white focus:outline-none border border-white/10" 
-              placeholder="Mesaj yazın..." 
-            />
-            <button onClick={sendMessage} className="bg-primary p-2.5 rounded-full text-black hover:opacity-90 cursor-pointer">
-              {loading ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} />}
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
 
 export function SiteHeader() {
   const { count, openCart } = useCart()
@@ -145,11 +82,6 @@ export function SiteHeader() {
               <span className="block h-0.5 w-3/4 bg-current rounded-full" />
               <span className="block h-0.5 w-full bg-current rounded-full" />
             </button>
-
-            <nav className="hidden sm:flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-zinc-300 font-mono">
-              <Link href="/store" className="hover:text-primary transition-colors">MAĞAZA</Link>
-              <Link href="/community" className="hover:text-primary transition-colors">TOPLULUK</Link>
-            </nav>
           </div>
 
           <div className="absolute left-1/2 -translate-x-1/2">
@@ -212,7 +144,6 @@ export function SiteHeader() {
       </header>
 
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={() => window.location.reload()} />
-      <AiChatButton />
     </>
   )
 }
