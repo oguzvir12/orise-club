@@ -249,13 +249,14 @@ function StoreContent() {
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black flex flex-col justify-between">
       
       <div>
-        <div className="bg-zinc-950 border-b border-white/10 text-zinc-300 py-2.5 px-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 mt-20">
+        {/* Üst Kargo Bandı (Üst boşluk mt-16 sm:mt-20 yapılarak daraltıldı) */}
+        <div className="bg-zinc-950 border-b border-white/10 text-zinc-300 py-2.5 px-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 mt-16 sm:mt-20">
           <Truck size={14} className="text-primary" />
           <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
         </div>
 
         {selectedProduct && (
-          <div className="absolute top-32 left-6 z-30 sm:left-10">
+          <div className="absolute top-28 left-6 z-30 sm:left-10">
             <button type="button" onClick={closeProductDetail} className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all hover:border-primary cursor-pointer">
               <ArrowLeft className="h-3.5 w-3.5 text-primary" />
               <span>Tüm Koleksiyon</span>
@@ -440,7 +441,7 @@ function StoreContent() {
             <div id="collection"></div>
             
             {/* Filtreleme ve Sıralama Çubuğu */}
-            <section className="border-b border-white/10 bg-zinc-950/90 sticky top-20 z-30 backdrop-blur-2xl">
+            <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 sm:top-20 z-30 backdrop-blur-2xl">
               <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-5 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
                 <div className="flex items-center gap-2">
                   {availableCategories.map((catKey) => (
@@ -650,7 +651,7 @@ function StoreContent() {
                       <tr><td className="p-2.5 border border-white/10 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>10.5</td><td>10.75</td><td>11</td><td>11.25</td><td>11.5</td><td>11.75</td><td>12</td><td>12.25</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">KOLEVİ OMUZDAN DİK</td><td>29</td><td>30</td><td>31</td><td>32</td><td>33</td><td>34</td><td>35</td><td>36</td></tr>
-                      <tr><td className="p-2.5 border border-white/10 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10] text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">KOL AĞZI</td><td>19.5</td><td>20.25</td><td>21</td><td>21.75</td><td>22.5</td><td>23.25</td><td>24</td><td>24.75</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">YAKA YÜKSEKLİĞİ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
