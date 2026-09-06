@@ -651,7 +651,7 @@ function StoreContent() {
                       <tr><td className="p-2.5 border border-white/10 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>10.5</td><td>10.75</td><td>11</td><td>11.25</td><td>11.5</td><td>11.75</td><td>12</td><td>12.25</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">KOLEVİ OMUZDAN DİK</td><td>29</td><td>30</td><td>31</td><td>32</td><td>33</td><td>34</td><td>35</td><td>36</td></tr>
-                      <tr><td className="p-2.5 border border-white/10] text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">KOL AĞZI</td><td>19.5</td><td>20.25</td><td>21</td><td>21.75</td><td>22.5</td><td>23.25</td><td>24</td><td>24.75</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">YAKA YÜKSEKLİĞİ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
