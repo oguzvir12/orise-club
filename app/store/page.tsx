@@ -63,7 +63,6 @@ function StoreContent() {
   const [newReviewRating, setNewReviewRating] = useState('5')
   const [hasPurchased, setHasPurchased] = useState(false)
 
-  // Bülten Abone State
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false)
 
@@ -235,7 +234,6 @@ function StoreContent() {
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black flex flex-col justify-between">
       
       <div>
-        {/* Üst Kargo Bandı */}
         <div className="bg-primary text-black py-2.5 px-4 text-center text-xs font-mono font-black uppercase tracking-widest flex items-center justify-center gap-2 mt-20">
           <Truck size={15} />
           <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz!</span>
@@ -394,10 +392,19 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Coolpetz Tarzı Büyük Çarpıcı Hero Alanı */}
+            {/* Video Destekli Çarpıcı Hero Alanı */}
             <section className="relative h-[80vh] min-h-[550px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10">
-              <div className="absolute inset-0 z-0 overflow-hidden">
-                <Image src="/store-hero.jpeg" alt="Orise Store" fill priority className="object-cover object-center scale-105 brightness-90 contrast-110" />
+              <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+                <video 
+                  autoPlay 
+                  muted 
+                  loop 
+                  playsInline 
+                  className="absolute inset-0 h-full w-full object-cover object-center scale-105 brightness-90 contrast-110"
+                >
+                  <source src="/store-hero-video.mp4" type="video/mp4" />
+                  Tarayıcınız video etiketini desteklemiyor.
+                </video>
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
               </div>
               <div className="relative z-10 max-w-4xl space-y-6">
@@ -583,7 +590,7 @@ function StoreContent() {
                       <tr><td className="p-2.5 border border-white/10 text-left">ETEK</td><td>54</td><td>56</td><td>58</td><td>60</td><td>62</td><td>64</td><td>66</td><td>—</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">OMUZDAN OMUZA</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td><td>68</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">YAKA AÇIKLIĞI</td><td>19</td><td>19.5</td><td>20</td><td>20.5</td><td>21</td><td>21.5</td><td>22</td><td>22.5</td></tr>
-                      <tr><td className="p-2.5 border border-white/10 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>10.5</td><td>10.75</td><td>11</td><td>11.25</td><td>11.5</td><td>11.75</td><td>12</td><td>12.25</td></tr>
+      <tr><td className="p-2.5 border border-white/10 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>10.5</td><td>10.75</td><td>11</td><td>11.25</td><td>11.5</td><td>11.75</td><td>12</td><td>12.25</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">KOLEVİ OMUZDAN DİK</td><td>29</td><td>30</td><td>31</td><td>32</td><td>33</td><td>34</td><td>35</td><td>36</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
