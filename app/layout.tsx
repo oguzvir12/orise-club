@@ -9,7 +9,7 @@ import { Geist, Space_Grotesk } from 'next/font/google'
 import { CartProvider } from '@/components/cart/cart-provider'
 import { SiteHeader } from '@/components/site-header'
 import { CartDrawer } from '@/components/cart/cart-drawer'
-import { ShieldCheck, Mail, ArrowUpRight, ChevronDown } from 'lucide-react'
+import { ShieldCheck, Mail, ArrowUpRight, ChevronDown, ChevronUp } from 'lucide-react'
 import { InstagramIcon } from '@/components/icons/instagram-icon'
 import { LinkedinIcon } from '@/components/icons/linkedin-icon'
 import './globals.css'
@@ -29,7 +29,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const [isWhatsappMinimized, setIsWhatsappMinimized] = useState(false)
+  const [isWhatsappExpanded, setIsWhatsappExpanded] = useState(false)
 
   return (
     <html
@@ -46,10 +46,10 @@ export default function RootLayout({
 
           <CartDrawer />
 
-          {/* SAĞ ALT: Küçültülebilir / Gizlenebilir WhatsApp Butonu */}
-          <div className="fixed bottom-6 right-6 z-[90] flex items-center gap-2">
-            {!isWhatsappMinimized ? (
-              <div className="flex items-center gap-2 rounded-full bg-[#25D366] text-white shadow-2xl pl-4 pr-2 py-2">
+          {/* SAĞ ALT: Varsayılan olarak küçük ikon, tıklayınca genişleyen WhatsApp Butonu */}
+          <div className="fixed bottom-6 right-6 z-[90]">
+            {isWhatsappExpanded ? (
+              <div className="flex items-center gap-2 rounded-full bg-[#25D366] text-white shadow-2xl pl-4 pr-2 py-2 animate-fadeIn">
                 <a 
                   href="https://wa.me/905070820800?text=Merhaba,%20ORISE%20Club%20hakkında%20bilgi%20almak%20istiyorum." 
                   target="_blank" 
@@ -62,7 +62,7 @@ export default function RootLayout({
                   <span>WhatsApp Destek</span>
                 </a>
                 <button 
-                  onClick={() => setIsWhatsappMinimized(true)}
+                  onClick={() => setIsWhatsappExpanded(false)}
                   className="text-white/80 hover:text-white p-1 cursor-pointer"
                   title="Küçült"
                 >
@@ -71,7 +71,7 @@ export default function RootLayout({
               </div>
             ) : (
               <button 
-                onClick={() => setIsWhatsappMinimized(false)}
+                onClick={() => setIsWhatsappExpanded(true)}
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-2xl hover:scale-105 transition-transform cursor-pointer"
                 title="WhatsApp Destek Aç"
               >
@@ -173,7 +173,6 @@ export default function RootLayout({
             </div>
           </footer>
         </CartProvider>
-        {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )
