@@ -350,6 +350,7 @@ export default function CommunityPage() {
               const eventDate = new Date(evt.date)
               const dayNum = eventDate.getDate()
               const monthName = eventDate.toLocaleString('tr-TR', { month: 'long' }).toUpperCase()
+              const dayName = eventDate.toLocaleString('tr-TR', { weekday: 'long' }).toUpperCase()
               const timeStr = eventDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
 
               const evtRegs = registrations.filter(r => r.event_id === evt.id && r.status === 'approved')
@@ -364,10 +365,12 @@ export default function CommunityPage() {
                 >
                   <div className="space-y-5">
                     <div className="flex items-center gap-4">
-                      <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-center shrink-0 w-20">
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">{monthName}</span>
+                      {/* Tarih ve Gün Rozeti */}
+                      <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 px-3 py-3 text-center shrink-0 w-24">
+                        <span className="text-[9px] font-mono uppercase tracking-widest text-primary font-bold">{monthName}</span>
                         <span className="text-2xl font-black text-white leading-none my-1">{dayNum}</span>
-                        <span className="text-[10px] text-zinc-400">{timeStr}</span>
+                        <span className="text-[10px] font-mono text-primary font-extrabold uppercase">{dayName}</span>
+                        <span className="text-[10px] text-zinc-400 mt-0.5">{timeStr}</span>
                       </div>
                       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-zinc-950 border border-white/5">
                         <Image
