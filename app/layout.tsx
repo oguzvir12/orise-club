@@ -58,22 +58,17 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased bg-black text-white flex flex-col min-h-screen selection:bg-primary selection:text-black overflow-x-hidden">
         <CartProvider>
-          {/* Üst Menü */}
           <SiteHeader />
 
-          {/* Sayfa İçeriği */}
           <main className="flex-1 w-full pt-16">
             {children}
           </main>
 
-          {/* Sepet Çekmecesi */}
           <CartDrawer />
 
-          {/* Çok Sütunlu Footer */}
           <footer className="w-full border-t border-white/10 bg-zinc-950 pt-16 pb-12 px-6 sm:px-10 lg:px-16 font-sans text-xs">
             <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
               
-              {/* 1. Sütun: Kurumsal & Güvence */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="font-sans text-xl font-black tracking-tighter text-white">ORISE <span className="text-primary">STORE</span></span>
@@ -95,7 +90,6 @@ export default function RootLayout({
                 </div>
               </div>
 
-              {/* 2. Sütun: Kaynaklar / Mağaza (Etkinlik Takvimi kaldırıldı) */}
               <div className="space-y-3 font-mono">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-white">Kurumsal & Mağaza</h4>
                 <ul className="space-y-2.5 text-zinc-400">
@@ -105,7 +99,6 @@ export default function RootLayout({
                 </ul>
               </div>
 
-              {/* 3. Sütun: Kulüp & Sosyal */}
               <div className="space-y-3 font-mono">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-white">Kulüp & Sosyal</h4>
                 <ul className="space-y-2.5 text-zinc-400">
@@ -128,7 +121,6 @@ export default function RootLayout({
                 </ul>
               </div>
 
-              {/* 4. Sütun: Bize Ulaşın */}
               <div className="space-y-3 font-mono">
                 <h4 className="text-xs font-bold uppercase tracking-widest text-white">Bize Ulaşın</h4>
                 <div className="space-y-3 text-zinc-400 text-[11px]">
@@ -155,7 +147,6 @@ export default function RootLayout({
 
             </div>
 
-            {/* Alt Telif ve Yasal Onur Bandı */}
             <div className="mx-auto max-w-7xl mt-14 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-zinc-500">
               <p>© 2026 ORISE CLUB. Tüm Hakları Saklıdır. // Bir Markadan Fazlası, Bir Kulüp.</p>
               <div className="flex items-center gap-6">
