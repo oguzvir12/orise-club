@@ -10,7 +10,6 @@ import {
   ShoppingBag,
   Check,
   Maximize2,
-  Flame,
   ArrowUpDown,
   Sparkles,
   Truck,
@@ -25,7 +24,7 @@ import { supabase } from '@/lib/supabase'
 
 const ALL_CATEGORIES_MAP: { [key: string]: string } = {
   all: 'TÜMÜ',
-  sale: '🔥 FIRSAT & İNDİRİM',
+  sale: 'FIRSAT & İNDİRİM',
   tank: 'KOŞU ATLETİ',
   sweatshirt: 'SWEATSHIRT',
   shorts: 'ŞORT',
@@ -234,11 +233,6 @@ function StoreContent() {
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black flex flex-col justify-between">
       
       <div>
-        <div className="bg-primary text-black py-2.5 px-4 text-center text-xs font-mono font-black uppercase tracking-widest flex items-center justify-center gap-2 mt-20">
-          <Truck size={15} />
-          <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz!</span>
-        </div>
-
         {selectedProduct && (
           <div className="absolute top-28 left-6 z-30 sm:left-10">
             <button type="button" onClick={closeProductDetail} className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all hover:border-primary cursor-pointer">
@@ -250,7 +244,7 @@ function StoreContent() {
 
         {selectedProduct ? (
           <div>
-            <section className="pt-12 pb-20 sm:pt-16 sm:pb-24 border-b border-white/10">
+            <section className="pt-24 pb-20 sm:pt-28 sm:pb-24 border-b border-white/10">
               <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
                 <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
                   
@@ -392,8 +386,8 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Video Destekli Çarpıcı Hero Alanı */}
-            <section className="relative h-[80vh] min-h-[550px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10">
+            {/* Video Destekli Çarpıcı Hero Alanı & Şık Üst Bilgi Rozeti */}
+            <section className="relative h-[85vh] min-h-[600px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10 pt-20">
               <div className="absolute inset-0 z-0 overflow-hidden bg-black">
                 <video 
                   autoPlay 
@@ -407,6 +401,13 @@ function StoreContent() {
                 </video>
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
               </div>
+
+              {/* Lüks Marka Üst Bilgi Rozeti */}
+              <div className="absolute top-28 right-8 z-20 hidden sm:flex items-center gap-2 rounded-full border border-white/20 bg-black/60 px-5 py-2 text-xs font-mono text-zinc-300 backdrop-blur-xl">
+                <Truck size={14} className="text-primary" />
+                <span>2000 TL Üzeri Ücretsiz Kargo</span>
+              </div>
+
               <div className="relative z-10 max-w-4xl space-y-6">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-primary backdrop-blur-md shadow-[0_0_20px_rgba(249,115,22,0.2)]">
                   <Sparkles className="h-3.5 w-3.5" />
@@ -590,7 +591,7 @@ function StoreContent() {
                       <tr><td className="p-2.5 border border-white/10 text-left">ETEK</td><td>54</td><td>56</td><td>58</td><td>60</td><td>62</td><td>64</td><td>66</td><td>—</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">OMUZDAN OMUZA</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td><td>68</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">YAKA AÇIKLIĞI</td><td>19</td><td>19.5</td><td>20</td><td>20.5</td><td>21</td><td>21.5</td><td>22</td><td>22.5</td></tr>
-      <tr><td className="p-2.5 border border-white/10 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>10.5</td><td>10.75</td><td>11</td><td>11.25</td><td>11.5</td><td>11.75</td><td>12</td><td>12.25</td></tr>
+                      <tr><td className="p-2.5 border border-white/10 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>10.5</td><td>10.75</td><td>11</td><td>11.25</td><td>11.5</td><td>11.75</td><td>12</td><td>12.25</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">KOLEVİ OMUZDAN DİK</td><td>29</td><td>30</td><td>31</td><td>32</td><td>33</td><td>34</td><td>35</td><td>36</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
