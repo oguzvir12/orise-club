@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, MessageCircle, Send, Loader2, Menu, X } from 'lucide-react'
+import { ShoppingBag, User, LogOut, MessageCircle, Send, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -134,7 +134,6 @@ export function SiteHeader() {
       <header className={cn('fixed inset-x-0 top-0 z-50 transition-all duration-300', scrolled ? 'border-b border-white/10 bg-black/90 backdrop-blur-2xl shadow-lg' : 'border-b border-transparent bg-black/50 backdrop-blur-md')}>
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
           
-          {/* Mobil Menü Butonu & Navigasyon */}
           <div className="flex items-center gap-4">
             <button 
               type="button" 
@@ -148,19 +147,16 @@ export function SiteHeader() {
             </button>
 
             <nav className="hidden sm:flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-zinc-300 font-mono">
-              <Link href="/store" className="hover:text-primary transition-colors">Mağaza</Link>
-              <Link href="/community" className="hover:text-primary transition-colors">Topluluk</Link>
+              <Link href="/store" className="hover:text-primary transition-colors">MAĞAZA</Link>
             </nav>
           </div>
 
-          {/* Coolpetz Tarzı Ortalanmış Logolu Alan */}
           <div className="absolute left-1/2 -translate-x-1/2">
             <Link href="/store" aria-label="ORISE STORE" className="flex flex-col items-center">
               <Logo />
             </Link>
           </div>
 
-          {/* Sağ Alan: Sepet & Profil / Giriş */}
           <div className="flex items-center gap-3">
             <button type="button" onClick={openCart} aria-label="Sepeti aç" className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-zinc-900/80 text-white backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-primary/20 hover:text-primary cursor-pointer">
               <ShoppingBag className="h-4 w-4" />
@@ -190,11 +186,9 @@ export function SiteHeader() {
           </div>
         </div>
 
-        {/* Mobil Açılır Menü Çekmecesi */}
         {mobileMenuOpen && (
           <div className="sm:hidden absolute top-20 inset-x-0 bg-zinc-950/95 border-b border-white/10 backdrop-blur-2xl p-6 space-y-4 font-mono text-xs uppercase font-bold animate-fadeIn">
             <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300 hover:text-primary">Mağaza Vitrini</Link>
-            <Link href="/community" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300 hover:text-primary">Topluluk & Etkinlikler</Link>
             <div className="border-t border-white/10 pt-4 flex flex-col gap-3">
               {user ? (
                 <>
