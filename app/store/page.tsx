@@ -17,7 +17,8 @@ import {
   MessageSquare,
   Ruler,
   X,
-  Send
+  Send,
+  Mail
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -62,8 +63,13 @@ function StoreContent() {
   const [newReviewRating, setNewReviewRating] = useState('5')
   const [hasPurchased, setHasPurchased] = useState(false)
 
+  // Sol alt açılır bülten widget state
+  const [isNewsletterOpen, setIsNewsletterOpen] = useState(false)
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false)
+
+  // Çerez Onay Banner State
+  const [cookieConsent, setCookieConsent] = useState(true)
 
   const fetchProducts = async () => {
     const { data } = await supabase
@@ -78,7 +84,14 @@ function StoreContent() {
   useEffect(() => {
     fetchProducts()
     checkAuthAndInteractions()
+    const hasConsent = localStorage.getItem('orise_cookie_consent')
+    if (!hasConsent) setCookieConsent(false)
   }, [])
+
+  const acceptCookies = () => {
+    localStorage.setItem('orise_cookie_consent', 'true')
+    setCookieConsent(true)
+  }
 
   const checkAuthAndInteractions = async () => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -233,7 +246,6 @@ function StoreContent() {
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black flex flex-col justify-between">
       
       <div>
-        {/* Üst Minimalist Kargo Bandı (Estetik) */}
         <div className="bg-zinc-950 border-b border-white/10 text-zinc-300 py-2.5 px-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 mt-20">
           <Truck size={14} className="text-primary" />
           <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
@@ -392,7 +404,7 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Video Destekli Çarpıcı Hero Alanı (Logoya Uygun Geniş/Extended Tipografi ve "Birlikte Hareket Et") */}
+            {/* Video Destekli Çarpıcı Hero Alanı ("Birlikte Hareket Et") */}
             <section className="relative h-[85vh] min-h-[600px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10">
               <div className="absolute inset-0 z-0 overflow-hidden bg-black">
                 <video 
@@ -413,7 +425,7 @@ function StoreContent() {
                   <Sparkles className="h-3.5 w-3.5" />
                   <span>Koleksiyon 2026</span>
                 </div>
-                <h1 className="font-sans text-5xl sm:text-7xl lg:text-9xl font-black tracking-[-0.04em] text-white uppercase leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
+                <h1 className="font-sans text-5xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-white uppercase leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
                   BİRLİKTE <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">HAREKET ET.</span>
                 </h1>
                 <p className="text-sm sm:text-lg text-zinc-300 font-sans max-w-xl font-normal leading-relaxed">
@@ -499,43 +511,65 @@ function StoreContent() {
                 </div>
               </div>
             </section>
-
-            {/* Bülten Alanı */}
-            <section className="border-t border-white/10 bg-zinc-950 py-24 text-center">
-              <div className="mx-auto max-w-xl px-6 space-y-6">
-                <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-primary font-bold">TOPLULUK BÜLTENİ</span>
-                <h2 className="font-sans text-3xl sm:text-4xl font-black text-white tracking-tight">Yeni Koleksiyonlardan Haberdar Ol</h2>
-                <p className="text-xs sm:text-sm text-zinc-400">Yeni drop'lar, sürpriz indirimler ve açık hava buluşmalarından ilk sen haberdar ol.</p>
-                
-                {newsletterSubscribed ? (
-                  <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold">
-                    ✓ Bültenimize başarıyla kaydoldunuz!
-                  </div>
-                ) : (
-                  <form onSubmit={(e) => { e.preventDefault(); if(newsletterEmail) setNewsletterSubscribed(true); }} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2">
-                    <input 
-                      type="email" 
-                      required 
-                      value={newsletterEmail} 
-                      onChange={(e) => setNewsletterEmail(e.target.value)} 
-                      placeholder="E-posta adresiniz..." 
-                      className="flex-1 rounded-full border border-white/15 bg-black px-6 py-4 text-xs text-white focus:border-primary focus:outline-none" 
-                    />
-                    <button type="submit" className="rounded-full bg-primary px-8 py-4 text-xs font-bold uppercase tracking-widest text-black hover:bg-orange-500 transition-all cursor-pointer shadow-[0_0_20px_rgba(249,115,22,0.3)]">
-                      Abone Ol
-                    </button>
-                  </form>
-                )}
-                <div className="pt-2">
-                  <button onClick={() => alert('Teşekkürler!')} className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 underline hover:text-zinc-300 cursor-pointer">
-                    NO THANKS
-                  </button>
-                </div>
-              </div>
-            </section>
           </>
         )}
       </div>
+
+      {/* SOL ALT: Şık Açılır-Kapanır Bülten Widget */}
+      <div className="fixed bottom-6 left-6 z-40">
+        {!isNewsletterOpen ? (
+          <button 
+            onClick={() => setIsNewsletterOpen(true)}
+            className="flex items-center gap-2 rounded-full border border-white/15 bg-zinc-950/90 px-5 py-3 text-xs font-mono font-bold text-white shadow-2xl backdrop-blur-xl hover:border-primary transition-all cursor-pointer group"
+          >
+            <Mail size={15} className="text-primary group-hover:scale-110 transition-transform" />
+            <span>Koleksiyondan Haberdar Ol</span>
+          </button>
+        ) : (
+          <div className="w-80 rounded-3xl border border-white/15 bg-zinc-950 p-5 shadow-2xl backdrop-blur-2xl space-y-4 animate-fadeIn">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <span className="text-xs font-mono uppercase tracking-widest text-primary font-bold">Koleksiyon Bülteni</span>
+              <button onClick={() => setIsNewsletterOpen(false)} className="text-zinc-400 hover:text-white cursor-pointer"><X size={14} /></button>
+            </div>
+            {newsletterSubscribed ? (
+              <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold text-center">
+                ✓ Başarıyla Kaydoldunuz!
+              </div>
+            ) : (
+              <form onSubmit={(e) => { e.preventDefault(); if(newsletterEmail) setNewsletterSubscribed(true); }} className="space-y-3">
+                <input 
+                  type="email" 
+                  required 
+                  value={newsletterEmail} 
+                  onChange={(e) => setNewsletterEmail(e.target.value)} 
+                  placeholder="E-posta adresiniz..." 
+                  className="w-full rounded-xl border border-white/15 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none" 
+                />
+                <button type="submit" className="w-full rounded-full bg-primary py-3 text-xs font-bold uppercase tracking-widest text-black hover:bg-orange-500 transition-all cursor-pointer">
+                  Abone Ol
+                </button>
+              </form>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Yasal Çerez (KVKK) Onay Banner'ı */}
+      {!cookieConsent && (
+        <div className="fixed bottom-0 inset-x-0 z-50 bg-zinc-950/95 border-t border-white/15 p-4 sm:p-5 backdrop-blur-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
+          <p className="text-xs text-zinc-300 max-w-4xl font-sans">
+            Deneyiminizi geliştirmek ve yasal yükümlülüklerimizi yerine getirmek amacıyla çerezler kullanmaktayız. Sitemizi kullanarak çerez politikamızı kabul etmiş olursunuz.
+          </p>
+          <div className="flex items-center gap-3 shrink-0">
+            <button 
+              onClick={acceptCookies} 
+              className="rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black hover:bg-orange-500 transition-all cursor-pointer"
+            >
+              Kabul Et & Kapat
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Beden Ölçü Tablosu Modal */}
       {isSizeTableOpen && (
