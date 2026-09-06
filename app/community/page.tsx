@@ -16,7 +16,8 @@ import {
   Sparkles,
   Info,
   Users,
-  Lock
+  Lock,
+  ShoppingBag
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SiteHeader } from '@/components/site-header'
@@ -253,49 +254,54 @@ export default function CommunityPage() {
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
       <SiteHeader />
 
-      <section className="relative overflow-hidden border-b border-white/10 pt-36 pb-20 lg:pt-44 lg:pb-24">
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <Image
-            src="/community-hero.jpeg"
-            alt="Orise Club"
-            fill
-            priority
-            className="object-cover opacity-30 grayscale contrast-125 scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/40" />
+      {/* Video Destekli Lüks Topluluk Hero Alanı */}
+      <section className="relative h-[85vh] min-h-[600px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10 pt-20">
+        <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+          <video 
+            autoPlay 
+            muted 
+            loop 
+            playsInline 
+            className="absolute inset-0 h-full w-full object-cover object-center scale-105 brightness-90 contrast-110"
+          >
+            <source src="/community-hero-video.mp4" type="video/mp4" />
+            Tarayıcınız video etiketini desteklemiyor.
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-          <div className="max-w-3xl space-y-6">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:bg-black hover:text-white"
-            >
-              <ArrowLeft className="h-3.5 w-3.5 text-primary" />
-              <span>Ana Sayfaya Dön</span>
-            </Link>
+        {/* Sol Üst Mağazaya Dönüş Butonu */}
+        <div className="absolute top-28 left-6 z-20 sm:left-10">
+          <Link
+            href="/store"
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:text-white"
+          >
+            <ShoppingBag className="h-3.5 w-3.5 text-primary" />
+            <span>Mağazaya Dön</span>
+          </Link>
+        </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-primary backdrop-blur-md shadow-[0_0_20px_rgba(249,115,22,0.2)]">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Haftalık Antrenman Takvimi & Atölyeler</span>
-            </div>
-
-            <h1 className="font-sans text-5xl font-black tracking-tighter text-white sm:text-7xl lg:text-8xl leading-[1.02]">
-              Toplulukla Tanış, <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">
-                Ritmine Katıl.
-              </span>
-            </h1>
-
-            <p className="max-w-xl text-sm sm:text-base text-zinc-300 leading-relaxed font-normal">
-              Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğunun açık hava buluşmalarını keşfet.
-            </p>
+        <div className="relative z-10 max-w-4xl space-y-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-primary backdrop-blur-md shadow-[0_0_20px_rgba(249,115,22,0.2)]">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>Haftalık Antrenman Takvimi & Atölyeler</span>
           </div>
+
+          <h1 className="font-sans text-5xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-white uppercase leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
+            Toplulukla Tanış, <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">
+              Ritmine Katıl.
+            </span>
+          </h1>
+
+          <p className="max-w-xl text-sm sm:text-base text-zinc-300 leading-relaxed font-normal">
+            Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğunun açık hava buluşmalarını keşfet.
+          </p>
         </div>
       </section>
 
       {/* FİLTRELEME ÇUBUĞU */}
-      <section className="border-b border-white/10 bg-zinc-950/90 sticky top-16 z-40 backdrop-blur-2xl">
+      <section className="border-b border-white/10 bg-zinc-950/90 sticky top-20 z-40 backdrop-blur-2xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
