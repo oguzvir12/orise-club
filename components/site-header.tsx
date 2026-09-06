@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, MessageCircle, Send, Loader2, X } from 'lucide-react'
+import { ShoppingBag, User, LogOut, MessageCircle, Send, Loader2, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -78,6 +78,7 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [isAuthOpen, setIsAuthOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   
   const [fullName, setFullName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
@@ -134,7 +135,21 @@ export function SiteHeader() {
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
           
           <div className="flex items-center gap-4">
-            {/* Sol taraf temiz bırakıldı */}
+            <button 
+              type="button" 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="sm:hidden flex flex-col justify-center gap-1.5 h-10 w-10 rounded-full border border-white/15 bg-zinc-900/80 p-2.5 text-white hover:border-primary transition-all cursor-pointer"
+              aria-label="Menüyü aç"
+            >
+              <span className="block h-0.5 w-full bg-current rounded-full" />
+              <span className="block h-0.5 w-3/4 bg-current rounded-full" />
+              <span className="block h-0.5 w-full bg-current rounded-full" />
+            </button>
+
+            <nav className="hidden sm:flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-zinc-300 font-mono">
+              <Link href="/store" className="hover:text-primary transition-colors">MAĞAZA</Link>
+              <Link href="/community" className="hover:text-primary transition-colors">TOPLULUK</Link>
+            </nav>
           </div>
 
           <div className="absolute left-1/2 -translate-x-1/2">
@@ -171,6 +186,29 @@ export function SiteHeader() {
             )}
           </div>
         </div>
+
+        {mobileMenuOpen && (
+          <div className="sm:hidden absolute top-20 inset-x-0 bg-zinc-950/95 border-b border-white/10 backdrop-blur-2xl p-6 space-y-4 font-mono text-xs uppercase font-bold animate-fadeIn">
+            <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300 hover:text-primary">Mağaza Vitrini</Link>
+            <Link href="/community" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-zinc-300 hover:text-primary">Topluluk & Etkinlikler</Link>
+            <div className="border-t border-white/10 pt-4 flex flex-col gap-3">
+              {user ? (
+                <>
+                  <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-white">
+                    <User size={14} className="text-primary" /> Hesabım & Siparişler
+                  </Link>
+                  <button onClick={handleLogout} className="flex items-center gap-2 text-red-400 text-left">
+                    <LogOut size={14} /> Çıkış Yap
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => { setMobileMenuOpen(false); setIsAuthOpen(true); }} className="w-full py-3 bg-primary text-black rounded-full font-black">
+                  Giriş Yap / Kayıt Ol
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onSuccess={() => window.location.reload()} />
