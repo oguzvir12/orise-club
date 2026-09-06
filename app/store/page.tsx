@@ -63,10 +63,12 @@ function StoreContent() {
   const [newReviewRating, setNewReviewRating] = useState('5')
   const [hasPurchased, setHasPurchased] = useState(false)
 
+  // Sol alt açılır bülten widget state
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false)
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false)
 
+  // Çerez Onay Banner State
   const [cookieConsent, setCookieConsent] = useState(true)
 
   const fetchProducts = async () => {
@@ -512,18 +514,6 @@ function StoreContent() {
           </>
         )}
       </div>
-
-      {/* Lüks E-Ticaret Footer / Yasal Metinler ve Bülten */}
-      <footer className="border-t border-white/10 bg-zinc-950 py-16 px-6 text-center text-xs font-mono text-zinc-500 space-y-6">
-        <div className="flex flex-wrap items-center justify-center gap-6 text-zinc-400 uppercase tracking-widest text-[11px]">
-          <Link href="/gizlilik" className="hover:text-primary transition-colors cursor-pointer">Gizlilik Politikası</Link>
-          <span>•</span>
-          <Link href="/mesafeli-satis" className="hover:text-primary transition-colors cursor-pointer">Mesafeli Satış Sözleşmesi</Link>
-          <span>•</span>
-          <Link href="/iade-degisim" className="hover:text-primary transition-colors cursor-pointer">İade & Değişim</Link>
-        </div>
-        <p className="text-zinc-600">© 2026 ORISE CLUB. Tüm hakları saklıdır.</p>
-      </footer>
 
       {/* SOL ALT: Şık Açılır-Kapanır Bülten Widget */}
       <div className="fixed bottom-6 left-6 z-40">
