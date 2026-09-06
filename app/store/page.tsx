@@ -63,7 +63,8 @@ function StoreContent() {
   const [newReviewRating, setNewReviewRating] = useState('5')
   const [hasPurchased, setHasPurchased] = useState(false)
 
-  // Sol alt açılır bülten widget state
+  // Sol alt açılır bülten widget state ve kapatma (görünürlük) kontrolü
+  const [showNewsletter, setShowNewsletter] = useState(true)
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false)
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false)
@@ -515,44 +516,55 @@ function StoreContent() {
         )}
       </div>
 
-      {/* SOL ALT: Şık Açılır-Kapanır Bülten Widget */}
-      <div className="fixed bottom-6 left-6 z-40">
-        {!isNewsletterOpen ? (
-          <button 
-            onClick={() => setIsNewsletterOpen(true)}
-            className="flex items-center gap-2 rounded-full border border-white/15 bg-zinc-950/90 px-5 py-3 text-xs font-mono font-bold text-white shadow-2xl backdrop-blur-xl hover:border-primary transition-all cursor-pointer group"
-          >
-            <Mail size={15} className="text-primary group-hover:scale-110 transition-transform" />
-            <span>Koleksiyondan Haberdar Ol</span>
-          </button>
-        ) : (
-          <div className="w-80 rounded-3xl border border-white/15 bg-zinc-950 p-5 shadow-2xl backdrop-blur-2xl space-y-4 animate-fadeIn">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <span className="text-xs font-mono uppercase tracking-widest text-primary font-bold">Koleksiyon Bülteni</span>
-              <button onClick={() => setIsNewsletterOpen(false)} className="text-zinc-400 hover:text-white cursor-pointer"><X size={14} /></button>
+      {/* SOL ALT: Kapatılabilir Şık Bülten Widget */}
+      {showNewsletter && (
+        <div className="fixed bottom-6 left-6 z-40">
+          {!isNewsletterOpen ? (
+            <div className="flex items-center gap-1 rounded-full border border-white/15 bg-zinc-950/90 px-4 py-2.5 text-xs font-mono font-bold text-white shadow-2xl backdrop-blur-xl">
+              <button 
+                onClick={() => setIsNewsletterOpen(true)}
+                className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer"
+              >
+                <Mail size={15} className="text-primary" />
+                <span>Koleksiyondan Haberdar Ol</span>
+              </button>
+              <button 
+                onClick={() => setShowNewsletter(false)}
+                className="ml-2 text-zinc-500 hover:text-white transition-colors cursor-pointer p-1"
+                title="Kapat"
+              >
+                <X size={14} />
+              </button>
             </div>
-            {newsletterSubscribed ? (
-              <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold text-center">
-                ✓ Başarıyla Kaydoldunuz!
+          ) : (
+            <div className="w-80 rounded-3xl border border-white/15 bg-zinc-950 p-5 shadow-2xl backdrop-blur-2xl space-y-4 animate-fadeIn">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="text-xs font-mono uppercase tracking-widest text-primary font-bold">Koleksiyon Bülteni</span>
+                <button onClick={() => setShowNewsletter(false)} className="text-zinc-400 hover:text-white cursor-pointer"><X size={14} /></button>
               </div>
-            ) : (
-              <form onSubmit={(e) => { e.preventDefault(); if(newsletterEmail) setNewsletterSubscribed(true); }} className="space-y-3">
-                <input 
-                  type="email" 
-                  required 
-                  value={newsletterEmail} 
-                  onChange={(e) => setNewsletterEmail(e.target.value)} 
-                  placeholder="E-posta adresiniz..." 
-                  className="w-full rounded-xl border border-white/15 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none" 
-                />
-                <button type="submit" className="w-full rounded-full bg-primary py-3 text-xs font-bold uppercase tracking-widest text-black hover:bg-orange-500 transition-all cursor-pointer">
-                  Abone Ol
-                </button>
-              </form>
-            )}
-          </div>
-        )}
-      </div>
+              {newsletterSubscribed ? (
+                <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold text-center">
+                  ✓ Başarıyla Kaydoldunuz!
+                </div>
+              ) : (
+                <form onSubmit={(e) => { e.preventDefault(); if(newsletterEmail) setNewsletterSubscribed(true); }} className="space-y-3">
+                  <input 
+                    type="email" 
+                    required 
+                    value={newsletterEmail} 
+                    onChange={(e) => setNewsletterEmail(e.target.value)} 
+                    placeholder="E-posta adresiniz..." 
+                    className="w-full rounded-xl border border-white/15 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none" 
+                  />
+                  <button type="submit" className="w-full rounded-full bg-primary py-3 text-xs font-bold uppercase tracking-widest text-black hover:bg-orange-500 transition-all cursor-pointer">
+                    Abone Ol
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Yasal Çerez (KVKK) Onay Banner'ı */}
       {!cookieConsent && (
@@ -626,7 +638,7 @@ function StoreContent() {
                       <tr><td className="p-2.5 border border-white/10 text-left">OMUZDAN OMUZA</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td><td>68</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">YAKA AÇIKLIĞI</td><td>19</td><td>19.5</td><td>20</td><td>20.5</td><td>21</td><td>21.5</td><td>22</td><td>22.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>10.5</td><td>10.75</td><td>11</td><td>11.25</td><td>11.5</td><td>11.75</td><td>12</td><td>12.25</td></tr>
-                      <tr><td className="p-2.5 border border-white/10 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
+                    <tr><td className="p-2.5 border border-white/10 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">KOLEVİ OMUZDAN DİK</td><td>29</td><td>30</td><td>31</td><td>32</td><td>33</td><td>34</td><td>35</td><td>36</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
                       <tr><td className="p-2.5 border border-white/10 text-left">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
