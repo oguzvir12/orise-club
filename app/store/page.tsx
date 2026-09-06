@@ -233,8 +233,14 @@ function StoreContent() {
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black flex flex-col justify-between">
       
       <div>
+        {/* Üst Minimalist Kargo Bandı (Estetik) */}
+        <div className="bg-zinc-950 border-b border-white/10 text-zinc-300 py-2.5 px-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 mt-20">
+          <Truck size={14} className="text-primary" />
+          <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
+        </div>
+
         {selectedProduct && (
-          <div className="absolute top-28 left-6 z-30 sm:left-10">
+          <div className="absolute top-32 left-6 z-30 sm:left-10">
             <button type="button" onClick={closeProductDetail} className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all hover:border-primary cursor-pointer">
               <ArrowLeft className="h-3.5 w-3.5 text-primary" />
               <span>Tüm Koleksiyon</span>
@@ -244,7 +250,7 @@ function StoreContent() {
 
         {selectedProduct ? (
           <div>
-            <section className="pt-24 pb-20 sm:pt-28 sm:pb-24 border-b border-white/10">
+            <section className="pt-12 pb-20 sm:pt-16 sm:pb-24 border-b border-white/10">
               <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
                 <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
                   
@@ -386,8 +392,8 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Video Destekli Çarpıcı Hero Alanı & Şık Üst Bilgi Rozeti */}
-            <section className="relative h-[85vh] min-h-[600px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10 pt-20">
+            {/* Video Destekli Çarpıcı Hero Alanı (Logoya Uygun Geniş/Extended Tipografi ve "Birlikte Hareket Et") */}
+            <section className="relative h-[85vh] min-h-[600px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10">
               <div className="absolute inset-0 z-0 overflow-hidden bg-black">
                 <video 
                   autoPlay 
@@ -402,19 +408,13 @@ function StoreContent() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
               </div>
 
-              {/* Lüks Marka Üst Bilgi Rozeti */}
-              <div className="absolute top-28 right-8 z-20 hidden sm:flex items-center gap-2 rounded-full border border-white/20 bg-black/60 px-5 py-2 text-xs font-mono text-zinc-300 backdrop-blur-xl">
-                <Truck size={14} className="text-primary" />
-                <span>2000 TL Üzeri Ücretsiz Kargo</span>
-              </div>
-
-              <div className="relative z-10 max-w-4xl space-y-6">
+              <div className="relative z-10 max-w-5xl space-y-6">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-primary backdrop-blur-md shadow-[0_0_20px_rgba(249,115,22,0.2)]">
                   <Sparkles className="h-3.5 w-3.5" />
                   <span>Koleksiyon 2026</span>
                 </div>
-                <h1 className="font-sans text-6xl sm:text-8xl lg:text-9xl font-black tracking-tighter text-white uppercase leading-[0.9]">
-                  RİTMİNİ <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">HİSSET.</span>
+                <h1 className="font-sans text-5xl sm:text-7xl lg:text-9xl font-black tracking-[-0.04em] text-white uppercase leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
+                  BİRLİKTE <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">HAREKET ET.</span>
                 </h1>
                 <p className="text-sm sm:text-lg text-zinc-300 font-sans max-w-xl font-normal leading-relaxed">
                   Yeni nesil teknik spor giyim, kulüp ruhu ve sokak stili bir arada. Sınırları birlikte zorlayın.
@@ -500,7 +500,7 @@ function StoreContent() {
               </div>
             </section>
 
-            {/* Coolpetz Tarzı Bülten / Kayıt Alanı (Footer Üstü) */}
+            {/* Bülten Alanı */}
             <section className="border-t border-white/10 bg-zinc-950 py-24 text-center">
               <div className="mx-auto max-w-xl px-6 space-y-6">
                 <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-primary font-bold">TOPLULUK BÜLTENİ</span>
