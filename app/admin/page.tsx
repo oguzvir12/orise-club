@@ -91,7 +91,6 @@ export default function AdminPage() {
 
   const [userRolesState, setUserRolesState] = useState<{ [key: string]: { role: string, branch: string } }>({})
 
-  // Yeni Ürün Ekleme
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [price, setPrice] = useState('')
@@ -109,7 +108,6 @@ export default function AdminPage() {
   const [description, setDescription] = useState('')
   const [imageList, setImageList] = useState<string[]>([])
 
-  // Yeni Etkinlik Ekleme
   const [evtTitle, setEvtTitle] = useState('')
   const [evtBranch, setEvtBranch] = useState('KOŞU')
   const [evtDate, setEvtDate] = useState('')
@@ -120,7 +118,6 @@ export default function AdminPage() {
   const [evtImageUrl, setEvtImageUrl] = useState('')
   const [eventUploading, setEventUploading] = useState(false)
 
-  // Etkinlik Düzenleme Modal State'leri
   const [editingEvent, setEditingEvent] = useState<any | null>(null)
   const [editEvtTitle, setEditEvtTitle] = useState('')
   const [editEvtBranch, setEditEvtBranch] = useState('KOŞU')
@@ -132,7 +129,6 @@ export default function AdminPage() {
   const [editEvtImageUrl, setEditEvtImageUrl] = useState('')
   const [editEventUploading, setEditEventUploading] = useState(false)
 
-  // Ürün Düzenleme Modal
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editSubtitle, setEditSubtitle] = useState('')
@@ -556,7 +552,13 @@ export default function AdminPage() {
       return
     }
 
+    // Mantıksal kısıt: Kargolanmamış sipariş doğrudan Teslim Edildi yapılamaz
     const trackingNo = trackingNoInput[orderId] || null
+    if (newStatus === 'Teslim Edildi' && currentStatus !== 'Kargolandı') {
+      alert('Kargolanmamış bir sipariş doğrudan teslim edildi olarak işaretlenemez! Önce Kargolandı yapmalısınız.')
+      return
+    }
+
     const { error } = await supabase.from('orders').update({
       status: newStatus,
       tracking_number: trackingNo
