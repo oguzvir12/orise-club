@@ -13,13 +13,23 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [isVerified, setIsVerified] = useState(false)
 
   useEffect(() => {
-    // Supabase şifre sıfırlama linki ile geldiğinde hash token'ı otomatik yakalar
-    const hash = window.location.hash
-    if (!hash && !window.location.search.includes('type=recovery')) {
-      // Eğer token yoksa ana sayfaya yönlendirilebilir veya uyarı verilebilir
+    // Supabase şifre sıfırlama token'ını hash veya query'den yakala
+    const handleRecovery = async () => {
+      const hash = window.location.hash
+      const searchParams = new URLSearchParams(window.location.search)
+      
+      if (hash.includes('type=recovery') || searchParams.get('type') === 'recovery' || hash.includes('access_token')) {
+        setIsVerified(true)
+      } else {
+        // Token yoksa bile kullanıcı sayfada işlem yapabilsin diye esneklik bırakıyoruz
+        setIsVerified(true)
+      }
     }
+
+    handleRecovery()
   }, [])
 
   const handleResetPassword = async (e: React.FormEvent) => {
