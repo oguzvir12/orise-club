@@ -95,7 +95,6 @@ export function CartDrawer() {
         return
       }
 
-      // Stok Düşme İşlemi
       for (const cartItem of items) {
         const lastHyphenIdx = cartItem.id.lastIndexOf('-')
         const size = cartItem.id.substring(lastHyphenIdx + 1)
@@ -151,7 +150,8 @@ export function CartDrawer() {
         discount: discountAmount,
         shipping_fee: shippingFee,
         total_price: finalTotal,
-        status: 'Ödeme Onaylandı'
+        status: 'Ödeme Bekliyor',
+        tracking_number: null
       }
 
       const { error: ordError } = await supabase.from('orders').insert([orderPayload])
@@ -161,12 +161,9 @@ export function CartDrawer() {
         clearCart()
       }
 
-      setTimeout(() => {
-        setLoading(false)
-        alert('İyzico ile güvenli ödeme başarıyla tamamlandı! Siparişiniz onaylanmıştır ve stoklar güncellenmiştir.')
-        closeCart()
-        window.location.href = '/profile'
-      }, 800)
+      setLoading(false)
+      closeCart()
+      window.location.href = '/profile'
 
     } catch (err: any) {
       setValidationError('Hata: ' + err.message)
@@ -236,7 +233,6 @@ export function CartDrawer() {
         {items.length > 0 && (
           <div className="space-y-4 border-t border-[#D8D6D2]/10 bg-[#111111] px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
             
-            {/* Kupon Kodu Alanı */}
             <div className="space-y-2 border-b border-[#D8D6D2]/10 pb-4">
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -266,7 +262,6 @@ export function CartDrawer() {
               )}
             </div>
 
-            {/* Fatura Adresi Alanı */}
             <div className="space-y-2 border-b border-[#D8D6D2]/10 pb-4">
               <label className="flex items-center gap-2 text-xs font-mono text-[#D8D6D2] cursor-pointer">
                 <input 
