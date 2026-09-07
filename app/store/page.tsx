@@ -21,7 +21,7 @@ import {
   Mail,
   ChevronLeft,
   ChevronDown,
-  Compass
+  ArrowDown
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -255,13 +255,13 @@ function StoreContent() {
   return (
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
-      <div>
-        {/* Üst Kargo Bandı - Doğru Konumlandırma ve Estetik Şeffaflık */}
-        <div className="bg-[#111111]/80 border-b border-[#D8D6D2]/10 text-[#D8D6D2] py-2 px-4 text-center text-[10px] sm:text-[11px] font-mono tracking-[0.15em] uppercase flex items-center justify-center gap-2 backdrop-blur-md">
-          <Truck size={14} className="text-[#F74A05] shrink-0" />
-          <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
-        </div>
+      {/* Üst Kargo Bandı - Logo ile Çakışmayı Önlemek İçin En Üstte Doğru Akışta */}
+      <div className="w-full bg-[#111111]/90 border-b border-[#D8D6D2]/10 text-[#D8D6D2] py-2 px-4 text-center text-[10px] sm:text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 backdrop-blur-md z-40">
+        <Truck size={14} className="text-[#F74A05] shrink-0" />
+        <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
+      </div>
 
+      <div>
         {selectedProduct && (
           <div className="absolute top-28 left-6 z-30 sm:left-10">
             <button type="button" onClick={closeProductDetail} className="group inline-flex items-center gap-2 rounded-full border border-[#D8D6D2]/20 bg-[#111111]/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-[#F5F2EC] backdrop-blur-xl transition-all hover:border-[#F74A05] cursor-pointer">
@@ -415,7 +415,7 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Video Destekli Çarpıcı Hero Alanı ve İnteraktif Dönen 3D Rozet */}
+            {/* Video Destekli Çarpıcı Hero Alanı ve Şık İnteraktif "KEŞFET" Rozeti */}
             <section className="relative h-[85vh] min-h-[550px] w-full overflow-hidden flex items-end pb-16 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
               <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
                 <video 
@@ -431,17 +431,23 @@ function StoreContent() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-transparent" />
               </div>
 
-              {/* Sağ Üst / Orta Konumlu İnteraktif Dönen Rozet */}
-              <div className="absolute top-12 right-6 sm:right-16 z-20">
+              {/* Sağ Üst Köşede Premium Dönen ve Neon Parıltılı Keşfet Rozeti */}
+              <div className="absolute top-10 right-6 sm:right-16 z-20">
                 <button 
                   onClick={scrollToCollection}
-                  className="group relative flex h-24 w-24 sm:h-32 sm:w-32 items-center justify-center rounded-full border border-[#F74A05]/30 bg-black/40 backdrop-blur-xl shadow-[0_0_30px_rgba(247,74,5,0.3)] transition-all hover:scale-110 hover:border-[#F74A05] cursor-pointer"
+                  className="group relative flex h-28 w-28 sm:h-36 sm:w-36 items-center justify-center rounded-full border border-[#F74A05]/40 bg-black/60 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.35)] transition-all hover:scale-110 hover:border-[#F74A05] hover:shadow-[0_0_50px_rgba(247,74,5,0.6)] cursor-pointer"
                   title="Koleksiyona Git"
                 >
-                  <div className="absolute inset-0 rounded-full animate-spin [animation-duration:12s] border border-dashed border-[#F74A05]/60" />
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <Compass className="h-6 w-6 sm:h-8 sm:w-8 text-[#F74A05] transition-transform group-hover:rotate-45" />
-                    <span className="text-[9px] sm:text-[10px] font-mono font-bold tracking-widest text-white mt-1 uppercase">KEŞFET</span>
+                  {/* Dönen Çizgili Çember */}
+                  <div className="absolute inset-2 rounded-full animate-spin [animation-duration:10s] border border-dashed border-[#F74A05]/70" />
+                  
+                  {/* İçerik */}
+                  <div className="flex flex-col items-center justify-center text-center space-y-1">
+                    <span className="font-['Vast_XXL',sans-serif] text-[10px] sm:text-xs font-black tracking-widest text-white uppercase group-hover:text-[#F74A05] transition-colors">ORISE</span>
+                    <div className="flex items-center gap-1 bg-[#F74A05] text-[#111111] px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-md">
+                      <span>KEŞFET</span>
+                      <ArrowDown className="h-2.5 w-2.5 animate-bounce" />
+                    </div>
                   </div>
                 </button>
               </div>
