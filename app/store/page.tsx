@@ -21,8 +21,10 @@ import {
   Mail,
   ChevronLeft,
   ChevronDown,
+  ChevronUp,
   ArrowDown,
-  Compass
+  Filter,
+  SlidersHorizontal
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -50,12 +52,18 @@ function StoreContent() {
   const [products, setProducts] = useState<any[]>([])
   const [activeCategory, setActiveCategory] = useState<string>('all')
   const [sortOrder, setSortOrder] = useState<'default' | 'asc' | 'desc'>('default')
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
+  
+  // Derin Filtreleme State'leri (Dinamik Ürün Verilerinden Üretilir)
+  const [selectedColorFilter, setSelectedColorFilter] = useState<string>('all')
+  const [selectedSizeFilter, setSelectedSizeFilter] = useState<string>('all')
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState<boolean>(false)
 
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
   const [selectedColor, setSelectedColor] = useState<string>('')
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
   const [isAdded, setIsAdded] = useState<boolean>(false)
+  const [isDescExpanded, setIsDescExpanded] = useState<boolean>(false) // Açıklama kısaltma/uzatma state'i
 
   const [isSizeTableOpen, setIsSizeTableOpen] = useState(false)
   const [activeTabTable, setActiveTabTable] = useState<'erkek' | 'kadin'>('erkek')
@@ -106,6 +114,7 @@ function StoreContent() {
         setSelectedColor(colors[0] || '')
         setSelectedSize('')
         setActiveImageIdx(0)
+        setIsDescExpanded(false)
         if (match.gender) setActiveTabTable(match.gender)
         fetchProductInteractions(match.id)
       }
@@ -177,6 +186,7 @@ function StoreContent() {
     setSelectedSize('')
     setActiveImageIdx(0)
     setIsAdded(false)
+    setIsDescExpanded(false)
     if (product.gender) setActiveTabTable(product.gender)
     router.push(`/store?product=${product.id}`, { scroll: false })
     fetchProductInteractions(product.id)
@@ -230,6 +240,10 @@ function StoreContent() {
     }
   }, [searchParam])
 
+  // Veritabanındaki ürünlerden dinamik Renkler ve Bedenler listesini çıkar
+  const availableColors = Array.from(new Set(products.flatMap(p => p.colors || [])))
+  const availableSizesList = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL']
+
   const availableCategories = ['all', 'sale']
   products.forEach(p => {
     if (p.category && !availableCategories.includes(p.category)) {
@@ -237,6 +251,7 @@ function StoreContent() {
     }
   })
 
+  // Derin Filtreleme Mantığı
   let filteredProducts = products.filter((p) => {
     if (searchParam) {
       const query = searchParam.toLowerCase()
@@ -247,10 +262,29 @@ function StoreContent() {
     }
 
     if (activeCategory === 'sale') {
-      return p.compare_at_price && p.compare_at_price > p.price
+      if (!(p.compare_at_price && p.compare_at_price > p.price)) return false
+    } else if (activeCategory !== 'all') {
+      if (p.category !== activeCategory) return false
     }
-    if (activeCategory === 'all') return true
-    return p.category === activeCategory
+
+    if (selectedColorFilter !== 'all') {
+      const colors = p.colors || []
+      if (!colors.includes(selectedColorFilter)) return false
+    }
+
+    if (selectedSizeFilter !== 'all') {
+      const rawSizes = p.sizes || {}
+      // Herhangi bir renk kombinasyonunda bu beden stokta var mı kontrol et
+      const hasSize = Object.values(rawSizes).some((colorMap: any) => {
+        if (typeof colorMap === 'object' && colorMap !== null) {
+          return Number(colorMap[selectedSizeFilter] || 0) > 0
+        }
+        return Number(rawSizes[selectedSizeFilter] || 0) > 0
+      })
+      if (!hasSize) return false
+    }
+
+    return true
   })
 
   if (sortOrder === 'asc') filteredProducts.sort((a, b) => Number(a.price) - Number(b.price))
@@ -265,7 +299,7 @@ function StoreContent() {
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
       <div>
-        {/* ÜRÜN DETAY MODALI (Geliştirilmiş dikey kaydırma ve ferah açıklama alanı) */}
+        {/* ÜRÜN DETAY MODALI (Mobil ve Masaüstü Uyumlu, Akıllı Genişletilebilir Açıklama Alanı) */}
         {selectedProduct && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn overflow-y-auto">
             <div className="relative w-full max-w-5xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 sm:p-10 shadow-2xl space-y-8 text-[#FFFFFF] max-h-[92vh] overflow-y-auto">
@@ -311,11 +345,17 @@ function StoreContent() {
                       )}
                     </div>
 
-                    {/* Ferah ve Kaydırılabilir Açıklama Alanı */}
-                    <div 
-                      className="mt-4 text-xs leading-relaxed text-[#D8D6D2] space-y-2 bg-black/40 p-5 rounded-2xl border border-[#D8D6D2]/10 max-h-60 overflow-y-auto no-scrollbar"
-                      dangerouslySetInnerHTML={{ __html: selectedProduct.description }} 
-                    />
+                    {/* Akıllı Genişletilebilir (Expandable) Açıklama Kutusu */}
+                    <div className="mt-4 bg-black/40 p-4 rounded-2xl border border-[#D8D6D2]/10 space-y-2">
+                      <div className={`text-xs leading-relaxed text-[#D8D6D2] overflow-hidden transition-all duration-300 ${isDescExpanded ? 'max-h-96 overflow-y-auto pr-2' : 'max-h-24'}`} dangerouslySetInnerHTML={{ __html: selectedProduct.description }} />
+                      <button 
+                        type="button" 
+                        onClick={() => setIsDescExpanded(!isDescExpanded)} 
+                        className="text-[11px] font-mono font-bold text-[#F74A05] hover:underline flex items-center gap-1 pt-1 cursor-pointer"
+                      >
+                        {isDescExpanded ? <>Küçült <ChevronUp size={12} /></> : <>Devamını Oku / İncele <ChevronDown size={12} /></>}
+                      </button>
+                    </div>
 
                     {selectedProduct.colors && selectedProduct.colors.length > 0 && (
                       <div className="mt-4 space-y-2">
@@ -370,7 +410,7 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Video Destekli Çarpıcı Hero Alanı ve Sportif / Kulüp Estetiğinde Keşfet Butonu */}
+        {/* Video Destekli Çarpıcı Hero Alanı ve Basketbol Pota Temalı Şekil Keşfet Butonu */}
         <section className="relative h-[85vh] min-h-[550px] w-full overflow-hidden flex items-end pb-16 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
@@ -386,19 +426,24 @@ function StoreContent() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-transparent" />
           </div>
 
-          {/* SPORTİF VE ESTETİK KEŞFET BUTONU (Kulüp havasına uygun, basketbol/kale temalı modern rozet) */}
+          {/* BASKETBOL POTA & TOP TEMALI SPORTİF KEŞFET BUTONU */}
           <div className="absolute bottom-10 right-6 sm:right-16 z-25">
             <button 
               onClick={scrollToCollection}
-              className="group relative flex items-center gap-3 rounded-full border-2 border-[#F74A05] bg-black/85 px-6 py-4 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.5)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
+              className="group relative flex items-center gap-3.5 rounded-full border-2 border-[#F74A05] bg-black/90 px-6 py-4 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.5)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
               title="Koleksiyona İniş Yap"
             >
-              <div className="flex flex-col text-left">
-                <span className="text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">GOLÜ AT / SKORU YAP</span>
-                <span className="font-['Vast_XXL',sans-serif] text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
+              {/* Basketbol Topu İkonu & Pota Efekti */}
+              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-lg">
+                <svg className="h-5 w-5 fill-current animate-spin [animation-duration:8s]" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M2 12h20" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
               </div>
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-white transition-colors shadow-md">
-                <ArrowDown className="h-4 w-4 animate-bounce" />
+              <div className="flex flex-col text-left">
+                <span className="text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">SKORU YAP / AĞLARI SARS</span>
+                <span className="font-['Vast_XXL',sans-serif] text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
               </div>
             </button>
           </div>
@@ -423,15 +468,16 @@ function StoreContent() {
 
         <div id="collection"></div>
         
-        {/* Filtreleme ve Sıralama Çubuğu (Arama Temizleme Butonu Profesyonelce Filtre Alanına Taşındı) */}
+        {/* DERİN FİLTRELEME VE SIRALAMA ÇUBUĞU (Çalışır Vaziyette, Dinamik Renk & Beden Filtreleri) */}
         <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/90 sticky top-16 sm:top-20 z-30 backdrop-blur-2xl">
-          <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 sm:py-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 sm:py-5 flex flex-col lg:flex-row items-center justify-between gap-4">
             
-            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+            {/* Üst Kategoriler */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto py-1">
               {searchParam && (
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05] bg-[#F74A05]/25 px-4 py-1.5 text-xs font-mono text-white shrink-0">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05] bg-[#F74A05]/25 px-4 py-2 text-xs font-mono text-white shrink-0">
                   <span>Arama: "{searchParam}"</span>
-                  <Link href="/store" className="hover:text-[#F74A05] transition-colors font-bold ml-1 flex items-center bg-black/40 rounded-full px-2 py-0.5 text-[10px]">Temizle ✕</Link>
+                  <Link href="/store" className="hover:text-[#F74A05] transition-colors font-bold ml-1 flex items-center bg-black/40 rounded-full px-2.5 py-0.5 text-[10px]">Temizle ✕</Link>
                 </div>
               )}
 
@@ -446,15 +492,92 @@ function StoreContent() {
               ))}
             </div>
 
-            <div className="flex items-center gap-2.5 shrink-0 bg-black/40 border border-[#D8D6D2]/15 rounded-full px-4 py-2">
-              <ArrowUpDown className="h-3.5 w-3.5 text-[#F74A05]" />
-              <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-transparent text-[11px] sm:text-xs font-mono text-[#FFFFFF] focus:outline-none cursor-pointer">
-                <option value="default" className="bg-[#111111]">Önerilen Sıralama</option>
-                <option value="asc" className="bg-[#111111]">Fiyat: Ucuzdan Pahalıya</option>
-                <option value="desc" className="bg-[#111111]">Fiyat: Pahalıdan Ucuza</option>
-              </select>
+            {/* Derin Filtreleme Butonları & Sıralama */}
+            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+              {/* Derin Filtre Paneli Açma Butonu */}
+              <button 
+                type="button" 
+                onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
+                className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0 ${isFilterPanelOpen || selectedColorFilter !== 'all' || selectedSizeFilter !== 'all' ? 'border-[#F74A05] bg-[#F74A05]/20 text-[#F74A05]' : 'border-[#D8D6D2]/15 bg-black/40 text-[#D8D6D2] hover:text-white'}`}
+              >
+                <SlidersHorizontal size={14} />
+                <span>Detaylı Filtre</span>
+                {(selectedColorFilter !== 'all' || selectedSizeFilter !== 'all') && (
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#F74A05] text-[9px] font-black text-[#111111]">!</span>
+                )}
+              </button>
+
+              <div className="flex items-center gap-2.5 shrink-0 bg-black/40 border border-[#D8D6D2]/15 rounded-full px-4 py-2">
+                <ArrowUpDown className="h-3.5 w-3.5 text-[#F74A05]" />
+                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-transparent text-[11px] sm:text-xs font-mono text-[#FFFFFF] focus:outline-none cursor-pointer">
+                  <option value="default" className="bg-[#111111]">Önerilen Sıralama</option>
+                  <option value="asc" className="bg-[#111111]">Fiyat: Ucuzdan Pahalıya</option>
+                  <option value="desc" className="bg-[#111111]">Fiyat: Pahalıdan Ucuza</option>
+                </select>
+              </div>
             </div>
+
           </div>
+
+          {/* Derin Filtreleme Açılır Panel (Renk ve Beden Seçimi) */}
+          {isFilterPanelOpen && (
+            <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 pb-6 pt-2 border-t border-[#D8D6D2]/10 flex flex-wrap items-center gap-6 animate-fadeIn text-xs font-mono">
+              
+              {/* Renk Filtresi */}
+              <div className="flex items-center gap-2">
+                <span className="text-[#D8D6D2] uppercase font-bold">Renk:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button 
+                    onClick={() => setSelectedColorFilter('all')}
+                    className={`px-3 py-1 rounded-full border transition-all cursor-pointer ${selectedColorFilter === 'all' ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                  >
+                    Tümü
+                  </button>
+                  {availableColors.map((col: any) => (
+                    <button 
+                      key={col}
+                      onClick={() => setSelectedColorFilter(col)}
+                      className={`px-3 py-1 rounded-full border transition-all cursor-pointer ${selectedColorFilter === col ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                    >
+                      {col}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Beden Filtresi */}
+              <div className="flex items-center gap-2">
+                <span className="text-[#D8D6D2] uppercase font-bold">Beden:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button 
+                    onClick={() => setSelectedSizeFilter('all')}
+                    className={`px-3 py-1 rounded-full border transition-all cursor-pointer ${selectedSizeFilter === 'all' ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                  >
+                    Tümü
+                  </button>
+                  {availableSizesList.map((size) => (
+                    <button 
+                      key={size}
+                      onClick={() => setSelectedSizeFilter(size)}
+                      className={`px-3 py-1 rounded-full border transition-all cursor-pointer ${selectedSizeFilter === size ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(selectedColorFilter !== 'all' || selectedSizeFilter !== 'all') && (
+                <button 
+                  onClick={() => { setSelectedColorFilter('all'); setSelectedSizeFilter('all'); }} 
+                  className="text-[#F74A05] underline font-bold cursor-pointer ml-auto"
+                >
+                  Filtreleri Sıfırla
+                </button>
+              )}
+
+            </div>
+          )}
         </section>
 
         {/* Ürün Vitrini (Grid) */}
