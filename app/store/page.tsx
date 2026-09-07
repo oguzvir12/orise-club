@@ -405,7 +405,7 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Hero Alanı: Web'de ve Telefonda Kargo Yazısı Kaldırıldı, Keşfet Butonu Sadece Masaüstünde Kalacak Şekilde Düzenlendi */}
+        {/* Hero Alanı: Kargo Yazısı Kaldırıldı, Keşfet Butonu Sadece Masaüstünde */}
         <section className="relative pt-24 sm:pt-36 pb-12 sm:pb-24 px-4 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[75vh] sm:min-h-[85vh] flex items-end">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
@@ -421,7 +421,6 @@ function StoreContent() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/50 to-transparent" />
           </div>
 
-          {/* KEŞFET BUTONU: Sadece Masaüstünde Görünür (Telefonda tamamen kaldırıldı) */}
           <div className="hidden sm:flex absolute bottom-10 right-16 z-25">
             <button 
               onClick={scrollToCollection}
@@ -700,5 +699,13 @@ function StoreContent() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function StorePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#111111]" />}>
+      <StoreContent />
+    </Suspense>
   )
 }
