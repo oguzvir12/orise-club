@@ -552,13 +552,17 @@ export default function AdminPage() {
       return
     }
 
-    // Mantıksal kısıt: Kargolanmamış sipariş doğrudan Teslim Edildi yapılamaz
-    const trackingNo = trackingNoInput[orderId] || null
     if (newStatus === 'Teslim Edildi' && currentStatus !== 'Kargolandı') {
       alert('Kargolanmamış bir sipariş doğrudan teslim edildi olarak işaretlenemez! Önce Kargolandı yapmalısınız.')
       return
     }
 
+    if (currentStatus === 'Kargolandı' && newStatus === 'Ödeme Onaylandı') {
+      alert('Kargolanmış bir sipariş tekrar önceki aşamaya geri alınamaz!')
+      return
+    }
+
+    const trackingNo = trackingNoInput[orderId] || null
     const { error } = await supabase.from('orders').update({
       status: newStatus,
       tracking_number: trackingNo
@@ -955,7 +959,6 @@ export default function AdminPage() {
                                     disabled={isLocked}
                                     className={`bg-black border border-[#D8D6D2]/20 rounded-lg px-2 py-1.5 text-[11px] text-[#FFFFFF] ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   >
-                                    <option value="Ödeme Bekliyor">Ödeme Bekliyor</option>
                                     <option value="Ödeme Onaylandı">Ödeme Onaylandı</option>
                                     <option value="Kargolandı">Kargolandı</option>
                                     <option value="Teslim Edildi">Teslim Edildi</option>
