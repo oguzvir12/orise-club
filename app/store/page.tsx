@@ -406,7 +406,7 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Hero Alanı: Mobilde Optimize Edilmiş Geniş Açı Video ve Kompakt Şık Keşfet Rozeti */}
+        {/* Hero Alanı: Mobilde Optimize Edilmiş Geniş Açı Video ve Telefondan Küçültülmüş Akıllı İkon Keşfet Butonu */}
         <section className="relative pt-24 sm:pt-36 pb-12 sm:pb-24 px-4 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[75vh] sm:min-h-[85vh] flex items-end">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
@@ -414,7 +414,7 @@ function StoreContent() {
               muted 
               loop 
               playsInline 
-              className="absolute inset-0 h-full w-full object-cover sm:object-cover object-center scale-100 sm:scale-105 brightness-90 contrast-110"
+              className="absolute inset-0 h-full w-full object-cover object-center scale-100 sm:scale-105 brightness-90 contrast-110"
             >
               <source src="/store-hero-video.mp4" type="video/mp4" />
               Tarayıcınız video etiketini desteklemiyor.
@@ -422,12 +422,12 @@ function StoreContent() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/50 to-transparent" />
           </div>
 
-          {/* TELEFONDA VE MASAÜSTÜNDE KUSURSUZ KONUMLANDIRILMIŞ ANİMASYONLU KEŞFET BUTONU */}
+          {/* KEŞFET BUTONU: Mobilde kompakt ikon, masaüstünde yazılı ve animasyonlu rozet */}
           <div className="absolute bottom-4 right-4 sm:bottom-10 sm:right-16 z-25">
             <button 
               onClick={scrollToCollection}
-              className="group relative flex items-center gap-2.5 rounded-full border-2 border-[#F74A05] bg-black/90 px-4 py-2.5 sm:px-6 sm:py-4 backdrop-blur-2xl shadow-[0_0_30px_rgba(247,74,5,0.4)] transition-all hover:scale-105 hover:bg-[#F74A05] cursor-pointer"
-              title="Koleksiyona İniş Yap"
+              className="group relative flex items-center justify-center sm:gap-3 rounded-full border-2 border-[#F74A05] bg-black/90 p-3 sm:px-6 sm:py-4 backdrop-blur-2xl shadow-[0_0_30px_rgba(247,74,5,0.4)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
+              title="Koleksiyonu Keşfet"
             >
               <div className="relative flex h-7 w-7 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-md">
                 <svg className="h-3.5 w-3.5 sm:h-5 sm:w-5 fill-current animate-bounce" viewBox="0 0 24 24">
@@ -436,9 +436,9 @@ function StoreContent() {
                   <path d="M2 12h20" stroke="currentColor" strokeWidth="1.5"/>
                 </svg>
               </div>
-              <div className="flex flex-col text-left">
-                <span className="text-[7px] sm:text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">ORISE CLUB</span>
-                <span className="font-['Vast_XXL',sans-serif] text-[10px] sm:text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
+              <div className="hidden sm:flex flex-col text-left">
+                <span className="text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">ORISE CLUB</span>
+                <span className="font-['Vast_XXL',sans-serif] text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
               </div>
             </button>
           </div>
@@ -463,7 +463,7 @@ function StoreContent() {
 
         <div id="collection"></div>
         
-        {/* DERİN FİLTRELEME VE SIRALAMA ÇUBUĞU (Mobilde Derli Toplu ve Akışkan) */}
+        {/* DERİN FİLTRELEME VE SIRALAMA ÇUBUĞU */}
         <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/95 sticky top-16 sm:top-20 z-30 backdrop-blur-2xl">
           <div className="mx-auto max-w-7xl px-4 sm:px-10 lg:px-14 py-3 sm:py-5 flex flex-col lg:flex-row items-center justify-between gap-3">
             
@@ -471,7 +471,7 @@ function StoreContent() {
               {searchParam && (
                 <div className="inline-flex items-center gap-1.5 rounded-full border border-[#F74A05] bg-[#F74A05]/25 px-3 py-1.5 text-xs font-mono text-white shrink-0">
                   <span>Arama: "{searchParam}"</span>
-                  <Link href="/store" className="hover:text-[#F74A05] transition-colors font-bold ml-1 flex items-center bg-black/40 rounded-full px-2 py-0.5 text-[10px]">Temizle ✕</Link>
+                  <Link href="/store" className="hover:text-[#F74A05] transition-colors font-bold ml-1 flex items-center bg-black/40 rounded-full px-2.5 py-0.5 text-[10px]">Temizle ✕</Link>
                 </div>
               )}
 
