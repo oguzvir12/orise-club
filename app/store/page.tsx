@@ -53,7 +53,6 @@ function StoreContent() {
   const [activeCategory, setActiveCategory] = useState<string>('all')
   const [sortOrder, setSortOrder] = useState<'default' | 'asc' | 'desc'>('default')
   
-  // Derin Filtreleme State'leri (Dinamik Ürün Verilerinden Üretilir)
   const [selectedColorFilter, setSelectedColorFilter] = useState<string>('all')
   const [selectedSizeFilter, setSelectedSizeFilter] = useState<string>('all')
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState<boolean>(false)
@@ -63,7 +62,7 @@ function StoreContent() {
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0)
   const [isAdded, setIsAdded] = useState<boolean>(false)
-  const [isDescExpanded, setIsDescExpanded] = useState<boolean>(false) // Açıklama kısaltma/uzatma state'i
+  const [isDescExpanded, setIsDescExpanded] = useState<boolean>(false)
 
   const [isSizeTableOpen, setIsSizeTableOpen] = useState(false)
   const [activeTabTable, setActiveTabTable] = useState<'erkek' | 'kadin'>('erkek')
@@ -240,7 +239,6 @@ function StoreContent() {
     }
   }, [searchParam])
 
-  // Veritabanındaki ürünlerden dinamik Renkler ve Bedenler listesini çıkar
   const availableColors = Array.from(new Set(products.flatMap(p => p.colors || [])))
   const availableSizesList = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL']
 
@@ -251,7 +249,6 @@ function StoreContent() {
     }
   })
 
-  // Derin Filtreleme Mantığı
   let filteredProducts = products.filter((p) => {
     if (searchParam) {
       const query = searchParam.toLowerCase()
@@ -274,7 +271,6 @@ function StoreContent() {
 
     if (selectedSizeFilter !== 'all') {
       const rawSizes = p.sizes || {}
-      // Herhangi bir renk kombinasyonunda bu beden stokta var mı kontrol et
       const hasSize = Object.values(rawSizes).some((colorMap: any) => {
         if (typeof colorMap === 'object' && colorMap !== null) {
           return Number(colorMap[selectedSizeFilter] || 0) > 0
@@ -299,7 +295,7 @@ function StoreContent() {
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
       <div>
-        {/* ÜRÜN DETAY MODALI (Mobil ve Masaüstü Uyumlu, Akıllı Genişletilebilir Açıklama Alanı) */}
+        {/* ÜRÜN DETAY MODALI (Akıllı Uzatılabilir Açıklama Alanı) */}
         {selectedProduct && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn overflow-y-auto">
             <div className="relative w-full max-w-5xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 sm:p-10 shadow-2xl space-y-8 text-[#FFFFFF] max-h-[92vh] overflow-y-auto">
@@ -345,7 +341,7 @@ function StoreContent() {
                       )}
                     </div>
 
-                    {/* Akıllı Genişletilebilir (Expandable) Açıklama Kutusu */}
+                    {/* Akıllı Genişletilebilir Açıklama Alanı */}
                     <div className="mt-4 bg-black/40 p-4 rounded-2xl border border-[#D8D6D2]/10 space-y-2">
                       <div className={`text-xs leading-relaxed text-[#D8D6D2] overflow-hidden transition-all duration-300 ${isDescExpanded ? 'max-h-96 overflow-y-auto pr-2' : 'max-h-24'}`} dangerouslySetInnerHTML={{ __html: selectedProduct.description }} />
                       <button 
@@ -410,8 +406,8 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Video Destekli Çarpıcı Hero Alanı ve Basketbol Pota Temalı Şekil Keşfet Butonu */}
-        <section className="relative h-[85vh] min-h-[550px] w-full overflow-hidden flex items-end pb-16 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
+        {/* Video Destekli Çarpıcı Hero Alanı ve Animasyonlu Basketbol Pota Temalı Keşfet Butonu */}
+        <section className="relative pt-24 sm:pt-28 pb-16 sm:pb-24 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[85vh] flex items-end">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
               autoPlay 
@@ -426,24 +422,23 @@ function StoreContent() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-transparent" />
           </div>
 
-          {/* BASKETBOL POTA & TOP TEMALI SPORTİF KEŞFET BUTONU */}
-          <div className="absolute bottom-10 right-6 sm:right-16 z-25">
+          {/* GERÇEK ANIMASYONLU BASKETBOL POTA & TOP TEMALI KEŞFET BUTONU */}
+          <div className="absolute bottom-6 right-4 sm:bottom-10 sm:right-16 z-25">
             <button 
               onClick={scrollToCollection}
-              className="group relative flex items-center gap-3.5 rounded-full border-2 border-[#F74A05] bg-black/90 px-6 py-4 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.5)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
+              className="group relative flex items-center gap-3 rounded-full border-2 border-[#F74A05] bg-black/90 px-5 py-3 sm:px-6 sm:py-4 backdrop-blur-2xl shadow-[0_0_35px_rgba(247,74,5,0.4)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
               title="Koleksiyona İniş Yap"
             >
-              {/* Basketbol Topu İkonu & Pota Efekti */}
-              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-lg">
-                <svg className="h-5 w-5 fill-current animate-spin [animation-duration:8s]" viewBox="0 0 24 24">
+              <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-md">
+                <svg className="h-4 w-4 sm:h-5 sm:w-5 fill-current animate-bounce" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M2 12h20" stroke="currentColor" strokeWidth="1.5"/>
                 </svg>
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">SKORU YAP / AĞLARI SARS</span>
-                <span className="font-['Vast_XXL',sans-serif] text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
+                <span className="text-[8px] sm:text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">GOLÜ AT / SKORU YAP</span>
+                <span className="font-['Vast_XXL',sans-serif] text-[11px] sm:text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
               </div>
             </button>
           </div>
@@ -468,12 +463,11 @@ function StoreContent() {
 
         <div id="collection"></div>
         
-        {/* DERİN FİLTRELEME VE SIRALAMA ÇUBUĞU (Çalışır Vaziyette, Dinamik Renk & Beden Filtreleri) */}
+        {/* DERİN FİLTRELEME VE SIRALAMA ÇUBUĞU (Arama Temizleme Butonu Filtre Yanına Taşındı) */}
         <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/90 sticky top-16 sm:top-20 z-30 backdrop-blur-2xl">
           <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 sm:py-5 flex flex-col lg:flex-row items-center justify-between gap-4">
             
-            {/* Üst Kategoriler */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto py-1">
+            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar w-full lg:w-auto py-1">
               {searchParam && (
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05] bg-[#F74A05]/25 px-4 py-2 text-xs font-mono text-white shrink-0">
                   <span>Arama: "{searchParam}"</span>
@@ -492,9 +486,7 @@ function StoreContent() {
               ))}
             </div>
 
-            {/* Derin Filtreleme Butonları & Sıralama */}
             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
-              {/* Derin Filtre Paneli Açma Butonu */}
               <button 
                 type="button" 
                 onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
@@ -523,7 +515,6 @@ function StoreContent() {
           {isFilterPanelOpen && (
             <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 pb-6 pt-2 border-t border-[#D8D6D2]/10 flex flex-wrap items-center gap-6 animate-fadeIn text-xs font-mono">
               
-              {/* Renk Filtresi */}
               <div className="flex items-center gap-2">
                 <span className="text-[#D8D6D2] uppercase font-bold">Renk:</span>
                 <div className="flex flex-wrap gap-1.5">
@@ -545,7 +536,6 @@ function StoreContent() {
                 </div>
               </div>
 
-              {/* Beden Filtresi */}
               <div className="flex items-center gap-2">
                 <span className="text-[#D8D6D2] uppercase font-bold">Beden:</span>
                 <div className="flex flex-wrap gap-1.5">
