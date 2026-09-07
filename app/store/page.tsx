@@ -20,7 +20,8 @@ import {
   Send,
   Mail,
   ChevronLeft,
-  ChevronDown
+  ChevronDown,
+  Compass
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -221,6 +222,13 @@ function StoreContent() {
     setTimeout(() => setIsAdded(false), 2000)
   }
 
+  const scrollToCollection = () => {
+    const section = document.getElementById('collection')
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   const availableCategories = ['all', 'sale']
   products.forEach(p => {
     if (p.category && !availableCategories.includes(p.category)) {
@@ -248,9 +256,9 @@ function StoreContent() {
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
       <div>
-        {/* Üst Kargo Bandı - Navbar'ın içinde akışa uygun, şeffaf yapıda */}
-        <div className="w-full bg-[#111111]/30 border-b border-[#D8D6D2]/10 text-[#D8D6D2] py-2 px-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 backdrop-blur-md">
-          <Truck size={14} className="text-[#F74A05]" />
+        {/* Üst Kargo Bandı - Doğru Konumlandırma ve Estetik Şeffaflık */}
+        <div className="bg-[#111111]/80 border-b border-[#D8D6D2]/10 text-[#D8D6D2] py-2 px-4 text-center text-[10px] sm:text-[11px] font-mono tracking-[0.15em] uppercase flex items-center justify-center gap-2 backdrop-blur-md">
+          <Truck size={14} className="text-[#F74A05] shrink-0" />
           <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
         </div>
 
@@ -407,8 +415,8 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Video Destekli Çarpıcı Hero Alanı - Mobilde üst üste binme sorunu giderildi */}
-            <section className="relative h-[80vh] min-h-[500px] w-full overflow-hidden flex items-end pb-12 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
+            {/* Video Destekli Çarpıcı Hero Alanı ve İnteraktif Dönen 3D Rozet */}
+            <section className="relative h-[85vh] min-h-[550px] w-full overflow-hidden flex items-end pb-16 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
               <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
                 <video 
                   autoPlay 
@@ -420,16 +428,27 @@ function StoreContent() {
                   <source src="/store-hero-video.mp4" type="video/mp4" />
                   Tarayıcınız video etiketini desteklemiyor.
                 </video>
-                <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-transparent" />
               </div>
 
-              <div className="relative z-10 max-w-5xl space-y-4 sm:space-y-6">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05]/40 bg-[#F74A05]/10 px-4 sm:px-5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em] text-[#F74A05] backdrop-blur-md shadow-[0_0_20px_rgba(247,74,5,0.2)]">
-                  <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                  <span>Koleksiyon 2026</span>
-                </div>
-                <h1 className="font-['Vast_XXL',sans-serif] text-3xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-[#FFFFFF] uppercase leading-[1.1] sm:leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
-                  BİRLİKTE <br className="hidden sm:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F74A05] via-orange-400 to-amber-300">HAREKET ET.</span>
+              {/* Sağ Üst / Orta Konumlu İnteraktif Dönen Rozet */}
+              <div className="absolute top-12 right-6 sm:right-16 z-20">
+                <button 
+                  onClick={scrollToCollection}
+                  className="group relative flex h-24 w-24 sm:h-32 sm:w-32 items-center justify-center rounded-full border border-[#F74A05]/30 bg-black/40 backdrop-blur-xl shadow-[0_0_30px_rgba(247,74,5,0.3)] transition-all hover:scale-110 hover:border-[#F74A05] cursor-pointer"
+                  title="Koleksiyona Git"
+                >
+                  <div className="absolute inset-0 rounded-full animate-spin [animation-duration:12s] border border-dashed border-[#F74A05]/60" />
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <Compass className="h-6 w-6 sm:h-8 sm:w-8 text-[#F74A05] transition-transform group-hover:rotate-45" />
+                    <span className="text-[9px] sm:text-[10px] font-mono font-bold tracking-widest text-white mt-1 uppercase">KEŞFET</span>
+                  </div>
+                </button>
+              </div>
+
+              <div className="relative z-10 max-w-4xl space-y-4 sm:space-y-6">
+                <h1 className="font-['Vast_XXL',sans-serif] text-4xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-[#FFFFFF] uppercase leading-[1.05] sm:leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
+                  BİRLİKTE <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F74A05] via-orange-400 to-amber-300">HAREKET ET.</span>
                 </h1>
                 <p className="text-xs sm:text-lg text-[#D8D6D2] font-sans max-w-xl font-normal leading-relaxed">
                   Yeni nesil teknik spor giyim, kulüp ruhu ve sokak stili bir arada. Sınırları birlikte zorlayın.
@@ -651,7 +670,7 @@ function StoreContent() {
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOLEVİ OMUZDAN DİK</td><td>29</td><td>30</td><td>31</td><td>32</td><td>33</td><td>34</td><td>35</td><td>36</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 code">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
+                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL AĞZI</td><td>19.5</td><td>20.25</td><td>21</td><td>21.75</td><td>22.5</td><td>23.25</td><td>24</td><td>24.75</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">YAKA YÜKSEKLİĞİ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                     </>
@@ -669,7 +688,7 @@ function StoreContent() {
 
 export default function StorePage() {
   return (
-    <Suspense href="#" fallback={<div className="min-h-screen bg-[#111111]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#111111]" />}>
       <StoreContent />
     </Suspense>
   )
