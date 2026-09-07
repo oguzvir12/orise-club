@@ -265,7 +265,7 @@ function StoreContent() {
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
       <div>
-        {/* ÜRÜN DETAY MODALI (Tam ekran yerine şık bir modal popup olarak tasarlandı) */}
+        {/* ÜRÜN DETAY MODALI (Geliştirilmiş dikey kaydırma ve ferah açıklama alanı) */}
         {selectedProduct && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn overflow-y-auto">
             <div className="relative w-full max-w-5xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 sm:p-10 shadow-2xl space-y-8 text-[#FFFFFF] max-h-[92vh] overflow-y-auto">
@@ -311,7 +311,11 @@ function StoreContent() {
                       )}
                     </div>
 
-                    <div className="mt-4 text-xs leading-relaxed text-[#D8D6D2] space-y-2 bg-black/40 p-4 rounded-2xl border border-[#D8D6D2]/10" dangerouslySetInnerHTML={{ __html: selectedProduct.description }} />
+                    {/* Ferah ve Kaydırılabilir Açıklama Alanı */}
+                    <div 
+                      className="mt-4 text-xs leading-relaxed text-[#D8D6D2] space-y-2 bg-black/40 p-5 rounded-2xl border border-[#D8D6D2]/10 max-h-60 overflow-y-auto no-scrollbar"
+                      dangerouslySetInnerHTML={{ __html: selectedProduct.description }} 
+                    />
 
                     {selectedProduct.colors && selectedProduct.colors.length > 0 && (
                       <div className="mt-4 space-y-2">
@@ -366,7 +370,7 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Video Destekli Çarpıcı Hero Alanı ve Şekil/Sportif Keşfet Butonu */}
+        {/* Video Destekli Çarpıcı Hero Alanı ve Sportif / Kulüp Estetiğinde Keşfet Butonu */}
         <section className="relative h-[85vh] min-h-[550px] w-full overflow-hidden flex items-end pb-16 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
@@ -382,31 +386,24 @@ function StoreContent() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-transparent" />
           </div>
 
-          {/* ESTETİK VE ŞEKİL KEŞFET BUTONU (Basket atan / sportif kulüp tasarımı) */}
+          {/* SPORTİF VE ESTETİK KEŞFET BUTONU (Kulüp havasına uygun, basketbol/kale temalı modern rozet) */}
           <div className="absolute bottom-10 right-6 sm:right-16 z-25">
             <button 
               onClick={scrollToCollection}
-              className="group relative flex items-center gap-3 rounded-full border border-[#F74A05]/60 bg-black/80 px-6 py-3.5 backdrop-blur-2xl shadow-[0_0_35px_rgba(247,74,5,0.4)] transition-all hover:scale-110 hover:border-[#F74A05] hover:bg-[#F74A05] cursor-pointer"
+              className="group relative flex items-center gap-3 rounded-full border-2 border-[#F74A05] bg-black/85 px-6 py-4 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.5)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
               title="Koleksiyona İniş Yap"
             >
               <div className="flex flex-col text-left">
-                <span className="text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-bold tracking-widest uppercase">ORISE CLUB</span>
+                <span className="text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">GOLÜ AT / SKORU YAP</span>
                 <span className="font-['Vast_XXL',sans-serif] text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
               </div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-white transition-colors">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-white transition-colors shadow-md">
                 <ArrowDown className="h-4 w-4 animate-bounce" />
               </div>
             </button>
           </div>
 
           <div className="relative z-10 max-w-4xl space-y-4 sm:space-y-6">
-            {searchParam && (
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05] bg-[#F74A05]/20 px-4 py-1.5 text-xs font-mono text-white backdrop-blur-md">
-                <span>"{searchParam}" için arama sonuçları gösteriliyor</span>
-                <Link href="/store" className="underline font-bold text-white ml-2">Temizle</Link>
-              </div>
-            )}
-
             {/* Estetik Kargo Rozeti */}
             <div className="inline-flex items-center gap-2.5 rounded-full border border-[#D8D6D2]/15 bg-black/60 px-4 py-2 text-xs font-mono text-[#D8D6D2] backdrop-blur-md shadow-lg">
               <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#F74A05]/20 text-[#F74A05]">
@@ -426,10 +423,18 @@ function StoreContent() {
 
         <div id="collection"></div>
         
-        {/* Filtreleme ve Sıralama Çubuğu (Yön tuşu taşıma ve hizalama sorunu giderildi) */}
+        {/* Filtreleme ve Sıralama Çubuğu (Arama Temizleme Butonu Profesyonelce Filtre Alanına Taşındı) */}
         <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/90 sticky top-16 sm:top-20 z-30 backdrop-blur-2xl">
           <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 sm:py-5 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            
+            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+              {searchParam && (
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05] bg-[#F74A05]/25 px-4 py-1.5 text-xs font-mono text-white shrink-0">
+                  <span>Arama: "{searchParam}"</span>
+                  <Link href="/store" className="hover:text-[#F74A05] transition-colors font-bold ml-1 flex items-center bg-black/40 rounded-full px-2 py-0.5 text-[10px]">Temizle ✕</Link>
+                </div>
+              )}
+
               {availableCategories.map((catKey) => (
                 <button 
                   key={catKey} 
