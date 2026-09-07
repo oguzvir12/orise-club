@@ -251,11 +251,11 @@ export default function CommunityPage() {
       : upcomingEvents.filter((e) => e.branch?.toUpperCase() === selectedBranch)
 
   return (
-    <div className="relative min-h-screen bg-black text-white font-sans selection:bg-primary selection:text-black">
+    <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white">
       <SiteHeader />
 
-      <section className="relative h-[85vh] min-h-[600px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-white/10 pt-20">
-        <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+      <section className="relative h-[85vh] min-h-[600px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 pt-20">
+        <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
           <video 
             autoPlay 
             muted 
@@ -266,51 +266,51 @@ export default function CommunityPage() {
             <source src="/community-hero-video.mp4" type="video/mp4" />
             Tarayıcınız video etiketini desteklemiyor.
           </video>
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-transparent" />
         </div>
 
         <div className="absolute top-28 left-6 z-20 sm:left-10">
           <Link
             href="/store"
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:border-primary hover:text-white"
+            className="inline-flex items-center gap-2 rounded-full border border-[#D8D6D2]/20 bg-[#111111]/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-[#F5F2EC] backdrop-blur-xl transition-all duration-300 hover:border-[#F74A05] hover:text-[#FFFFFF]"
           >
-            <ShoppingBag className="h-3.5 w-3.5 text-primary" />
+            <ShoppingBag className="h-3.5 w-3.5 text-[#F74A05]" />
             <span>Mağazaya Dön</span>
           </Link>
         </div>
 
         <div className="relative z-10 max-w-5xl space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-primary backdrop-blur-md shadow-[0_0_20px_rgba(249,115,22,0.2)]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05]/40 bg-[#F74A05]/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-[#F74A05] backdrop-blur-md shadow-[0_0_20px_rgba(247,74,5,0.2)]">
             <Sparkles className="h-3.5 w-3.5" />
             <span>Haftalık Antrenman Takvimi & Atölyeler</span>
           </div>
 
-          <h1 className="font-sans text-4xl sm:text-7xl lg:text-8xl font-black tracking-tight text-white uppercase leading-[1.1] sm:leading-[1.05]" style={{ letterSpacing: '-0.02em' }}>
+          <h1 className="font-['Vast_XXL',sans-serif] text-4xl sm:text-7xl lg:text-8xl font-black tracking-tight text-[#FFFFFF] uppercase leading-[1.1] sm:leading-[1.05]" style={{ letterSpacing: '-0.02em' }}>
             Toplulukla Tanış, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-400 to-amber-300">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F74A05] via-orange-400 to-amber-300">
               Ritmine Katıl.
             </span>
           </h1>
 
-          <p className="max-w-xl text-sm sm:text-base text-zinc-300 leading-relaxed font-normal">
+          <p className="max-w-xl text-sm sm:text-base text-[#D8D6D2] leading-relaxed font-normal">
             Tek başınalıktan çık, şehre karış. Birlikte hareket eden yeni nesil spor topluluğunun açık hava buluşmalarını keşfet.
           </p>
         </div>
       </section>
 
-      <section className="border-b border-white/10 bg-zinc-950/90 sticky top-20 z-40 backdrop-blur-2xl">
+      <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/90 sticky top-16 sm:top-20 z-40 backdrop-blur-2xl">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-              <Filter className="h-4 w-4 text-primary shrink-0 mr-2" />
+              <Filter className="h-4 w-4 text-[#F74A05] shrink-0 mr-2" />
               {availableBranches.map((branch) => (
                 <button
                   key={branch}
                   onClick={() => setSelectedBranch(branch)}
                   className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
                     selectedBranch === branch
-                      ? 'bg-primary text-black shadow-[0_0_20px_rgba(249,115,22,0.4)] font-black'
-                      : 'border border-white/10 bg-black/60 text-zinc-400 hover:border-white/30 hover:text-white'
+                      ? 'bg-[#F74A05] text-[#111111] shadow-[0_0_20px_rgba(247,74,5,0.4)] font-black'
+                      : 'border border-[#D8D6D2]/15 bg-[#111111]/60 text-[#D8D6D2] hover:border-[#F74A05]/50 hover:text-[#FFFFFF]'
                   }`}
                 >
                   {branch}
@@ -322,7 +322,7 @@ export default function CommunityPage() {
               href="https://www.instagram.com/orisecommunity/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-zinc-900/80 px-5 py-2 text-xs font-bold uppercase tracking-wider text-zinc-200 hover:border-primary hover:text-primary transition-all"
+              className="inline-flex items-center gap-2 rounded-full border border-[#D8D6D2]/20 bg-[#111111]/80 px-5 py-2 text-xs font-bold uppercase tracking-wider text-[#F5F2EC] hover:border-[#F74A05] hover:text-[#F74A05] transition-all"
             >
               <span>Instagram @orisecommunity</span>
             </a>
@@ -330,15 +330,15 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <section className="bg-gradient-to-b from-black via-zinc-950/60 to-black py-20">
+      <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-20">
         <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-          <div className="mb-12 flex items-center justify-between border-b border-white/10 pb-4">
-            <h2 className="font-sans text-2xl font-black text-white tracking-tight">Yaklaşan Buluşmalar & Antrenmanlar</h2>
+          <div className="mb-12 flex items-center justify-between border-b border-[#D8D6D2]/10 pb-4">
+            <h2 className="font-['Vast_XXL',sans-serif] text-2xl font-black text-[#FFFFFF] tracking-tight">Yaklaşan Buluşmalar & Antrenmanlar</h2>
             <div className="flex items-center gap-4">
-              <button onClick={() => fetchEvents()} className="text-xs font-mono text-zinc-400 hover:text-primary uppercase tracking-widest cursor-pointer underline">
+              <button onClick={() => fetchEvents()} className="text-xs font-mono text-[#D8D6D2] hover:text-[#F74A05] uppercase tracking-widest cursor-pointer underline">
                 Yenile
               </button>
-              <span className="text-xs font-mono text-zinc-400 uppercase tracking-widest">
+              <span className="text-xs font-mono text-[#D8D6D2] uppercase tracking-widest">
                 [{filteredEvents.length} ETKİNLİK]
               </span>
             </div>
@@ -361,25 +361,25 @@ export default function CommunityPage() {
                 <div
                   key={evt.id}
                   onClick={() => openDetailModal(evt)}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur-xl transition-all duration-500 hover:border-primary/60 hover:bg-zinc-900/80 shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-pointer"
+                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#D8D6D2]/15 bg-[#111111]/60 p-6 backdrop-blur-xl transition-all duration-500 hover:border-[#F74A05]/60 hover:bg-[#111111] shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-pointer"
                 >
                   <div className="space-y-5">
                     <div className="flex items-center gap-4">
                       {/* Tarih ve Gün Rozeti */}
-                      <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 px-3 py-3 text-center shrink-0 w-24">
-                        <span className="text-[9px] font-mono uppercase tracking-widest text-primary font-bold">{monthName}</span>
-                        <span className="text-2xl font-black text-white leading-none my-1">{dayNum}</span>
-                        <span className="text-[10px] font-mono text-primary font-extrabold uppercase">{dayName}</span>
-                        <span className="text-[10px] text-zinc-400 mt-0.5">{timeStr}</span>
+                      <div className="flex flex-col items-center justify-center rounded-2xl border border-[#F74A05]/30 bg-[#F74A05]/10 px-3 py-3 text-center shrink-0 w-24">
+                        <span className="text-[9px] font-mono uppercase tracking-widest text-[#F74A05] font-bold">{monthName}</span>
+                        <span className="text-2xl font-black text-[#FFFFFF] leading-none my-1">{dayNum}</span>
+                        <span className="text-[10px] font-mono text-[#F74A05] font-extrabold uppercase">{dayName}</span>
+                        <span className="text-[10px] text-[#D8D6D2] mt-0.5">{timeStr}</span>
                       </div>
-                      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-zinc-950 border border-white/5">
+                      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-[#111111] border border-[#D8D6D2]/10">
                         <Image
                           src={evt.image_url || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop'}
                           alt={evt.title}
                           fill
                           className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
-                        <div className="absolute top-2.5 left-2.5 rounded-full border border-primary/40 bg-black/80 px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-primary backdrop-blur-md">
+                        <div className="absolute top-2.5 left-2.5 rounded-full border border-[#F74A05]/40 bg-[#111111]/80 px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-[#F74A05] backdrop-blur-md">
                           {evt.branch || 'KULÜP'}
                         </div>
                       </div>
@@ -387,36 +387,36 @@ export default function CommunityPage() {
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-sans text-xl font-black text-white group-hover:text-primary transition-colors tracking-tight">
+                        <h3 className="font-['Vast_XXL',sans-serif] text-xl font-bold text-[#FFFFFF] group-hover:text-[#F74A05] transition-colors tracking-tight">
                           {evt.title}
                         </h3>
-                        <span className="text-[10px] font-mono bg-zinc-800 text-zinc-300 px-2.5 py-1 rounded-full border border-white/10">
+                        <span className="text-[10px] font-mono bg-[#D8D6D2]/10 text-[#D8D6D2] px-2.5 py-1 rounded-full border border-[#D8D6D2]/15">
                           👥 {evtRegs.length}/{capacity}
                         </span>
                       </div>
 
                       {evt.instructor_name && (
-                        <p className="text-xs font-mono text-primary font-bold tracking-wider">
+                        <p className="text-xs font-mono text-[#F74A05] font-bold tracking-wider">
                           Eğitmen: {evt.instructor_name}
                         </p>
                       )}
                       
                       <div 
-                        className="text-xs text-zinc-300 leading-snug h-12 overflow-hidden text-ellipsis [&_*]:text-xs [&_*]:text-zinc-300 [&_*]:m-0"
+                        className="text-xs text-[#D8D6D2] leading-snug h-12 overflow-hidden text-ellipsis [&_*]:text-xs [&_*]:text-[#D8D6D2] [&_*]:m-0"
                         dangerouslySetInnerHTML={{ __html: evt.description }}
                       />
-                      <span className="text-[10px] font-mono text-primary inline-flex items-center gap-1 pt-1 font-bold">
+                      <span className="text-[10px] font-mono text-[#F74A05] inline-flex items-center gap-1 pt-1 font-bold">
                         <Info size={12} /> Detayları Gör / Büyüt
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-xl bg-black/50 p-3 border border-white/5 text-xs font-mono text-zinc-300">
-                      <MapPin className="h-4 w-4 text-primary shrink-0" />
+                    <div className="flex items-center gap-2 rounded-xl bg-[#111111]/80 p-3 border border-[#D8D6D2]/10 text-xs font-mono text-[#D8D6D2]">
+                      <MapPin className="h-4 w-4 text-[#F74A05] shrink-0" />
                       <span className="truncate">{evt.location || 'İstanbul'}</span>
                     </div>
                   </div>
 
-                  <div className="mt-8 pt-5 border-t border-white/10 space-y-3" onClick={(e) => e.stopPropagation()}>
+                  <div className="mt-8 pt-5 border-t border-[#D8D6D2]/10 space-y-3" onClick={(e) => e.stopPropagation()}>
                     {alreadyJoined ? (
                       <div className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 py-3.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
                         <Check className="h-4 w-4" />
@@ -431,7 +431,7 @@ export default function CommunityPage() {
                       <button
                         type="button"
                         onClick={(e) => openRegisterModal(evt, e)}
-                        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] transition-all hover:scale-[1.02] hover:bg-orange-500 cursor-pointer"
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-[#F74A05] py-3.5 text-xs font-bold uppercase tracking-widest text-[#111111] shadow-[0_0_25px_rgba(247,74,5,0.4)] transition-all hover:scale-[1.02] hover:bg-orange-600 cursor-pointer font-black"
                       >
                         <span>Katılım Talebi Gönder</span>
                         <ChevronRight className="h-4 w-4" />
@@ -442,7 +442,7 @@ export default function CommunityPage() {
                       href="https://www.instagram.com/orisecommunity/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-zinc-900/80 py-3 text-[11px] font-bold uppercase tracking-wider text-zinc-300 hover:border-primary hover:text-white transition-all"
+                      className="flex w-full items-center justify-center gap-2 rounded-full border border-[#D8D6D2]/20 bg-[#111111] py-3 text-[11px] font-bold uppercase tracking-wider text-[#D8D6D2] hover:border-[#F74A05] hover:text-[#FFFFFF] transition-all"
                     >
                       <span>Detaylar & Konum Instagram'da</span>
                     </a>
@@ -454,7 +454,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      {/* SAĞ ALT: WhatsApp İletişim Butonu (+90 507 082 08 00) */}
+      {/* SAĞ ALT: WhatsApp İletişim Butonu */}
       <div className="fixed bottom-6 right-6 z-[90]">
         <a 
           href="https://wa.me/905070820800?text=Merhaba,%20ORISE%20Club%20hakkında%20bilgi%20almak%20istiyorum." 
@@ -475,28 +475,28 @@ export default function CommunityPage() {
           onClick={() => setIsDetailModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-2xl rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
+            className="relative w-full max-w-2xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 pb-4">
               <div>
-                <span className="text-[10px] font-mono uppercase text-primary tracking-widest block font-bold">
+                <span className="text-[10px] font-mono uppercase text-[#F74A05] tracking-widest block font-bold">
                   {selectedEvent.branch}
                 </span>
-                <h3 className="font-sans text-2xl font-black text-white mt-1">
+                <h3 className="font-['Vast_XXL',sans-serif] text-2xl font-black text-[#FFFFFF] mt-1">
                   {selectedEvent.title}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsDetailModalOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[#FFFFFF] hover:bg-[#F74A05] hover:text-[#111111] transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-zinc-900 border border-white/10">
+            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-[#111111] border border-[#D8D6D2]/10">
               <Image
                 src={selectedEvent.image_url || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop'}
                 alt={selectedEvent.title}
@@ -506,24 +506,24 @@ export default function CommunityPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
-              <div className="flex items-center gap-2 rounded-xl bg-black/60 p-3 border border-white/5 text-zinc-300">
-                <Calendar className="h-4 w-4 text-primary shrink-0" />
+              <div className="flex items-center gap-2 rounded-xl bg-[#111111] p-3 border border-[#D8D6D2]/10 text-[#D8D6D2]">
+                <Calendar className="h-4 w-4 text-[#F74A05] shrink-0" />
                 <span>{new Date(selectedEvent.date).toLocaleString('tr-TR')}</span>
               </div>
-              <div className="flex items-center gap-2 rounded-xl bg-black/60 p-3 border border-white/5 text-zinc-300">
-                <MapPin className="h-4 w-4 text-primary shrink-0" />
+              <div className="flex items-center gap-2 rounded-xl bg-[#111111] p-3 border border-[#D8D6D2]/10 text-[#D8D6D2]">
+                <MapPin className="h-4 w-4 text-[#F74A05] shrink-0" />
                 <span className="truncate">{selectedEvent.location || 'İstanbul'}</span>
               </div>
             </div>
 
             {selectedEvent.instructor_name && (
-              <p className="text-xs font-mono text-primary font-bold">
+              <p className="text-xs font-mono text-[#F74A05] font-bold">
                 Eğitmen / Lider: {selectedEvent.instructor_name}
               </p>
             )}
 
             <div 
-              className="text-sm leading-relaxed text-zinc-300 space-y-3 bg-black/40 p-4 rounded-2xl border border-white/5"
+              className="text-sm leading-relaxed text-[#D8D6D2] space-y-3 bg-[#111111]/80 p-4 rounded-2xl border border-[#D8D6D2]/10"
               dangerouslySetInnerHTML={{ __html: selectedEvent.description }}
             />
 
@@ -553,7 +553,7 @@ export default function CommunityPage() {
                         setIsDetailModalOpen(false)
                         openRegisterModal(selectedEvent)
                       }}
-                      className="flex-1 rounded-full bg-primary py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:bg-orange-500 transition-all cursor-pointer"
+                      className="flex-1 rounded-full bg-[#F74A05] py-3.5 text-xs font-bold uppercase tracking-widest text-[#111111] shadow-[0_0_25px_rgba(247,74,5,0.4)] hover:bg-orange-600 transition-all cursor-pointer font-black"
                     >
                       Katılım Talebi Gönder
                     </button>
@@ -571,22 +571,22 @@ export default function CommunityPage() {
           onClick={() => setIsModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
+            className="relative w-full max-w-lg rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 pb-4">
               <div>
-                <span className="text-[10px] font-mono uppercase text-primary tracking-widest block">
+                <span className="text-[10px] font-mono uppercase text-[#F74A05] tracking-widest block">
                   {selectedEvent.branch}
                 </span>
-                <h3 className="font-sans text-lg font-black text-white mt-0.5">
+                <h3 className="font-['Vast_XXL',sans-serif] text-lg font-black text-[#FFFFFF] mt-0.5">
                   {selectedEvent.title} — Katılım Talebi
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-primary hover:text-black transition-colors cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#FFFFFF] hover:bg-[#F74A05] hover:text-[#111111] transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -597,59 +597,59 @@ export default function CommunityPage() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
                   <Check className="h-7 w-7" />
                 </div>
-                <h4 className="font-sans text-xl font-bold text-white">Katılım Talebiniz Alındı!</h4>
-                <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-                  Yönetici onayından sonra durum profilinize yansıyacaktır. Tüm detaylar için <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="text-primary underline">@orisecommunity</a> hesabını takip edebilirsiniz!
+                <h4 className="font-['Vast_XXL',sans-serif] text-xl font-bold text-[#FFFFFF]">Katılım Talebiniz Alındı!</h4>
+                <p className="text-xs text-[#D8D6D2] max-w-xs mx-auto">
+                  Yönetici onayından sonra durum profilinize yansıyacaktır. Tüm detaylar için <a href="https://www.instagram.com/orisecommunity/" target="_blank" rel="noopener noreferrer" className="text-[#F74A05] underline">@orisecommunity</a> hesabını takip edebilirsiniz!
                 </p>
               </div>
             ) : (
               <form onSubmit={handleRegisterSubmit} className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Ad Soyad</label>
-                  <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ad Soyad" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none" />
+                  <label className="text-[10px] font-mono uppercase text-[#D8D6D2] block mb-1">Ad Soyad</label>
+                  <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ad Soyad" className="w-full rounded-xl border border-[#D8D6D2]/20 bg-[#111111] px-4 py-3 text-xs text-[#FFFFFF] focus:border-[#F74A05] focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Telefon</label>
-                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XX XXX XX XX" className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-xs text-white focus:border-primary focus:outline-none" />
+                  <label className="text-[10px] font-mono uppercase text-[#D8D6D2] block mb-1">Telefon</label>
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XX XXX XX XX" className="w-full rounded-xl border border-[#D8D6D2]/20 bg-[#111111] px-4 py-3 text-xs text-[#FFFFFF] focus:border-[#F74A05] focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">E-Posta</label>
-                  <input type="email" value={userEmail} readOnly className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-xs text-white opacity-75 cursor-not-allowed" />
+                  <label className="text-[10px] font-mono uppercase text-[#D8D6D2] block mb-1">E-Posta</label>
+                  <input type="email" value={userEmail} readOnly className="w-full rounded-xl border border-[#D8D6D2]/20 bg-[#111111]/60 px-4 py-3 text-xs text-[#FFFFFF] opacity-75 cursor-not-allowed" />
                 </div>
 
                 <div className="space-y-3 pt-2">
-                  <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 p-3.5">
+                  <div className="flex items-start gap-3 rounded-2xl border border-[#D8D6D2]/15 bg-[#111111] p-3.5">
                     <input
                       type="checkbox" id="healthCheck" required checked={healthAccepted}
                       onChange={(e) => setHealthAccepted(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-black text-primary focus:ring-primary cursor-pointer"
+                      className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-black text-[#F74A05] focus:ring-[#F74A05] cursor-pointer"
                     />
-                    <label htmlFor="healthCheck" className="text-[11px] leading-relaxed text-zinc-300">
+                    <label htmlFor="healthCheck" className="text-[11px] leading-relaxed text-[#D8D6D2]">
                       Fiziksel antrenmanlara katılmaya engel bir sağlık problemim olmadığını beyan ederim.{' '}
-                      <button type="button" onClick={() => setIsHealthModalOpen(true)} className="text-primary underline hover:text-white cursor-pointer">(Oku)</button>
+                      <button type="button" onClick={() => setIsHealthModalOpen(true)} className="text-[#F74A05] underline hover:text-[#FFFFFF] cursor-pointer">(Oku)</button>
                     </label>
                   </div>
 
-                  <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 p-3.5">
+                  <div className="flex items-start gap-3 rounded-2xl border border-[#D8D6D2]/15 bg-[#111111] p-3.5">
                     <input
                       type="checkbox" id="waiverCheck" required checked={waiverAccepted}
                       onChange={(e) => setWaiverAccepted(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-black text-primary focus:ring-primary cursor-pointer"
+                      className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-black text-[#F74A05] focus:ring-[#F74A05] cursor-pointer"
                     />
-                    <label htmlFor="waiverCheck" className="text-[11px] leading-relaxed text-zinc-300">
-                      <strong className="text-white">Feragatname & Sorumluluk Reddi:</strong> Kulüp etkinlikleri sırasındaki her türlü kaza ve zarardan bizzat sorumlu olduğumu kabul ederim.
+                    <label htmlFor="waiverCheck" className="text-[11px] leading-relaxed text-[#D8D6D2]">
+                      <strong className="text-[#FFFFFF]">Feragatname & Sorumluluk Reddi:</strong> Kulüp etkinlikleri sırasındaki her türlü kaza ve zarardan bizzat sorumlu olduğumu kabul ederim.
                     </label>
                   </div>
 
-                  <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-900/60 p-3.5">
+                  <div className="flex items-start gap-3 rounded-2xl border border-[#D8D6D2]/15 bg-[#111111] p-3.5">
                     <input
                       type="checkbox" id="kvkkCheck" required checked={kvkkAccepted}
                       onChange={(e) => setKvkkAccepted(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-black text-primary focus:ring-primary cursor-pointer"
+                      className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-black text-[#F74A05] focus:ring-[#F74A05] cursor-pointer"
                     />
-                    <label htmlFor="kvkkCheck" className="text-[11px] leading-relaxed text-zinc-300">
+                    <label htmlFor="kvkkCheck" className="text-[11px] leading-relaxed text-[#D8D6D2]">
                       Fotoğraf ve videolarımın kulüp tanıtımlarında kullanılmasına onay veriyorum.{' '}
-                      <button type="button" onClick={() => setIsKvkkModalOpen(true)} className="text-primary underline hover:text-white cursor-pointer">(Detaylar)</button>
+                      <button type="button" onClick={() => setIsKvkkModalOpen(true)} className="text-[#F74A05] underline hover:text-[#FFFFFF] cursor-pointer">(Detaylar)</button>
                     </label>
                   </div>
                 </div>
@@ -663,7 +663,7 @@ export default function CommunityPage() {
 
                 <button
                   type="submit" disabled={loading}
-                  className="w-full rounded-full bg-primary py-4 text-xs font-bold uppercase tracking-widest text-black shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:scale-[1.02] transition-transform cursor-pointer"
+                  className="w-full rounded-full bg-[#F74A05] py-4 text-xs font-bold uppercase tracking-widest text-[#111111] shadow-[0_0_25px_rgba(247,74,5,0.4)] hover:scale-[1.02] transition-transform cursor-pointer font-black"
                 >
                   {loading ? 'İşleniyor...' : 'Katılım Talebini Gönder'}
                 </button>
@@ -675,14 +675,14 @@ export default function CommunityPage() {
 
       {isHealthModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl" onClick={() => setIsHealthModalOpen(false)}>
-          <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <span className="text-primary font-bold text-xs uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Sağlık Beyanı</span>
-              <button onClick={() => setIsHealthModalOpen(false)} className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-white cursor-pointer"><X className="h-4 w-4" /></button>
+          <div className="relative w-full max-w-lg rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 pb-3">
+              <span className="text-[#F74A05] font-bold text-xs uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Sağlık Beyanı</span>
+              <button onClick={() => setIsHealthModalOpen(false)} className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-[#FFFFFF] cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
-            <p className="text-xs text-zinc-300 leading-relaxed">Kulüp etkinliklerine katılmama engel olacak, kalp, tansiyon veya ortopedik ciddi bir rahatsızlığım bulunmamaktadır.</p>
+            <p className="text-xs text-[#D8D6D2] leading-relaxed">Kulüp etkinliklerine katılmama engel olacak, kalp, tansiyon veya ortopedik ciddi bir rahatsızlığım bulunmamaktadır.</p>
             <div className="text-right">
-              <button type="button" onClick={() => { setHealthAccepted(true); setIsHealthModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer font-bold">Onayla</button>
+              <button type="button" onClick={() => { setHealthAccepted(true); setIsHealthModalOpen(false) }} className="rounded-full bg-[#F74A05] px-6 py-2 text-xs font-bold uppercase text-[#111111] cursor-pointer font-black">Onayla</button>
             </div>
           </div>
         </div>
@@ -690,14 +690,14 @@ export default function CommunityPage() {
 
       {isKvkkModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl" onClick={() => setIsKvkkModalOpen(false)}>
-          <div className="relative w-full max-w-lg rounded-3xl border border-white/15 bg-zinc-950 p-6 space-y-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <span className="text-primary font-bold text-xs uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> KVKK & Medya Aydınlatma Metni</span>
-              <button onClick={() => setIsKvkkModalOpen(false)} className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-white cursor-pointer"><X className="h-4 w-4" /></button>
+          <div className="relative w-full max-w-lg rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 space-y-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 pb-3">
+              <span className="text-[#F74A05] font-bold text-xs uppercase flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> KVKK & Medya Aydınlatma Metni</span>
+              <button onClick={() => setIsKvkkModalOpen(false)} className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-[#FFFFFF] cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
-            <p className="text-xs text-zinc-300 leading-relaxed">6698 sayılı KVKK uyarınca bilgileriniz işlenmektedir ve medya izinleriniz onaylanmaktadır.</p>
+            <p className="text-xs text-[#D8D6D2] leading-relaxed">6698 sayılı KVKK uyarınca bilgileriniz işlenmektedir ve medya izinleriniz onaylanmaktadır.</p>
             <div className="text-right">
-              <button type="button" onClick={() => { setKvkkAccepted(true); setIsKvkkModalOpen(false) }} className="rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase text-black cursor-pointer font-bold">Anladım / Onayla</button>
+              <button type="button" onClick={() => { setKvkkAccepted(true); setIsKvkkModalOpen(false) }} className="rounded-full bg-[#F74A05] px-6 py-2 text-xs font-bold uppercase text-[#111111] cursor-pointer font-black">Anladım / Onayla</button>
             </div>
           </div>
         </div>
