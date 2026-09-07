@@ -248,14 +248,14 @@ function StoreContent() {
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
       <div>
-        {/* Üst Kargo Bandı - Şeffaf / Cam Efektli ve Boşluksuz */}
-        <div className="bg-[#111111]/40 border-b border-[#D8D6D2]/10 text-[#D8D6D2] py-2 px-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 backdrop-blur-md">
+        {/* Üst Kargo Bandı - Navbar'ın içinde akışa uygun, şeffaf yapıda */}
+        <div className="w-full bg-[#111111]/30 border-b border-[#D8D6D2]/10 text-[#D8D6D2] py-2 px-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 backdrop-blur-md">
           <Truck size={14} className="text-[#F74A05]" />
           <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
         </div>
 
         {selectedProduct && (
-          <div className="absolute top-20 left-6 z-30 sm:left-10">
+          <div className="absolute top-28 left-6 z-30 sm:left-10">
             <button type="button" onClick={closeProductDetail} className="group inline-flex items-center gap-2 rounded-full border border-[#D8D6D2]/20 bg-[#111111]/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-[#F5F2EC] backdrop-blur-xl transition-all hover:border-[#F74A05] cursor-pointer">
               <ArrowLeft className="h-3.5 w-3.5 text-[#F74A05]" />
               <span>Tüm Koleksiyon</span>
@@ -407,8 +407,8 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Video Destekli Çarpıcı Hero Alanı */}
-            <section className="relative h-[85vh] min-h-[600px] w-full overflow-hidden flex items-end pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
+            {/* Video Destekli Çarpıcı Hero Alanı - Mobilde üst üste binme sorunu giderildi */}
+            <section className="relative h-[80vh] min-h-[500px] w-full overflow-hidden flex items-end pb-12 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
               <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
                 <video 
                   autoPlay 
@@ -423,15 +423,15 @@ function StoreContent() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/50 to-transparent" />
               </div>
 
-              <div className="relative z-10 max-w-5xl space-y-6">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05]/40 bg-[#F74A05]/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.25em] text-[#F74A05] backdrop-blur-md shadow-[0_0_20px_rgba(247,74,5,0.2)]">
-                  <Sparkles className="h-3.5 w-3.5" />
+              <div className="relative z-10 max-w-5xl space-y-4 sm:space-y-6">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05]/40 bg-[#F74A05]/10 px-4 sm:px-5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em] text-[#F74A05] backdrop-blur-md shadow-[0_0_20px_rgba(247,74,5,0.2)]">
+                  <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   <span>Koleksiyon 2026</span>
                 </div>
-                <h1 className="font-['Vast_XXL',sans-serif] text-5xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-[#FFFFFF] uppercase leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
-                  BİRLİKTE <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F74A05] via-orange-400 to-amber-300">HAREKET ET.</span>
+                <h1 className="font-['Vast_XXL',sans-serif] text-3xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-[#FFFFFF] uppercase leading-[1.1] sm:leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
+                  BİRLİKTE <br className="hidden sm:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F74A05] via-orange-400 to-amber-300">HAREKET ET.</span>
                 </h1>
-                <p className="text-sm sm:text-lg text-[#D8D6D2] font-sans max-w-xl font-normal leading-relaxed">
+                <p className="text-xs sm:text-lg text-[#D8D6D2] font-sans max-w-xl font-normal leading-relaxed">
                   Yeni nesil teknik spor giyim, kulüp ruhu ve sokak stili bir arada. Sınırları birlikte zorlayın.
                 </p>
               </div>
@@ -440,14 +440,14 @@ function StoreContent() {
             <div id="collection"></div>
             
             {/* Filtreleme ve Sıralama Çubuğu */}
-            <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/90 sticky top-16 sm:top-20 z-30 backdrop-blur-2xl">
-              <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-5 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+            <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/90 sticky top-12 sm:top-20 z-30 backdrop-blur-2xl">
+              <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 sm:py-5 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
                 <div className="flex items-center gap-2">
                   {availableCategories.map((catKey) => (
                     <button 
                       key={catKey} 
                       onClick={() => setActiveCategory(catKey)} 
-                      className={`rounded-full px-6 py-2.5 text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${activeCategory === catKey ? 'bg-[#F74A05] text-[#111111] font-black shadow-[0_0_20px_rgba(247,74,5,0.4)]' : 'border border-[#D8D6D2]/15 bg-[#111111]/60 text-[#D8D6D2] hover:text-[#FFFFFF] hover:border-[#F74A05]/50'}`}
+                      className={`rounded-full px-5 sm:px-6 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${activeCategory === catKey ? 'bg-[#F74A05] text-[#111111] font-black shadow-[0_0_20px_rgba(247,74,5,0.4)]' : 'border border-[#D8D6D2]/15 bg-[#111111]/60 text-[#D8D6D2] hover:text-[#FFFFFF] hover:border-[#F74A05]/50'}`}
                     >
                       {ALL_CATEGORIES_MAP[catKey] || catKey.toUpperCase()}
                     </button>
@@ -456,7 +456,7 @@ function StoreContent() {
 
                 <div className="flex items-center gap-2 shrink-0">
                   <ArrowUpDown className="h-4 w-4 text-[#D8D6D2]" />
-                  <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-[#111111] border border-[#D8D6D2]/15 rounded-full px-5 py-2.5 text-xs font-mono text-[#FFFFFF] focus:outline-none focus:border-[#F74A05] cursor-pointer">
+                  <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-[#111111] border border-[#D8D6D2]/15 rounded-full px-4 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs font-mono text-[#FFFFFF] focus:outline-none focus:border-[#F74A05] cursor-pointer">
                     <option value="default">Önerilen Sıralama</option>
                     <option value="asc">Fiyat: Ucuzdan Pahalıya</option>
                     <option value="desc">Fiyat: Pahalıdan Ucuza</option>
@@ -466,7 +466,7 @@ function StoreContent() {
             </section>
 
             {/* Ürün Vitrini (Grid) */}
-            <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-20 sm:py-28">
+            <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-16 sm:py-28">
               <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
                 <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredProducts.map((product) => {
@@ -669,7 +669,7 @@ function StoreContent() {
 
 export default function StorePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#111111]" />}>
+    <Suspense href="#" fallback={<div className="min-h-screen bg-[#111111]" />}>
       <StoreContent />
     </Suspense>
   )
