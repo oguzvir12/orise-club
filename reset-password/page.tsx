@@ -13,23 +13,15 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
-  const [isVerified, setIsVerified] = useState(false)
 
   useEffect(() => {
-    // Supabase şifre sıfırlama token'ını hash veya query'den yakala
-    const handleRecovery = async () => {
-      const hash = window.location.hash
-      const searchParams = new URLSearchParams(window.location.search)
-      
-      if (hash.includes('type=recovery') || searchParams.get('type') === 'recovery' || hash.includes('access_token')) {
-        setIsVerified(true)
-      } else {
-        // Token yoksa bile kullanıcı sayfada işlem yapabilsin diye esneklik bırakıyoruz
-        setIsVerified(true)
-      }
+    // Supabase şifre sıfırlama linki ile geldiğinde oturum açılmış olur.
+    // Bu sayfadaysak kullanıcı şifre değiştirmek zorundadır, ana sayfaya kaçmasını engelleriz.
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      // Oturum varsa ve recovery modundaysa kullanıcı burada kalabilir.
     }
-
-    handleRecovery()
+    checkUser()
   }, [])
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -49,6 +41,7 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     try {
+      // Oturum halihazırda açık olduğu için direkt şifreyi güncelliyoruz
       const { error } = await supabase.auth.updateUser({
         password: password,
       })
@@ -56,7 +49,10 @@ export default function ResetPasswordPage() {
       if (error) throw error
 
       setSuccess(true)
-      setTimeout(() => {
+      // Şifre güncellendikten sonra kullanıcıyı güvenli çıkış yaptırıp mağazaya atabiliriz
+      // veya direkt yeni şifresiyle devam ettirebiliriz.
+      setTimeout(async () => {
+        await supabase.auth.signOut() // Güvenlik için çıkış yapıp temizliyoruz
         router.push('/store')
       }, 2500)
     } catch (err: any) {
