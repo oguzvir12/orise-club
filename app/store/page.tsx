@@ -72,7 +72,7 @@ function StoreContent() {
   const [reviews, setReviews] = useState<any[]>([])
   const [newReviewComment, setNewReviewComment] = useState('')
   const [newReviewRating, setNewReviewRating] = useState('5')
-  const [hasDeliveredOrder, setHasDeliveredOrder] = useState(false)
+  const [hasDeliveredThisProduct, setHasDeliveredThisProduct] = useState(false)
 
   const [cookieConsent, setCookieConsent] = useState(true)
 
@@ -130,10 +130,14 @@ function StoreContent() {
 
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
-      const { data: ordersData } = await supabase.from('orders').select('*').eq('user_id', session.user.id)
+      const { data: ordersData } = await supabase.from('orders').select('*').eq('user_id', session.user.id).eq('status', 'Teslim Edildi')
       if (ordersData) {
-        const delivered = ordersData.some(ord => ord.status === 'Teslim Edildi')
-        setHasDeliveredOrder(delivered)
+        // items alanı içinden bu ürünün ID'sini içeren bir sipariş var mı kontrol ediyoruz
+        const boughtThisProduct = ordersData.some(ord => {
+          const items = ord.items || []
+          return items.some((item: any) => item.id?.includes(productId) || item.product_id === productId)
+        })
+        setHasDeliveredThisProduct(boughtThisProduct)
       }
     }
   }
@@ -160,7 +164,7 @@ function StoreContent() {
   const handleSendReview = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!currentUser) { alert('Yorum yapmak için giriş yapmalısınız.'); return }
-    if (!hasDeliveredOrder) { alert('Bu ürüne yorum yapabilmeniz için siparişinizin teslim edilmiş olması gerekmektedir.'); return }
+    if (!hasDeliveredThisProduct) { alert('Ürünü teslim aldıktan sonra yorum yapabilirsiniz.'); return }
 
     const { error } = await supabase.from('product_reviews').insert([{
       product_id: selectedProduct.id,
@@ -401,7 +405,7 @@ function StoreContent() {
                 </div>
               </div>
 
-              {/* Soru Sorma (Herkes) ve Yorum Yapma (Sadece Teslim Edilenler) Bölümü */}
+              {/* Soru Sorma (Herkes) ve Yorum Yapma (Sadece Bu Ürünü Teslim Alanlar) Bölümü */}
               <div className="border-t border-[#D8D6D2]/10 pt-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
                 <div className="space-y-4">
                   <h3 className="text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 text-[#FFFFFF]"><HelpCircle className="text-[#F74A05]" size={16} /> Soru Sor ({questions.length})</h3>
@@ -421,14 +425,14 @@ function StoreContent() {
 
                 <div className="space-y-4">
                   <h3 className="text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 text-[#FFFFFF]"><MessageSquare className="text-[#F74A05]" size={16} /> Yorumlar ({reviews.length})</h3>
-                  {hasDeliveredOrder ? (
+                  {hasDeliveredThisProduct ? (
                     <form onSubmit={handleSendReview} className="space-y-3 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
-                      <textarea rows={2} value={newReviewComment} onChange={(e) => setNewReviewComment(e.target.value)} placeholder="Ürün hakkındaki deneyimleriniz..." className="w-full rounded-xl border border-[#D8D6D2]/15 bg-black/40 p-3 text-xs text-[#FFFFFF] focus:outline-none resize-none" />
+                      <textarea rows={2} value={newReviewComment} onChange={(e) => setNewReviewComment(e.target.value)} placeholder="Ürünü teslim aldıktan sonra yorum yapabilirsiniz..." className="w-full rounded-xl border border-[#D8D6D2]/15 bg-black/40 p-3 text-xs text-[#FFFFFF] focus:outline-none resize-none" />
                       <button type="submit" className="rounded-full bg-emerald-500 text-[#111111] font-bold px-5 py-2 text-[11px] uppercase cursor-pointer">Yorum Yap</button>
                     </form>
                   ) : (
                     <p className="text-[11px] font-mono text-[#D8D6D2]/60 p-3 rounded-xl border border-[#D8D6D2]/10 bg-black/20">
-                      * Bu ürüne yorum yapabilmeniz için siparişinizin <strong>"Teslim Edildi"</strong> statüsünde olması gerekmektedir.
+                      Ürünü teslim aldıktan sonra yorum yapabilirsiniz.
                     </p>
                   )}
                   <div className="space-y-3 max-h-56 overflow-y-auto">
