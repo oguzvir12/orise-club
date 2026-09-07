@@ -43,6 +43,7 @@ function StoreContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const productParam = searchParams.get('product')
+  const searchParam = searchParams.get('search')
 
   const { addItem } = useCart()
 
@@ -232,6 +233,14 @@ function StoreContent() {
   })
 
   let filteredProducts = products.filter((p) => {
+    if (searchParam) {
+      const query = searchParam.toLowerCase()
+      const titleMatch = p.title?.toLowerCase().includes(query)
+      const descMatch = p.description?.toLowerCase().includes(query)
+      const catMatch = p.category?.toLowerCase().includes(query)
+      if (!titleMatch && !descMatch && !catMatch) return false
+    }
+
     if (activeCategory === 'sale') {
       return p.compare_at_price && p.compare_at_price > p.price
     }
@@ -404,8 +413,8 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Video Destekli Çarpıcı Hero Alanı ve Şık Keşfet Rozeti */}
-            <section className="relative h-[85vh] min-h-[550px] w-full overflow-hidden flex items-end pb-16 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
+            {/* Video Destekli Çarpıcı Hero Alanı ve Daha Aşağıda Konumlandırılmış Eğlenceli/Şekil Keşfet Rozeti */}
+            <section className="relative h-[85vh] min-h-[550px] w-full overflow-hidden flex items-end pb-12 sm:pb-16 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
               <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
                 <video 
                   autoPlay 
@@ -420,24 +429,33 @@ function StoreContent() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-transparent" />
               </div>
 
-              {/* Sağ Üst Köşede Eğlenceli, Dönen ve Kompakt "KEŞFET" Rozeti */}
-              <div className="absolute top-8 right-6 sm:right-16 z-25">
+              {/* İstediğin Gibi Daha Aşağıda Konumlandırılmış Eğlenceli ve Şekil Keşfet Rozeti */}
+              <div className="absolute bottom-12 right-6 sm:right-16 z-25">
                 <button 
                   onClick={scrollToCollection}
-                  className="group relative flex h-24 w-24 sm:h-32 sm:w-32 items-center justify-center rounded-full border border-[#F74A05]/40 bg-black/70 backdrop-blur-xl shadow-[0_0_30px_rgba(247,74,5,0.3)] transition-all hover:scale-110 hover:border-[#F74A05] hover:shadow-[0_0_40px_rgba(247,74,5,0.6)] cursor-pointer"
+                  className="group relative flex h-28 w-28 sm:h-36 sm:w-36 items-center justify-center rounded-full border-2 border-[#F74A05] bg-black/80 backdrop-blur-2xl shadow-[0_0_35px_rgba(247,74,5,0.4)] transition-all hover:scale-110 hover:bg-[#F74A05] hover:shadow-[0_0_50px_rgba(247,74,5,0.7)] cursor-pointer"
                   title="Koleksiyona İniş Yap"
                 >
-                  <div className="absolute inset-1.5 rounded-full animate-spin [animation-duration:14s] border border-dashed border-[#F74A05]/60" />
-                  <div className="flex flex-col items-center justify-center text-center space-y-0.5">
-                    <Compass className="h-5 w-5 sm:h-6 sm:w-6 text-[#F74A05] transition-transform group-hover:rotate-45" />
-                    <span className="font-['Vast_XXL',sans-serif] text-[9px] sm:text-[10px] font-black tracking-widest text-white uppercase">KOLEKSİYON</span>
-                    <span className="text-[8px] sm:text-[9px] font-mono text-[#F74A05] font-bold">↓ KEŞFET</span>
+                  <div className="absolute inset-2 rounded-full animate-spin [animation-duration:12s] border border-dashed border-white/60" />
+                  <div className="flex flex-col items-center justify-center text-center space-y-1">
+                    <span className="font-['Vast_XXL',sans-serif] text-[10px] sm:text-xs font-black tracking-widest text-white uppercase group-hover:text-[#111111] transition-colors">ORISE</span>
+                    <div className="flex items-center gap-1 bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-white px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-md transition-colors">
+                      <span>KEŞFET</span>
+                      <ArrowDown className="h-2.5 w-2.5 animate-bounce" />
+                    </div>
                   </div>
                 </button>
               </div>
 
               <div className="relative z-10 max-w-4xl space-y-4 sm:space-y-6">
-                {/* Estetik Kargo Rozeti (Başlığın Üstünde, Nokta atışı konumda) */}
+                {searchParam && (
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05] bg-[#F74A05]/20 px-4 py-1.5 text-xs font-mono text-white backdrop-blur-md">
+                    <span>"{searchParam}" için arama sonuçları gösteriliyor</span>
+                    <Link href="/store" className="underline font-bold text-white ml-2">Temizle</Link>
+                  </div>
+                )}
+
+                {/* Estetik Kargo Rozeti */}
                 <div className="inline-flex items-center gap-2.5 rounded-full border border-[#D8D6D2]/15 bg-black/60 px-4 py-2 text-xs font-mono text-[#D8D6D2] backdrop-blur-md shadow-lg">
                   <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#F74A05]/20 text-[#F74A05]">
                     <Truck size={12} />
