@@ -8,7 +8,6 @@ export function OriseMark({ className }: { className?: string }) {
       aria-hidden="true"
       className={cn('h-6 w-6', className)}
     >
-      {/* Ana Çember (Sol alttaki diyagonal kesik efekti maskelenmiş veya stroke-dasharray ile hassas ayarlanmış hali) */}
       <circle
         cx="50"
         cy="50"
@@ -19,7 +18,6 @@ export function OriseMark({ className }: { className?: string }) {
         strokeDasharray="210 28"
         transform="rotate(130 50 50)"
       />
-      {/* Merkez Noktası */}
       <circle cx="50" cy="50" r="11" fill="currentColor" />
     </svg>
   )
@@ -37,15 +35,15 @@ export function Logo({
   return (
     <span
       className={cn(
-        'font-display inline-flex items-center gap-2 text-xl font-bold tracking-[0.28em] text-foreground',
+        'font-["Vast_XXL",sans-serif] inline-flex items-center gap-2 text-xl font-bold tracking-[0.28em] text-[#FFFFFF]',
         className,
       )}
     >
-      <OriseMark className={cn('h-6 w-6 text-primary', markClassName)} />
+      <OriseMark className={cn('h-6 w-6 text-[#F74A05]', markClassName)} />
       <span className="inline-flex items-baseline gap-1">
         ORISE
         {showClub && (
-          <span className="text-[0.55em] font-medium tracking-[0.35em] text-muted-foreground">
+          <span className="text-[0.55em] font-medium tracking-[0.35em] text-[#D8D6D2]">
             CLUB
           </span>
         )}
