@@ -295,7 +295,7 @@ function StoreContent() {
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
       <div>
-        {/* ÜRÜN DETAY MODALI (Akıllı Uzatılabilir Açıklama Alanı) */}
+        {/* ÜRÜN DETAY MODALI (Akıllı Uzatılabilir Açıklama Alanı ile) */}
         {selectedProduct && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn overflow-y-auto">
             <div className="relative w-full max-w-5xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 sm:p-10 shadow-2xl space-y-8 text-[#FFFFFF] max-h-[92vh] overflow-y-auto">
@@ -406,8 +406,8 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Video Destekli Çarpıcı Hero Alanı ve Animasyonlu Basketbol Pota Temalı Keşfet Butonu */}
-        <section className="relative pt-24 sm:pt-28 pb-16 sm:pb-24 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[85vh] flex items-end">
+        {/* Video Destekli Çarpıcı Hero Alanı ve Mobilde Çakışmasız, Animasyonlu Pota Temalı Keşfet Butonu */}
+        <section className="relative pt-32 sm:pt-36 pb-20 sm:pb-24 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[85vh] flex items-end">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
               autoPlay 
@@ -422,14 +422,14 @@ function StoreContent() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-transparent" />
           </div>
 
-          {/* GERÇEK ANIMASYONLU BASKETBOL POTA & TOP TEMALI KEŞFET BUTONU */}
+          {/* GERÇEK ANİMASYONLU BASKETBOL POTA & TOP TEMALI KEŞFET BUTONU (Telefonda ve masaüstünde asla çakışmaz) */}
           <div className="absolute bottom-6 right-4 sm:bottom-10 sm:right-16 z-25">
             <button 
               onClick={scrollToCollection}
-              className="group relative flex items-center gap-3 rounded-full border-2 border-[#F74A05] bg-black/90 px-5 py-3 sm:px-6 sm:py-4 backdrop-blur-2xl shadow-[0_0_35px_rgba(247,74,5,0.4)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
+              className="group relative flex items-center gap-3.5 rounded-full border-2 border-[#F74A05] bg-black/90 px-5 py-3 sm:px-6 sm:py-4 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.5)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
               title="Koleksiyona İniş Yap"
             >
-              <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-md">
+              <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-lg">
                 <svg className="h-4 w-4 sm:h-5 sm:w-5 fill-current animate-bounce" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" strokeWidth="1.5"/>
@@ -437,7 +437,7 @@ function StoreContent() {
                 </svg>
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-[8px] sm:text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">GOLÜ AT / SKORU YAP</span>
+                <span className="text-[8px] sm:text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">ORISE CLUB</span>
                 <span className="font-['Vast_XXL',sans-serif] text-[11px] sm:text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
               </div>
             </button>
@@ -463,7 +463,7 @@ function StoreContent() {
 
         <div id="collection"></div>
         
-        {/* DERİN FİLTRELEME VE SIRALAMA ÇUBUĞU (Arama Temizleme Butonu Filtre Yanına Taşındı) */}
+        {/* DERİN FİLTRELEME VE SIRALAMA ÇUBUĞU (Dinamik Ürün Verilerinden Çalışır Vaziyette) */}
         <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/90 sticky top-16 sm:top-20 z-30 backdrop-blur-2xl">
           <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 sm:py-5 flex flex-col lg:flex-row items-center justify-between gap-4">
             
@@ -511,7 +511,7 @@ function StoreContent() {
 
           </div>
 
-          {/* Derin Filtreleme Açılır Panel (Renk ve Beden Seçimi) */}
+          {/* Derin Filtreleme Açılır Panel */}
           {isFilterPanelOpen && (
             <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 pb-6 pt-2 border-t border-[#D8D6D2]/10 flex flex-wrap items-center gap-6 animate-fadeIn text-xs font-mono">
               
