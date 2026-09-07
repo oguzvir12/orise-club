@@ -255,12 +255,6 @@ function StoreContent() {
   return (
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
-      {/* Üst Kargo Bandı - Logo ile Çakışmayı Önlemek İçin En Üstte Doğru Akışta */}
-      <div className="w-full bg-[#111111]/90 border-b border-[#D8D6D2]/10 text-[#D8D6D2] py-2 px-4 text-center text-[10px] sm:text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 backdrop-blur-md z-40">
-        <Truck size={14} className="text-[#F74A05] shrink-0" />
-        <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
-      </div>
-
       <div>
         {selectedProduct && (
           <div className="absolute top-28 left-6 z-30 sm:left-10">
@@ -415,7 +409,7 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Video Destekli Çarpıcı Hero Alanı ve Şık İnteraktif "KEŞFET" Rozeti */}
+            {/* Video Destekli Çarpıcı Hero Alanı, Şık İnteraktif "KEŞFET" Rozeti ve Sol Alt Kargo Bilgisi */}
             <section className="relative h-[85vh] min-h-[550px] w-full overflow-hidden flex items-end pb-16 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
               <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
                 <video 
@@ -431,17 +425,14 @@ function StoreContent() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-transparent" />
               </div>
 
-              {/* Sağ Üst Köşede Premium Dönen ve Neon Parıltılı Keşfet Rozeti */}
+              {/* Sağ Üst Köşede Dönen ve Neon Parıltılı Keşfet Rozeti */}
               <div className="absolute top-10 right-6 sm:right-16 z-20">
                 <button 
                   onClick={scrollToCollection}
                   className="group relative flex h-28 w-28 sm:h-36 sm:w-36 items-center justify-center rounded-full border border-[#F74A05]/40 bg-black/60 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.35)] transition-all hover:scale-110 hover:border-[#F74A05] hover:shadow-[0_0_50px_rgba(247,74,5,0.6)] cursor-pointer"
                   title="Koleksiyona Git"
                 >
-                  {/* Dönen Çizgili Çember */}
                   <div className="absolute inset-2 rounded-full animate-spin [animation-duration:10s] border border-dashed border-[#F74A05]/70" />
-                  
-                  {/* İçerik */}
                   <div className="flex flex-col items-center justify-center text-center space-y-1">
                     <span className="font-['Vast_XXL',sans-serif] text-[10px] sm:text-xs font-black tracking-widest text-white uppercase group-hover:text-[#F74A05] transition-colors">ORISE</span>
                     <div className="flex items-center gap-1 bg-[#F74A05] text-[#111111] px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-md">
@@ -450,6 +441,17 @@ function StoreContent() {
                     </div>
                   </div>
                 </button>
+              </div>
+
+              {/* Sol Alt Köşede Estetik Ücretsiz Kargo Kartı */}
+              <div className="absolute bottom-6 left-6 sm:left-12 z-20 hidden sm:flex items-center gap-3 rounded-2xl border border-[#D8D6D2]/15 bg-black/50 px-4 py-3 backdrop-blur-xl shadow-2xl">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F74A05]/20 text-[#F74A05]">
+                  <Truck size={18} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-[#D8D6D2]">KAMPANYA</div>
+                  <div className="text-xs font-bold text-[#FFFFFF]">2000 TL ve Üzeri Kargo Ücretsiz</div>
+                </div>
               </div>
 
               <div className="relative z-10 max-w-4xl space-y-4 sm:space-y-6">
