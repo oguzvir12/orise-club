@@ -21,7 +21,8 @@ import {
   Mail,
   ChevronLeft,
   ChevronDown,
-  ArrowDown
+  ArrowDown,
+  Compass
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -409,7 +410,7 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Video Destekli Çarpıcı Hero Alanı, Şık İnteraktif "KEŞFET" Rozeti ve Sol Alt Kargo Bilgisi */}
+            {/* Video Destekli Çarpıcı Hero Alanı, Eğlenceli İnteraktif Keşfet Rozeti ve Üst Kargo Bandı */}
             <section className="relative h-[85vh] min-h-[550px] w-full overflow-hidden flex items-end pb-16 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
               <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
                 <video 
@@ -425,36 +426,31 @@ function StoreContent() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-transparent" />
               </div>
 
-              {/* Sağ Üst Köşede Dönen ve Neon Parıltılı Keşfet Rozeti */}
-              <div className="absolute top-10 right-6 sm:right-16 z-20">
+              {/* Sağ Üst Köşede Eğlenceli, Dönen ve Kompakt "KEŞFET" Rozeti */}
+              <div className="absolute top-8 right-6 sm:right-16 z-25">
                 <button 
                   onClick={scrollToCollection}
-                  className="group relative flex h-28 w-28 sm:h-36 sm:w-36 items-center justify-center rounded-full border border-[#F74A05]/40 bg-black/60 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.35)] transition-all hover:scale-110 hover:border-[#F74A05] hover:shadow-[0_0_50px_rgba(247,74,5,0.6)] cursor-pointer"
-                  title="Koleksiyona Git"
+                  className="group relative flex h-24 w-24 sm:h-32 sm:w-32 items-center justify-center rounded-full border border-[#F74A05]/40 bg-black/70 backdrop-blur-xl shadow-[0_0_30px_rgba(247,74,5,0.3)] transition-all hover:scale-110 hover:border-[#F74A05] hover:shadow-[0_0_40px_rgba(247,74,5,0.6)] cursor-pointer"
+                  title="Koleksiyona İniş Yap"
                 >
-                  <div className="absolute inset-2 rounded-full animate-spin [animation-duration:10s] border border-dashed border-[#F74A05]/70" />
-                  <div className="flex flex-col items-center justify-center text-center space-y-1">
-                    <span className="font-['Vast_XXL',sans-serif] text-[10px] sm:text-xs font-black tracking-widest text-white uppercase group-hover:text-[#F74A05] transition-colors">ORISE</span>
-                    <div className="flex items-center gap-1 bg-[#F74A05] text-[#111111] px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-md">
-                      <span>KEŞFET</span>
-                      <ArrowDown className="h-2.5 w-2.5 animate-bounce" />
-                    </div>
+                  <div className="absolute inset-1.5 rounded-full animate-spin [animation-duration:14s] border border-dashed border-[#F74A05]/60" />
+                  <div className="flex flex-col items-center justify-center text-center space-y-0.5">
+                    <Compass className="h-5 w-5 sm:h-6 sm:w-6 text-[#F74A05] transition-transform group-hover:rotate-45" />
+                    <span className="font-['Vast_XXL',sans-serif] text-[9px] sm:text-[10px] font-black tracking-widest text-white uppercase">KOLEKSİYON</span>
+                    <span className="text-[8px] sm:text-[9px] font-mono text-[#F74A05] font-bold">↓ KEŞFET</span>
                   </div>
                 </button>
               </div>
 
-              {/* Sol Alt Köşede Estetik Ücretsiz Kargo Kartı */}
-              <div className="absolute bottom-6 left-6 sm:left-12 z-20 hidden sm:flex items-center gap-3 rounded-2xl border border-[#D8D6D2]/15 bg-black/50 px-4 py-3 backdrop-blur-xl shadow-2xl">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F74A05]/20 text-[#F74A05]">
-                  <Truck size={18} />
-                </div>
-                <div>
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-[#D8D6D2]">KAMPANYA</div>
-                  <div className="text-xs font-bold text-[#FFFFFF]">2000 TL ve Üzeri Kargo Ücretsiz</div>
-                </div>
-              </div>
-
               <div className="relative z-10 max-w-4xl space-y-4 sm:space-y-6">
+                {/* Estetik Kargo Rozeti (Başlığın Üstünde, Nokta atışı konumda) */}
+                <div className="inline-flex items-center gap-2.5 rounded-full border border-[#D8D6D2]/15 bg-black/60 px-4 py-2 text-xs font-mono text-[#D8D6D2] backdrop-blur-md shadow-lg">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#F74A05]/20 text-[#F74A05]">
+                    <Truck size={12} />
+                  </div>
+                  <span className="tracking-wide">2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
+                </div>
+
                 <h1 className="font-['Vast_XXL',sans-serif] text-4xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-[#FFFFFF] uppercase leading-[1.05] sm:leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
                   BİRLİKTE <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F74A05] via-orange-400 to-amber-300">HAREKET ET.</span>
                 </h1>
