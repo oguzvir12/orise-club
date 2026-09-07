@@ -83,7 +83,8 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className={cn('fixed inset-x-0 top-0 z-50 transition-all duration-300', scrolled ? 'border-b border-[#D8D6D2]/10 bg-[#111111]/80 backdrop-blur-xl shadow-lg' : 'border-b border-transparent bg-transparent backdrop-blur-sm')}>
+      {/* Şeffaf ve Cam efekti (backdrop-blur) tamamen kaldırıldı, sayfa arkasındaki içerik/video direkt görünüyor */}
+      <header className={cn('fixed inset-x-0 top-0 z-50 transition-all duration-300', scrolled ? 'border-b border-[#D8D6D2]/10 bg-[#111111]/95 shadow-lg' : 'border-b border-transparent bg-transparent')}>
         <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-4 sm:px-8 lg:px-12">
 
           <div className="flex items-center gap-2 z-10">
@@ -109,19 +110,19 @@ export function SiteHeader() {
               type="button" 
               onClick={() => setIsSearchOpen(!isSearchOpen)} 
               aria-label="Ürün Ara" 
-              className="relative inline-flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-[#D8D6D2]/20 bg-black/40 text-[#FFFFFF] backdrop-blur-xl transition-all hover:border-[#F74A05] hover:bg-[#F74A05]/20 hover:text-[#F74A05] cursor-pointer shrink-0"
+              className="relative inline-flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-[#D8D6D2]/20 bg-black/40 text-[#FFFFFF] transition-all hover:border-[#F74A05] hover:bg-[#F74A05]/20 hover:text-[#F74A05] cursor-pointer shrink-0"
             >
               <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
 
-            <button type="button" onClick={openCart} aria-label="Sepeti aç" className="relative inline-flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-[#D8D6D2]/20 bg-black/40 text-[#FFFFFF] backdrop-blur-xl transition-all hover:border-[#F74A05] hover:bg-[#F74A05]/20 hover:text-[#F74A05] cursor-pointer shrink-0">
+            <button type="button" onClick={openCart} aria-label="Sepeti aç" className="relative inline-flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-[#D8D6D2]/20 bg-black/40 text-[#FFFFFF] transition-all hover:border-[#F74A05] hover:bg-[#F74A05]/20 hover:text-[#F74A05] cursor-pointer shrink-0">
               <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               {count > 0 && <span className="absolute -right-1 -top-1 flex h-4 w-4 sm:h-5 sm:min-w-5 items-center justify-center rounded-full bg-[#F74A05] px-1 text-[9px] sm:text-[11px] font-black text-[#111111]">{count}</span>}
             </button>
 
             {user ? (
               <div className="hidden sm:flex items-center gap-1.5 sm:gap-2">
-                <Link href="/profile" className="flex items-center gap-1.5 rounded-full border border-[#D8D6D2]/20 bg-black/40 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono text-[#D8D6D2] backdrop-blur-md hover:border-[#F74A05] hover:text-[#FFFFFF] transition-all cursor-pointer">
+                <Link href="/profile" className="flex items-center gap-1.5 rounded-full border border-[#D8D6D2]/20 bg-black/40 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono text-[#D8D6D2] hover:border-[#F74A05] hover:text-[#FFFFFF] transition-all cursor-pointer">
                   {avatarUrl ? (
                     <div className="relative h-4 w-4 sm:h-5 sm:w-5 rounded-full overflow-hidden"><Image src={avatarUrl} alt="Avatar" fill className="object-cover" /></div>
                   ) : (
@@ -134,7 +135,7 @@ export function SiteHeader() {
                 </button>
               </div>
             ) : (
-              <button type="button" onClick={() => setIsAuthOpen(true)} className="flex items-center gap-1 sm:gap-2 rounded-full border border-[#F74A05]/40 bg-[#F74A05]/10 px-2.5 sm:px-5 py-1.5 sm:py-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#F74A05] backdrop-blur-md hover:bg-[#F74A05]/25 hover:border-[#F74A05] transition-all cursor-pointer shrink-0">
+              <button type="button" onClick={() => setIsAuthOpen(true)} className="flex items-center gap-1 sm:gap-2 rounded-full border border-[#F74A05]/40 bg-[#F74A05]/10 px-2.5 sm:px-5 py-1.5 sm:py-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#F74A05] hover:bg-[#F74A05]/25 hover:border-[#F74A05] transition-all cursor-pointer shrink-0">
                 <User className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="hidden xs:inline">Giriş Yap</span>
                 <span className="inline xs:hidden">Giriş</span>
@@ -145,7 +146,7 @@ export function SiteHeader() {
 
         {/* Arama Kutusu Açılır Alanı */}
         {isSearchOpen && (
-          <div className="absolute top-16 sm:top-20 inset-x-0 bg-[#111111]/95 border-b border-[#D8D6D2]/10 backdrop-blur-2xl p-4 sm:p-6 shadow-2xl animate-fadeIn">
+          <div className="absolute top-16 sm:top-20 inset-x-0 bg-[#111111]/98 border-b border-[#D8D6D2]/10 p-4 sm:p-6 shadow-2xl animate-fadeIn">
             <form onSubmit={handleSearch} className="mx-auto max-w-2xl flex items-center gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D8D6D2]/60" size={18} />
@@ -169,7 +170,7 @@ export function SiteHeader() {
         )}
 
         {mobileMenuOpen && (
-          <div className="sm:hidden absolute top-16 inset-x-0 bg-[#111111]/98 border-b border-[#D8D6D2]/10 backdrop-blur-2xl p-6 space-y-4 font-mono text-xs uppercase font-bold animate-fadeIn shadow-2xl">
+          <div className="sm:hidden absolute top-16 inset-x-0 bg-[#111111]/98 border-b border-[#D8D6D2]/10 p-6 space-y-4 font-mono text-xs uppercase font-bold animate-fadeIn shadow-2xl">
             <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-[#D8D6D2] hover:text-[#F74A05]">Mağaza Vitrini</Link>
             <Link href="/community" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-[#D8D6D2] hover:text-[#F74A05]">Topluluk & Etkinlikler</Link>
             <div className="border-t border-[#D8D6D2]/10 pt-4 flex flex-col gap-3">
