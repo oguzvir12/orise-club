@@ -405,7 +405,7 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Hero Alanı: Kargo Yazısı Kaldırıldı, Keşfet Butonu Sadece Masaüstünde */}
+        {/* Hero Alanı */}
         <section className="relative pt-24 sm:pt-36 pb-12 sm:pb-24 px-4 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[75vh] sm:min-h-[85vh] flex items-end">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
@@ -560,10 +560,10 @@ function StoreContent() {
           )}
         </section>
 
-        {/* Ürün Vitrini (Grid) */}
+        {/* Ürün Vitrini (Grid): Bilgisayarda Yan Yana 4'lü Ferah Avva Tarzı Düzen */}
         <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-12 sm:py-28">
-          <div className="mx-auto max-w-7xl px-4 sm:px-10 lg:px-14">
-            <div className="grid grid-cols-1 gap-6 sm:gap-10 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto max-w-[1600px] px-4 sm:px-8 lg:px-12">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-8">
               {filteredProducts.map((product) => {
                 const productImages = product.image_urls && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '/placeholder.svg']
                 const totalStock = product.sizes ? Object.values(product.sizes as Record<string, any>).reduce((acc: number, curr: any) => {
@@ -578,10 +578,10 @@ function StoreContent() {
                   <div 
                     key={product.id} 
                     onClick={() => openProductDetail(product)} 
-                    className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#D8D6D2]/15 bg-[#111111]/60 p-5 sm:p-6 backdrop-blur-xl transition-all duration-500 ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-[#F74A05]/60 hover:bg-[#111111] cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
+                    className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#D8D6D2]/15 bg-[#111111]/60 p-4 sm:p-5 backdrop-blur-xl transition-all duration-500 ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-[#F74A05]/60 hover:bg-[#111111] cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
                   >
                     <div>
-                      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-[#111111] flex items-center justify-center border border-[#D8D6D2]/10">
+                      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#111111] flex items-center justify-center border border-[#D8D6D2]/10">
                         {isSoldOut && (
                           <div className="absolute inset-0 z-20 bg-black/75 flex items-center justify-center">
                             <span className="rounded-xl bg-[#111111] border border-[#D8D6D2]/20 px-6 py-2.5 text-xs font-black uppercase text-[#D8D6D2]">TÜKENDİ</span>
@@ -590,15 +590,15 @@ function StoreContent() {
                         <Image src={productImages[0]} alt={product.title} fill className="object-contain p-4 transition-transform duration-700 group-hover:scale-105" />
                       </div>
 
-                      <div className="mt-5 space-y-1.5">
-                        <div className="text-[10px] font-mono text-[#F74A05] uppercase font-bold tracking-widest">{product.category_label || 'ÖZEL DROP'}</div>
-                        <h3 className="font-['Vast_XXL',sans-serif] text-lg sm:text-xl font-bold text-[#FFFFFF] group-hover:text-[#F74A05] transition-colors tracking-tight">{product.title}</h3>
+                      <div className="mt-4 space-y-1">
+                        <div className="text-[9px] font-mono text-[#F74A05] uppercase font-bold tracking-widest">{product.category_label || 'ÖZEL DROP'}</div>
+                        <h3 className="font-['Vast_XXL',sans-serif] text-base sm:text-lg font-bold text-[#FFFFFF] group-hover:text-[#F74A05] transition-colors tracking-tight line-clamp-1">{product.title}</h3>
                       </div>
                     </div>
 
-                    <div className="mt-6 sm:mt-8 flex items-center justify-between border-t border-[#D8D6D2]/10 pt-4">
-                      <div className="text-lg sm:text-xl font-black text-[#FFFFFF]">₺{Number(product.price).toLocaleString('tr-TR')}</div>
-                      <div className="inline-flex items-center gap-1.5 rounded-full border border-[#D8D6D2]/20 px-4 py-2 text-xs font-bold uppercase bg-[#D8D6D2]/10 text-[#F5F2EC] group-hover:bg-[#F74A05] group-hover:text-[#111111] group-hover:border-[#F74A05] transition-all">
+                    <div className="mt-6 flex items-center justify-between border-t border-[#D8D6D2]/10 pt-3">
+                      <div className="text-base sm:text-lg font-black text-[#FFFFFF]">₺{Number(product.price).toLocaleString('tr-TR')}</div>
+                      <div className="inline-flex items-center gap-1.5 rounded-full border border-[#D8D6D2]/20 px-3.5 py-1.5 text-[11px] font-bold uppercase bg-[#D8D6D2]/10 text-[#F5F2EC] group-hover:bg-[#F74A05] group-hover:text-[#111111] group-hover:border-[#F74A05] transition-all">
                         <span>İncele</span>
                         <ArrowUpRight className="h-3.5 w-3.5" />
                       </div>
@@ -688,7 +688,7 @@ function StoreContent() {
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL AĞZI</td><td>19.5</td><td>20.25</td><td>21</td><td>21.75</td><td>22.5</td><td>23.25</td><td>24</td><td>24.75</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">YAKA YÜKSEKLİĞİ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
+                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">YAKA YÜKSEKLİĞI</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                     </>
                   )}
                 </tbody>
