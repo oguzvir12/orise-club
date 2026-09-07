@@ -67,12 +67,6 @@ function StoreContent() {
   const [newReviewRating, setNewReviewRating] = useState('5')
   const [hasPurchased, setHasPurchased] = useState(false)
 
-  const [showNewsletter, setShowNewsletter] = useState(true)
-  const [isNewsletterMinimized, setIsNewsletterMinimized] = useState(false)
-  const [isNewsletterOpen, setIsNewsletterOpen] = useState(false)
-  const [newsletterEmail, setNewsletterEmail] = useState('')
-  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false)
-
   const [cookieConsent, setCookieConsent] = useState(true)
 
   const fetchProducts = async () => {
@@ -410,7 +404,7 @@ function StoreContent() {
           </div>
         ) : (
           <>
-            {/* Video Destekli Çarpıcı Hero Alanı, Eğlenceli İnteraktif Keşfet Rozeti ve Üst Kargo Bandı */}
+            {/* Video Destekli Çarpıcı Hero Alanı ve Şık Keşfet Rozeti */}
             <section className="relative h-[85vh] min-h-[550px] w-full overflow-hidden flex items-end pb-16 sm:pb-20 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10">
               <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
                 <video 
@@ -540,64 +534,6 @@ function StoreContent() {
           </>
         )}
       </div>
-
-      {/* SOL ALT: Küçültülebilir / Gizlenebilir Bülten Widget */}
-      {showNewsletter && (
-        <div className="fixed bottom-6 left-6 z-40">
-          {isNewsletterMinimized ? (
-            <button 
-              onClick={() => setIsNewsletterMinimized(false)}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#D8D6D2]/20 bg-[#111111] text-[#F74A05] shadow-2xl backdrop-blur-xl hover:scale-105 transition-transform cursor-pointer"
-              title="Bülteni Aç"
-            >
-              <Mail size={18} />
-            </button>
-          ) : !isNewsletterOpen ? (
-            <div className="flex items-center gap-1 rounded-full border border-[#D8D6D2]/20 bg-[#111111] px-4 py-2.5 text-xs font-mono font-bold text-[#FFFFFF] shadow-2xl backdrop-blur-xl">
-              <button 
-                onClick={() => setIsNewsletterOpen(true)}
-                className="flex items-center gap-2 hover:text-[#F74A05] transition-colors cursor-pointer"
-              >
-                <Mail size={15} className="text-[#F74A05]" />
-                <span>Koleksiyondan Haberdar Ol</span>
-              </button>
-              <button 
-                onClick={() => setIsNewsletterMinimized(true)}
-                className="ml-2 text-[#D8D6D2] hover:text-[#FFFFFF] transition-colors cursor-pointer p-1"
-                title="Aşağı Gizle"
-              >
-                <ChevronDown size={14} />
-              </button>
-            </div>
-          ) : (
-            <div className="w-80 rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-5 shadow-2xl backdrop-blur-2xl space-y-4 animate-fadeIn">
-              <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 pb-3">
-                <span className="text-xs font-mono uppercase tracking-widest text-[#F74A05] font-bold">Koleksiyon Bülteni</span>
-                <button onClick={() => setIsNewsletterOpen(false)} className="text-[#D8D6D2] hover:text-[#FFFFFF] cursor-pointer"><X size={14} /></button>
-              </div>
-              {newsletterSubscribed ? (
-                <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold text-center">
-                  ✓ Başarıyla Kaydoldunuz!
-                </div>
-              ) : (
-                <form onSubmit={(e) => { e.preventDefault(); if(newsletterEmail) setNewsletterSubscribed(true); }} className="space-y-3">
-                  <input 
-                    type="email" 
-                    required 
-                    value={newsletterEmail} 
-                    onChange={(e) => setNewsletterEmail(e.target.value)} 
-                    placeholder="E-posta adresiniz..." 
-                    className="w-full rounded-xl border border-[#D8D6D2]/20 bg-[#111111] px-4 py-3 text-xs text-[#FFFFFF] focus:border-[#F74A05] focus:outline-none" 
-                  />
-                  <button type="submit" className="w-full rounded-full bg-[#F74A05] py-3 text-xs font-bold uppercase tracking-widest text-[#111111] hover:bg-orange-600 transition-all cursor-pointer font-black">
-                    Abone Ol
-                  </button>
-                </form>
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Yasal Çerez (KVKK) Onay Banner'ı */}
       {!cookieConsent && (
