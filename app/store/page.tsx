@@ -295,10 +295,10 @@ function StoreContent() {
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
       <div>
-        {/* ÜRÜN DETAY MODALI (Akıllı Uzatılabilir Açıklama Alanı ile) */}
+        {/* ÜRÜN DETAY MODALI */}
         {selectedProduct && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn overflow-y-auto">
-            <div className="relative w-full max-w-5xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 sm:p-10 shadow-2xl space-y-8 text-[#FFFFFF] max-h-[92vh] overflow-y-auto">
+            <div className="relative w-full max-w-5xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-5 sm:p-10 shadow-2xl space-y-6 sm:space-y-8 text-[#FFFFFF] max-h-[92vh] overflow-y-auto">
               
               <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 pb-4">
                 <span className="text-xs font-mono tracking-widest text-[#F74A05] uppercase font-bold">ÜRÜN DETAYI</span>
@@ -307,7 +307,7 @@ function StoreContent() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
                 <div className="lg:col-span-6 space-y-4">
                   <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-2xl border border-[#D8D6D2]/15 bg-[#111111] flex items-center justify-center">
                     <Image src={currentImages[activeImageIdx]} alt={selectedProduct.title} fill priority className="object-contain p-4" />
@@ -332,9 +332,9 @@ function StoreContent() {
                       </button>
                     </div>
 
-                    <h2 className="mt-2 font-['Vast_XXL',sans-serif] text-2xl sm:text-3xl font-black tracking-tight text-[#FFFFFF]">{selectedProduct.title}</h2>
+                    <h2 className="mt-2 font-['Vast_XXL',sans-serif] text-xl sm:text-3xl font-black tracking-tight text-[#FFFFFF]">{selectedProduct.title}</h2>
                     
-                    <div className="mt-4 text-2xl sm:text-3xl font-black text-[#FFFFFF] flex items-center gap-3">
+                    <div className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-black text-[#FFFFFF] flex items-center gap-3">
                       <span>₺{Number(selectedProduct.price).toLocaleString('tr-TR')}</span>
                       {selectedProduct.compare_at_price && selectedProduct.compare_at_price > selectedProduct.price && (
                         <span className="text-base text-[#D8D6D2] line-through font-mono">₺{Number(selectedProduct.compare_at_price).toLocaleString('tr-TR')}</span>
@@ -343,7 +343,7 @@ function StoreContent() {
 
                     {/* Akıllı Genişletilebilir Açıklama Alanı */}
                     <div className="mt-4 bg-black/40 p-4 rounded-2xl border border-[#D8D6D2]/10 space-y-2">
-                      <div className={`text-xs leading-relaxed text-[#D8D6D2] overflow-hidden transition-all duration-300 ${isDescExpanded ? 'max-h-96 overflow-y-auto pr-2' : 'max-h-24'}`} dangerouslySetInnerHTML={{ __html: selectedProduct.description }} />
+                      <div className={`text-xs leading-relaxed text-[#D8D6D2] overflow-hidden transition-all duration-300 ${isDescExpanded ? 'max-h-96 overflow-y-auto pr-2' : 'max-h-20'}`} dangerouslySetInnerHTML={{ __html: selectedProduct.description }} />
                       <button 
                         type="button" 
                         onClick={() => setIsDescExpanded(!isDescExpanded)} 
@@ -356,7 +356,7 @@ function StoreContent() {
                     {selectedProduct.colors && selectedProduct.colors.length > 0 && (
                       <div className="mt-4 space-y-2">
                         <div className="text-xs font-mono text-[#D8D6D2] uppercase">Renk: <strong className="text-[#FFFFFF]">{selectedColor}</strong></div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           {selectedProduct.colors.map((col: string) => (
                             <button key={col} type="button" onClick={() => { setSelectedColor(col); setSelectedSize(''); }} className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${selectedColor === col ? 'border-[#F74A05] bg-[#F74A05]/20 text-[#F74A05]' : 'border-[#D8D6D2]/15 bg-[#111111] text-[#D8D6D2]'}`}>
                               {col}
@@ -406,56 +406,56 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Video Destekli Çarpıcı Hero Alanı ve Mobilde Çakışmasız, Animasyonlu Pota Temalı Keşfet Butonu */}
-        <section className="relative pt-32 sm:pt-36 pb-20 sm:pb-24 px-6 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[85vh] flex items-end">
+        {/* Hero Alanı: Mobilde Optimize Edilmiş Geniş Açı Video ve Kompakt Şık Keşfet Rozeti */}
+        <section className="relative pt-24 sm:pt-36 pb-12 sm:pb-24 px-4 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[75vh] sm:min-h-[85vh] flex items-end">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
               autoPlay 
               muted 
               loop 
               playsInline 
-              className="absolute inset-0 h-full w-full object-cover object-center scale-105 brightness-90 contrast-110"
+              className="absolute inset-0 h-full w-full object-cover sm:object-cover object-center scale-100 sm:scale-105 brightness-90 contrast-110"
             >
               <source src="/store-hero-video.mp4" type="video/mp4" />
               Tarayıcınız video etiketini desteklemiyor.
             </video>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/50 to-transparent" />
           </div>
 
-          {/* GERÇEK ANİMASYONLU BASKETBOL POTA & TOP TEMALI KEŞFET BUTONU (Telefonda ve masaüstünde asla çakışmaz) */}
-          <div className="absolute bottom-6 right-4 sm:bottom-10 sm:right-16 z-25">
+          {/* TELEFONDA VE MASAÜSTÜNDE KUSURSUZ KONUMLANDIRILMIŞ ANİMASYONLU KEŞFET BUTONU */}
+          <div className="absolute bottom-4 right-4 sm:bottom-10 sm:right-16 z-25">
             <button 
               onClick={scrollToCollection}
-              className="group relative flex items-center gap-3.5 rounded-full border-2 border-[#F74A05] bg-black/90 px-5 py-3 sm:px-6 sm:py-4 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.5)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
+              className="group relative flex items-center gap-2.5 rounded-full border-2 border-[#F74A05] bg-black/90 px-4 py-2.5 sm:px-6 sm:py-4 backdrop-blur-2xl shadow-[0_0_30px_rgba(247,74,5,0.4)] transition-all hover:scale-105 hover:bg-[#F74A05] cursor-pointer"
               title="Koleksiyona İniş Yap"
             >
-              <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-lg">
-                <svg className="h-4 w-4 sm:h-5 sm:w-5 fill-current animate-bounce" viewBox="0 0 24 24">
+              <div className="relative flex h-7 w-7 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-md">
+                <svg className="h-3.5 w-3.5 sm:h-5 sm:w-5 fill-current animate-bounce" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M2 12h20" stroke="currentColor" strokeWidth="1.5"/>
                 </svg>
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-[8px] sm:text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">ORISE CLUB</span>
-                <span className="font-['Vast_XXL',sans-serif] text-[11px] sm:text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
+                <span className="text-[7px] sm:text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">ORISE CLUB</span>
+                <span className="font-['Vast_XXL',sans-serif] text-[10px] sm:text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
               </div>
             </button>
           </div>
 
-          <div className="relative z-10 max-w-4xl space-y-4 sm:space-y-6">
+          <div className="relative z-10 max-w-4xl space-y-3 sm:space-y-6">
             {/* Estetik Kargo Rozeti */}
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-[#D8D6D2]/15 bg-black/60 px-4 py-2 text-xs font-mono text-[#D8D6D2] backdrop-blur-md shadow-lg">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#F74A05]/20 text-[#F74A05]">
-                <Truck size={12} />
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#D8D6D2]/15 bg-black/70 px-3.5 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-mono text-[#D8D6D2] backdrop-blur-md shadow-lg">
+              <div className="flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#F74A05]/20 text-[#F74A05]">
+                <Truck size={10} />
               </div>
               <span className="tracking-wide">2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
             </div>
 
-            <h1 className="font-['Vast_XXL',sans-serif] text-4xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-[#FFFFFF] uppercase leading-[1.05] sm:leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
+            <h1 className="font-['Vast_XXL',sans-serif] text-3xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-[#FFFFFF] uppercase leading-[1.02] sm:leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
               BİRLİKTE <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F74A05] via-orange-400 to-amber-300">HAREKET ET.</span>
             </h1>
-            <p className="text-xs sm:text-lg text-[#D8D6D2] font-sans max-w-xl font-normal leading-relaxed">
+            <p className="text-[11px] sm:text-lg text-[#D8D6D2] font-sans max-w-lg font-normal leading-relaxed">
               Yeni nesil teknik spor giyim, kulüp ruhu ve sokak stili bir arada. Sınırları birlikte zorlayın.
             </p>
           </div>
@@ -463,15 +463,15 @@ function StoreContent() {
 
         <div id="collection"></div>
         
-        {/* DERİN FİLTRELEME VE SIRALAMA ÇUBUĞU (Dinamik Ürün Verilerinden Çalışır Vaziyette) */}
-        <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/90 sticky top-16 sm:top-20 z-30 backdrop-blur-2xl">
-          <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 py-4 sm:py-5 flex flex-col lg:flex-row items-center justify-between gap-4">
+        {/* DERİN FİLTRELEME VE SIRALAMA ÇUBUĞU (Mobilde Derli Toplu ve Akışkan) */}
+        <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/95 sticky top-16 sm:top-20 z-30 backdrop-blur-2xl">
+          <div className="mx-auto max-w-7xl px-4 sm:px-10 lg:px-14 py-3 sm:py-5 flex flex-col lg:flex-row items-center justify-between gap-3">
             
-            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar w-full lg:w-auto py-1">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto py-1">
               {searchParam && (
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#F74A05] bg-[#F74A05]/25 px-4 py-2 text-xs font-mono text-white shrink-0">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-[#F74A05] bg-[#F74A05]/25 px-3 py-1.5 text-xs font-mono text-white shrink-0">
                   <span>Arama: "{searchParam}"</span>
-                  <Link href="/store" className="hover:text-[#F74A05] transition-colors font-bold ml-1 flex items-center bg-black/40 rounded-full px-2.5 py-0.5 text-[10px]">Temizle ✕</Link>
+                  <Link href="/store" className="hover:text-[#F74A05] transition-colors font-bold ml-1 flex items-center bg-black/40 rounded-full px-2 py-0.5 text-[10px]">Temizle ✕</Link>
                 </div>
               )}
 
@@ -479,29 +479,29 @@ function StoreContent() {
                 <button 
                   key={catKey} 
                   onClick={() => setActiveCategory(catKey)} 
-                  className={`rounded-full px-5 sm:px-6 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${activeCategory === catKey ? 'bg-[#F74A05] text-[#111111] font-black shadow-[0_0_20px_rgba(247,74,5,0.4)]' : 'border border-[#D8D6D2]/15 bg-[#111111]/60 text-[#D8D6D2] hover:text-[#FFFFFF] hover:border-[#F74A05]/50'}`}
+                  className={`rounded-full px-4 sm:px-6 py-1.5 sm:py-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${activeCategory === catKey ? 'bg-[#F74A05] text-[#111111] font-black shadow-[0_0_20px_rgba(247,74,5,0.4)]' : 'border border-[#D8D6D2]/15 bg-[#111111]/60 text-[#D8D6D2] hover:text-[#FFFFFF] hover:border-[#F74A05]/50'}`}
                 >
                   {ALL_CATEGORIES_MAP[catKey] || catKey.toUpperCase()}
                 </button>
               ))}
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-between lg:justify-end">
               <button 
                 type="button" 
                 onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
-                className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0 ${isFilterPanelOpen || selectedColorFilter !== 'all' || selectedSizeFilter !== 'all' ? 'border-[#F74A05] bg-[#F74A05]/20 text-[#F74A05]' : 'border-[#D8D6D2]/15 bg-black/40 text-[#D8D6D2] hover:text-white'}`}
+                className={`flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0 ${isFilterPanelOpen || selectedColorFilter !== 'all' || selectedSizeFilter !== 'all' ? 'border-[#F74A05] bg-[#F74A05]/20 text-[#F74A05]' : 'border-[#D8D6D2]/15 bg-black/40 text-[#D8D6D2] hover:text-white'}`}
               >
-                <SlidersHorizontal size={14} />
+                <SlidersHorizontal size={13} />
                 <span>Detaylı Filtre</span>
                 {(selectedColorFilter !== 'all' || selectedSizeFilter !== 'all') && (
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#F74A05] text-[9px] font-black text-[#111111]">!</span>
+                  <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#F74A05] text-[8px] font-black text-[#111111]">!</span>
                 )}
               </button>
 
-              <div className="flex items-center gap-2.5 shrink-0 bg-black/40 border border-[#D8D6D2]/15 rounded-full px-4 py-2">
-                <ArrowUpDown className="h-3.5 w-3.5 text-[#F74A05]" />
-                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-transparent text-[11px] sm:text-xs font-mono text-[#FFFFFF] focus:outline-none cursor-pointer">
+              <div className="flex items-center gap-2 shrink-0 bg-black/40 border border-[#D8D6D2]/15 rounded-full px-3.5 py-2">
+                <ArrowUpDown className="h-3 w-3 text-[#F74A05]" />
+                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-transparent text-[10px] sm:text-xs font-mono text-[#FFFFFF] focus:outline-none cursor-pointer">
                   <option value="default" className="bg-[#111111]">Önerilen Sıralama</option>
                   <option value="asc" className="bg-[#111111]">Fiyat: Ucuzdan Pahalıya</option>
                   <option value="desc" className="bg-[#111111]">Fiyat: Pahalıdan Ucuza</option>
@@ -513,14 +513,14 @@ function StoreContent() {
 
           {/* Derin Filtreleme Açılır Panel */}
           {isFilterPanelOpen && (
-            <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14 pb-6 pt-2 border-t border-[#D8D6D2]/10 flex flex-wrap items-center gap-6 animate-fadeIn text-xs font-mono">
+            <div className="mx-auto max-w-7xl px-4 sm:px-10 lg:px-14 pb-5 pt-2 border-t border-[#D8D6D2]/10 flex flex-wrap items-center gap-4 animate-fadeIn text-xs font-mono">
               
               <div className="flex items-center gap-2">
-                <span className="text-[#D8D6D2] uppercase font-bold">Renk:</span>
-                <div className="flex flex-wrap gap-1.5">
+                <span className="text-[#D8D6D2] uppercase font-bold text-[11px]">Renk:</span>
+                <div className="flex flex-wrap gap-1">
                   <button 
                     onClick={() => setSelectedColorFilter('all')}
-                    className={`px-3 py-1 rounded-full border transition-all cursor-pointer ${selectedColorFilter === 'all' ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                    className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedColorFilter === 'all' ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
                   >
                     Tümü
                   </button>
@@ -528,7 +528,7 @@ function StoreContent() {
                     <button 
                       key={col}
                       onClick={() => setSelectedColorFilter(col)}
-                      className={`px-3 py-1 rounded-full border transition-all cursor-pointer ${selectedColorFilter === col ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                      className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedColorFilter === col ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
                     >
                       {col}
                     </button>
@@ -537,11 +537,11 @@ function StoreContent() {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-[#D8D6D2] uppercase font-bold">Beden:</span>
-                <div className="flex flex-wrap gap-1.5">
+                <span className="text-[#D8D6D2] uppercase font-bold text-[11px]">Beden:</span>
+                <div className="flex flex-wrap gap-1">
                   <button 
                     onClick={() => setSelectedSizeFilter('all')}
-                    className={`px-3 py-1 rounded-full border transition-all cursor-pointer ${selectedSizeFilter === 'all' ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                    className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedSizeFilter === 'all' ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
                   >
                     Tümü
                   </button>
@@ -549,7 +549,7 @@ function StoreContent() {
                     <button 
                       key={size}
                       onClick={() => setSelectedSizeFilter(size)}
-                      className={`px-3 py-1 rounded-full border transition-all cursor-pointer ${selectedSizeFilter === size ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                      className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedSizeFilter === size ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
                     >
                       {size}
                     </button>
@@ -560,7 +560,7 @@ function StoreContent() {
               {(selectedColorFilter !== 'all' || selectedSizeFilter !== 'all') && (
                 <button 
                   onClick={() => { setSelectedColorFilter('all'); setSelectedSizeFilter('all'); }} 
-                  className="text-[#F74A05] underline font-bold cursor-pointer ml-auto"
+                  className="text-[#F74A05] underline font-bold cursor-pointer ml-auto text-[11px]"
                 >
                   Filtreleri Sıfırla
                 </button>
@@ -571,9 +571,9 @@ function StoreContent() {
         </section>
 
         {/* Ürün Vitrini (Grid) */}
-        <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-16 sm:py-28">
-          <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-            <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-12 sm:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-10 lg:px-14">
+            <div className="grid grid-cols-1 gap-6 sm:gap-10 sm:grid-cols-2 lg:grid-cols-3">
               {filteredProducts.map((product) => {
                 const productImages = product.image_urls && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '/placeholder.svg']
                 const totalStock = product.sizes ? Object.values(product.sizes as Record<string, any>).reduce((acc: number, curr: any) => {
@@ -588,7 +588,7 @@ function StoreContent() {
                   <div 
                     key={product.id} 
                     onClick={() => openProductDetail(product)} 
-                    className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#D8D6D2]/15 bg-[#111111]/60 p-6 backdrop-blur-xl transition-all duration-500 ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-[#F74A05]/60 hover:bg-[#111111] cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
+                    className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#D8D6D2]/15 bg-[#111111]/60 p-5 sm:p-6 backdrop-blur-xl transition-all duration-500 ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-[#F74A05]/60 hover:bg-[#111111] cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
                   >
                     <div>
                       <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-[#111111] flex items-center justify-center border border-[#D8D6D2]/10">
@@ -600,15 +600,15 @@ function StoreContent() {
                         <Image src={productImages[0]} alt={product.title} fill className="object-contain p-4 transition-transform duration-700 group-hover:scale-105" />
                       </div>
 
-                      <div className="mt-6 space-y-2">
+                      <div className="mt-5 space-y-1.5">
                         <div className="text-[10px] font-mono text-[#F74A05] uppercase font-bold tracking-widest">{product.category_label || 'ÖZEL DROP'}</div>
-                        <h3 className="font-['Vast_XXL',sans-serif] text-xl font-bold text-[#FFFFFF] group-hover:text-[#F74A05] transition-colors tracking-tight">{product.title}</h3>
+                        <h3 className="font-['Vast_XXL',sans-serif] text-lg sm:text-xl font-bold text-[#FFFFFF] group-hover:text-[#F74A05] transition-colors tracking-tight">{product.title}</h3>
                       </div>
                     </div>
 
-                    <div className="mt-8 flex items-center justify-between border-t border-[#D8D6D2]/10 pt-5">
-                      <div className="text-xl font-black text-[#FFFFFF]">₺{Number(product.price).toLocaleString('tr-TR')}</div>
-                      <div className="inline-flex items-center gap-2 rounded-full border border-[#D8D6D2]/20 px-5 py-2.5 text-xs font-bold uppercase bg-[#D8D6D2]/10 text-[#F5F2EC] group-hover:bg-[#F74A05] group-hover:text-[#111111] group-hover:border-[#F74A05] transition-all">
+                    <div className="mt-6 sm:mt-8 flex items-center justify-between border-t border-[#D8D6D2]/10 pt-4">
+                      <div className="text-lg sm:text-xl font-black text-[#FFFFFF]">₺{Number(product.price).toLocaleString('tr-TR')}</div>
+                      <div className="inline-flex items-center gap-1.5 rounded-full border border-[#D8D6D2]/20 px-4 py-2 text-xs font-bold uppercase bg-[#D8D6D2]/10 text-[#F5F2EC] group-hover:bg-[#F74A05] group-hover:text-[#111111] group-hover:border-[#F74A05] transition-all">
                         <span>İncele</span>
                         <ArrowUpRight className="h-3.5 w-3.5" />
                       </div>
