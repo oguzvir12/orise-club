@@ -178,53 +178,53 @@ export function CartDrawer() {
     <div aria-hidden={!isOpen} className={cn('fixed inset-0 z-[60]', isOpen ? 'pointer-events-auto' : 'pointer-events-none')}>
       <div onClick={closeCart} className={cn('absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300', isOpen ? 'opacity-100' : 'opacity-0')} />
 
-      <aside role="dialog" aria-modal="true" className={cn('absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-white/10 bg-zinc-950 text-white shadow-2xl transition-transform duration-300 ease-out', isOpen ? 'translate-x-0' : 'translate-x-full')}>
+      <aside role="dialog" aria-modal="true" className={cn('absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-[#D8D6D2]/10 bg-[#111111] text-[#F5F2EC] shadow-2xl transition-transform duration-300 ease-out', isOpen ? 'translate-x-0' : 'translate-x-full')}>
         
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 bg-black/80">
-          <h2 className="flex items-center gap-2.5 text-sm font-black uppercase tracking-widest text-white">
-            <ShoppingBag className="h-4 w-4 text-primary" />
+        <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 px-6 py-5 bg-[#111111]/90">
+          <h2 className="flex items-center gap-2.5 text-sm font-['Vast_XXL',sans-serif] font-black uppercase tracking-widest text-[#FFFFFF]">
+            <ShoppingBag className="h-4 w-4 text-[#F74A05]" />
             <span>Sepetim ({items.reduce((a: any, b: any) => a + (b.quantity || 1), 0)})</span>
           </h2>
-          <button type="button" onClick={closeCart} className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-zinc-300 hover:bg-primary hover:text-black cursor-pointer">
+          <button type="button" onClick={closeCart} className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#D8D6D2] hover:bg-[#F74A05] hover:text-[#111111] cursor-pointer">
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {items.length > 0 && (
-          <div className="bg-zinc-900/80 border-b border-white/10 px-6 py-2.5 text-[11px] font-mono text-zinc-300 flex items-center justify-between">
+          <div className="bg-[#111111] border-b border-[#D8D6D2]/10 px-6 py-2.5 text-[11px] font-mono text-[#D8D6D2] flex items-center justify-between">
             {isFreeShipping ? (
               <span className="text-emerald-400 font-bold w-full text-center">🎉 2000 TL Üzeri Ücretsiz Kargo Kazandınız!</span>
             ) : (
-              <span>Ücretsiz kargo için <strong className="text-primary">{formatTL(remainingForFreeShipping)}</strong> daha ekleyin!</span>
+              <span>Ücretsiz kargo için <strong className="text-[#F74A05]">{formatTL(remainingForFreeShipping)}</strong> daha ekleyin!</span>
             )}
           </div>
         )}
 
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-            <ShoppingBag className="h-10 w-10 text-zinc-600" />
-            <p className="text-base font-bold text-white">Sepetiniz şimdilik boş</p>
+            <ShoppingBag className="h-10 w-10 text-[#D8D6D2]/40" />
+            <p className="text-base font-bold text-[#FFFFFF]">Sepetiniz şimdilik boş</p>
           </div>
         ) : (
-          <ul className="flex-1 divide-y divide-white/5 overflow-y-auto px-6 py-2">
+          <ul className="flex-1 divide-y divide-[#D8D6D2]/10 overflow-y-auto px-6 py-2">
             {items.map((item: any) => (
               <li key={item.id} className="flex gap-4 py-4 items-center">
-                <div className="relative h-20 w-20 flex-none overflow-hidden rounded-2xl border border-white/10 bg-zinc-900">
+                <div className="relative h-20 w-20 flex-none overflow-hidden rounded-2xl border border-[#D8D6D2]/15 bg-[#111111]">
                   <Image src={item.image || '/placeholder.svg'} alt={item.name} fill className="object-contain p-1" />
                 </div>
                 <div className="flex flex-1 flex-col justify-between space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs font-bold text-white line-clamp-2">{item.name}</p>
-                    <button type="button" onClick={() => removeItem(item.id)} className="text-zinc-500 hover:text-red-400 cursor-pointer"><Trash2 className="h-4 w-4" /></button>
+                    <p className="text-xs font-bold text-[#FFFFFF] line-clamp-2">{item.name}</p>
+                    <button type="button" onClick={() => removeItem(item.id)} className="text-[#D8D6D2]/60 hover:text-red-400 cursor-pointer"><Trash2 className="h-4 w-4" /></button>
                   </div>
                   
                   <div className="flex items-center justify-between pt-1">
-                    <div className="inline-flex items-center rounded-xl border border-white/15 bg-black/80 px-1 py-0.5">
-                      <button type="button" onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/10 hover:text-white cursor-pointer"><Minus className="h-3 w-3" /></button>
-                      <span className="w-8 text-center text-xs font-bold text-white tabular-nums">{item.quantity || 1}</span>
-                      <button type="button" onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/10 hover:text-white cursor-pointer"><Plus className="h-3 w-3" /></button>
+                    <div className="inline-flex items-center rounded-xl border border-[#D8D6D2]/20 bg-black/80 px-1 py-0.5">
+                      <button type="button" onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-[#D8D6D2] hover:bg-white/10 hover:text-white cursor-pointer"><Minus className="h-3 w-3" /></button>
+                      <span className="w-8 text-center text-xs font-bold text-[#FFFFFF] tabular-nums">{item.quantity || 1}</span>
+                      <button type="button" onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-[#D8D6D2] hover:bg-white/10 hover:text-white cursor-pointer"><Plus className="h-3 w-3" /></button>
                     </div>
-                    <span className="text-xs font-black text-primary">{formatTL(item.price * (item.quantity || 1))}</span>
+                    <span className="text-xs font-black text-[#F74A05]">{formatTL(item.price * (item.quantity || 1))}</span>
                   </div>
 
                 </div>
@@ -234,46 +234,82 @@ export function CartDrawer() {
         )}
 
         {items.length > 0 && (
-          <div className="space-y-4 border-t border-white/10 bg-zinc-950 px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+          <div className="space-y-4 border-t border-[#D8D6D2]/10 bg-[#111111] px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
             
-            {/* Fatura Adresi Alanı ve Net Başlığı */}
-            <div className="space-y-2 pt-2 border-b border-white/10 pb-4">
-              <label className="flex items-center gap-2 text-xs font-mono text-zinc-300 cursor-pointer">
+            {/* Kupon Kodu Alanı */}
+            <div className="space-y-2 border-b border-[#D8D6D2]/10 pb-4">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#D8D6D2]/60" />
+                  <input
+                    type="text"
+                    placeholder="Kupon Kodu"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value)}
+                    className="w-full rounded-xl border border-[#D8D6D2]/20 bg-black pl-9 pr-3 py-2 text-xs text-[#FFFFFF] uppercase focus:border-[#F74A05] focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  className="rounded-xl bg-[#D8D6D2]/15 px-4 py-2 text-xs font-bold text-[#FFFFFF] hover:bg-[#F74A05] hover:text-[#111111] transition-colors cursor-pointer"
+                >
+                  Uygula
+                </button>
+              </div>
+              {couponError && <p className="text-[10px] text-red-400">{couponError}</p>}
+              {appliedDiscount > 0 && (
+                <div className="flex items-center justify-between text-[11px] text-emerald-400 bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">
+                  <span>✓ Kupon Uygulandı: <strong>{couponCodeName}</strong> (%{appliedDiscount} İndirim)</span>
+                  <button onClick={() => { setAppliedDiscount(0); setCouponCodeName('') }} className="text-xs hover:underline font-bold">Kaldır</button>
+                </div>
+              )}
+            </div>
+
+            {/* Fatura Adresi Alanı */}
+            <div className="space-y-2 border-b border-[#D8D6D2]/10 pb-4">
+              <label className="flex items-center gap-2 text-xs font-mono text-[#D8D6D2] cursor-pointer">
                 <input 
                   type="checkbox" 
                   checked={sameAsShipping} 
                   onChange={(e) => setSameAsShipping(e.target.checked)}
-                  className="rounded border-zinc-700 bg-black text-primary focus:ring-primary h-4 w-4"
+                  className="rounded border-zinc-700 bg-black text-[#F74A05] focus:ring-[#F74A05] h-4 w-4"
                 />
                 <span>Fatura adresim teslimat adresimle aynı</span>
               </label>
 
               {!sameAsShipping && (
                 <div className="space-y-1 pt-1">
-                  <label className="text-[10px] font-mono uppercase text-primary font-bold">Fatura Adresi</label>
+                  <label className="text-[10px] font-mono uppercase text-[#F74A05] font-bold">Fatura Adresi</label>
                   <input
                     type="text"
                     placeholder="Mahalle, Cadde, No, İlçe/İl..."
                     value={billingAddressInput}
                     onChange={(e) => setBillingAddressInput(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-black px-3 py-2.5 text-xs text-white focus:border-primary focus:outline-none"
+                    className="w-full rounded-xl border border-[#D8D6D2]/20 bg-black px-3 py-2.5 text-xs text-[#FFFFFF] focus:border-[#F74A05] focus:outline-none"
                   />
                 </div>
               )}
             </div>
 
             <div className="space-y-1.5 font-mono">
-              <div className="flex items-center justify-between text-xs text-zinc-400">
+              <div className="flex items-center justify-between text-xs text-[#D8D6D2]">
                 <span>Ara Toplam</span>
                 <span>{formatTL(subtotal)}</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-zinc-400">
+              {appliedDiscount > 0 && (
+                <div className="flex items-center justify-between text-xs text-emerald-400">
+                  <span>İndirim (%{appliedDiscount})</span>
+                  <span>-{formatTL(discountAmount)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between text-xs text-[#D8D6D2]">
                 <span className="flex items-center gap-1"><Truck size={13} /> Kargo Ücreti</span>
                 <span>{isFreeShipping ? <span className="text-emerald-400 font-bold uppercase">Ücretsiz</span> : formatTL(STANDARD_SHIPPING_FEE)}</span>
               </div>
-              <div className="flex items-center justify-between pt-1 font-sans border-t border-white/5 mt-2">
-                <span className="text-xs font-mono uppercase text-zinc-300">Toplam Tutar</span>
-                <span className="text-xl font-black text-primary">{formatTL(finalTotal)}</span>
+              <div className="flex items-center justify-between pt-1 font-sans border-t border-[#D8D6D2]/10 mt-2">
+                <span className="text-xs font-mono uppercase text-[#D8D6D2]">Toplam Tutar</span>
+                <span className="text-xl font-black text-[#F74A05]">{formatTL(finalTotal)}</span>
               </div>
             </div>
 
@@ -288,14 +324,14 @@ export function CartDrawer() {
                 type="button" 
                 disabled={loading} 
                 onClick={handleCheckout} 
-                className="w-full rounded-full bg-primary py-4 text-xs font-black uppercase tracking-widest text-black shadow-lg cursor-pointer disabled:opacity-50"
+                className="w-full rounded-full bg-[#F74A05] py-4 text-xs font-black uppercase tracking-widest text-[#111111] shadow-lg cursor-pointer disabled:opacity-50 hover:bg-orange-600 transition-colors"
               >
                 {loading ? 'İşleniyor...' : 'İyzico ile Güvenli Ödeme Yap'}
               </button>
               
               <div className="flex items-center justify-center gap-3 pt-2 opacity-80">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase">İyzico Güvencesiyle:</span>
-                <span className="text-[10px] font-bold font-mono text-zinc-300">Mastercard / VISA / Troy</span>
+                <span className="text-[10px] font-mono text-[#D8D6D2]/60 uppercase">İyzico Güvencesiyle:</span>
+                <span className="text-[10px] font-bold font-mono text-[#D8D6D2]">Mastercard / VISA / Troy</span>
               </div>
             </div>
           </div>
