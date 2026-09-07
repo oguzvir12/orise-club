@@ -132,7 +132,6 @@ function StoreContent() {
     if (session?.user) {
       const { data: ordersData } = await supabase.from('orders').select('*').eq('user_id', session.user.id)
       if (ordersData) {
-        // Sadece "Teslim Edildi" statüsündeki siparişler kontrol edilir
         const delivered = ordersData.some(ord => ord.status === 'Teslim Edildi')
         setHasDeliveredOrder(delivered)
       }
@@ -739,5 +738,13 @@ function StoreContent() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function StorePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#111111]" />}>
+      <StoreContent />
+    </Suspense>
   )
 }
