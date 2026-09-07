@@ -34,9 +34,9 @@ export default function RootLayout({
   return (
     <html
       lang="tr"
-      className={`${geist.variable} ${spaceGrotesk.variable} bg-black text-white`}
+      className={`${geist.variable} ${spaceGrotesk.variable} bg-[#111111] text-[#F5F2EC]`}
     >
-      <body className="font-sans antialiased bg-black text-white flex flex-col min-h-screen selection:bg-primary selection:text-black overflow-x-hidden">
+      <body className="font-sans antialiased bg-[#111111] text-[#F5F2EC] flex flex-col min-h-screen selection:bg-[#F74A05] selection:text-white overflow-x-hidden">
         <CartProvider>
           <SiteHeader />
 
@@ -46,7 +46,7 @@ export default function RootLayout({
 
           <CartDrawer />
 
-          {/* SAĞ ALT: Varsayılan olarak küçük ikon, tıklayınca genişleyen WhatsApp Butonu */}
+          {/* SAĞ ALT: WhatsApp Destek Butonu */}
           <div className="fixed bottom-6 right-6 z-[90]">
             {isWhatsappExpanded ? (
               <div className="flex items-center gap-2 rounded-full bg-[#25D366] text-white shadow-2xl pl-4 pr-2 py-2 animate-fadeIn">
@@ -82,14 +82,14 @@ export default function RootLayout({
             )}
           </div>
 
-          <footer className="w-full border-t border-white/10 bg-zinc-950 pt-16 pb-12 px-6 sm:px-10 lg:px-16 font-sans text-xs">
+          <footer className="w-full border-t border-[#D8D6D2]/10 bg-[#111111] pt-16 pb-12 px-6 sm:px-10 lg:px-16 font-sans text-xs">
             <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
               
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <span className="font-sans text-xl font-black tracking-tighter text-white">ORISE <span className="text-primary">STORE</span></span>
+                  <span className="font-['Vast_XXL',sans-serif] text-xl font-black tracking-tighter text-[#FFFFFF]">ORISE <span className="text-[#F74A05]">STORE</span></span>
                 </div>
-                <p className="text-zinc-400 leading-relaxed text-xs">
+                <p className="text-[#D8D6D2] leading-relaxed text-xs">
                   Bir Markadan Fazlası, Bir Kulüp. Şehrin ritminden ve kulüp kültüründen ilham alan özel seri teknik parçalar.
                 </p>
                 <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-mono text-emerald-400 font-bold">
@@ -107,55 +107,55 @@ export default function RootLayout({
               </div>
 
               <div className="space-y-3 font-mono">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-white">Kurumsal & Mağaza</h4>
-                <ul className="space-y-2.5 text-zinc-400">
-                  <li><Link href="/store" className="hover:text-primary transition-colors flex items-center gap-1">Tüm Koleksiyon <ArrowUpRight size={12}/></Link></li>
-                  <li><Link href="/store?category=sale" className="hover:text-primary transition-colors flex items-center gap-1">Fırsat & İndirimler <ArrowUpRight size={12}/></Link></li>
-                  <li><Link href="/hakkimizda" className="hover:text-primary transition-colors">Hakkımızda</Link></li>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-[#FFFFFF]">Kurumsal & Mağaza</h4>
+                <ul className="space-y-2.5 text-[#D8D6D2]">
+                  <li><Link href="/store" className="hover:text-[#F74A05] transition-colors flex items-center gap-1">Tüm Koleksiyon <ArrowUpRight size={12}/></Link></li>
+                  <li><Link href="/store?category=sale" className="hover:text-[#F74A05] transition-colors flex items-center gap-1">Fırsat & İndirimler <ArrowUpRight size={12}/></Link></li>
+                  <li><Link href="/hakkimizda" className="hover:text-[#F74A05] transition-colors">Hakkımızda</Link></li>
                 </ul>
               </div>
 
               <div className="space-y-3 font-mono">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-white">Kulüp & Sosyal</h4>
-                <ul className="space-y-2.5 text-zinc-400">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-[#FFFFFF]">Kulüp & Sosyal</h4>
+                <ul className="space-y-2.5 text-[#D8D6D2]">
                   <li>
-                    <a href="https://www.instagram.com/orisecommunity" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-2 font-bold text-white">
-                      <InstagramIcon className="h-4 w-4 text-primary" /> ORISE COMMUNITY
+                    <a href="https://www.instagram.com/orisecommunity" target="_blank" rel="noopener noreferrer" className="hover:text-[#F74A05] transition-colors flex items-center gap-2 font-bold text-[#FFFFFF]">
+                      <InstagramIcon className="h-4 w-4 text-[#F74A05]" /> ORISE COMMUNITY
                     </a>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">Etkinlikler, paylaşımlar ve kulüp haberleri için bizi takip et.</p>
+                    <p className="text-[10px] text-[#D8D6D2]/60 mt-0.5">Etkinlikler, paylaşımlar ve kulüp haberleri için bizi takip et.</p>
                   </li>
                   <li className="pt-1">
-                    <a href="https://www.instagram.com/orisestore" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-2">
-                      <InstagramIcon className="h-3.5 w-3.5 text-primary" /> @orisestore
+                    <a href="https://www.instagram.com/orisestore" target="_blank" rel="noopener noreferrer" className="hover:text-[#F74A05] transition-colors flex items-center gap-2">
+                      <InstagramIcon className="h-3.5 w-3.5 text-[#F74A05]" /> @orisestore
                     </a>
                   </li>
                   <li>
-                    <a href="https://www.linkedin.com/company/orisecommunity/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-2">
-                      <LinkedinIcon className="h-3.5 w-3.5 text-primary" /> LinkedIn
+                    <a href="https://www.linkedin.com/company/orisecommunity/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="hover:text-[#F74A05] transition-colors flex items-center gap-2">
+                      <LinkedinIcon className="h-3.5 w-3.5 text-[#F74A05]" /> LinkedIn
                     </a>
                   </li>
                 </ul>
               </div>
 
               <div className="space-y-3 font-mono">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-white">Bize Ulaşın</h4>
-                <div className="space-y-3 text-zinc-400 text-[11px]">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-[#FFFFFF]">Bize Ulaşın</h4>
+                <div className="space-y-3 text-[#D8D6D2] text-[11px]">
                   <div>
-                    <span className="text-[10px] text-zinc-500 block">Mağaza ile alakalı sorunlar için:</span>
-                    <a href="mailto:store@oriseclub.com" className="hover:text-primary transition-colors font-bold text-white flex items-center gap-1.5 mt-0.5">
-                      <Mail className="h-3.5 w-3.5 text-primary" /> store@oriseclub.com
+                    <span className="text-[10px] text-[#D8D6D2]/60 block">Mağaza ile alakalı sorunlar için:</span>
+                    <a href="mailto:store@oriseclub.com" className="hover:text-[#F74A05] transition-colors font-bold text-[#FFFFFF] flex items-center gap-1.5 mt-0.5">
+                      <Mail className="h-3.5 w-3.5 text-[#F74A05]" /> store@oriseclub.com
                     </a>
                   </div>
                   <div>
-                    <span className="text-[10px] text-zinc-500 block">Topluluk etkinlikleri için:</span>
-                    <a href="mailto:community@oriseclub.com" className="hover:text-primary transition-colors font-bold text-white flex items-center gap-1.5 mt-0.5">
-                      <Mail className="h-3.5 w-3.5 text-primary" /> community@oriseclub.com
+                    <span className="text-[10px] text-[#D8D6D2]/60 block">Topluluk etkinlikleri için:</span>
+                    <a href="mailto:community@oriseclub.com" className="hover:text-[#F74A05] transition-colors font-bold text-[#FFFFFF] flex items-center gap-1.5 mt-0.5">
+                      <Mail className="h-3.5 w-3.5 text-[#F74A05]" /> community@oriseclub.com
                     </a>
                   </div>
                   <div>
-                    <span className="text-[10px] text-zinc-500 block">İşbirliği için:</span>
-                    <a href="mailto:info@oriseclub.com" className="hover:text-primary transition-colors font-bold text-white flex items-center gap-1.5 mt-0.5">
-                      <Mail className="h-3.5 w-3.5 text-primary" /> info@oriseclub.com
+                    <span className="text-[10px] text-[#D8D6D2]/60 block">İşbirliği için:</span>
+                    <a href="mailto:info@oriseclub.com" className="hover:text-[#F74A05] transition-colors font-bold text-[#FFFFFF] flex items-center gap-1.5 mt-0.5">
+                      <Mail className="h-3.5 w-3.5 text-[#F74A05]" /> info@oriseclub.com
                     </a>
                   </div>
                 </div>
@@ -163,16 +163,17 @@ export default function RootLayout({
 
             </div>
 
-            <div className="mx-auto max-w-7xl mt-14 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-zinc-500">
+            <div className="mx-auto max-w-7xl mt-14 pt-6 border-t border-[#D8D6D2]/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-[#D8D6D2]/60">
               <p>© 2026 ORISE CLUB. Tüm Hakları Saklıdır. // Bir Markadan Fazlası, Bir Kulüp.</p>
               <div className="flex items-center gap-6">
-                <Link href="/gizlilik" className="hover:text-white transition-colors">Gizlilik Politikası</Link>
-                <Link href="/mesafeli-satis" className="hover:text-white transition-colors">Mesafeli Satış Sözleşmesi</Link>
-                <Link href="/iade-kosullari" className="hover:text-white transition-colors">İade & Değişim</Link>
+                <Link href="/gizlilik" className="hover:text-[#FFFFFF] transition-colors">Gizlilik Politikası</Link>
+                <Link href="/mesafeli-satis" className="hover:text-[#FFFFFF] transition-colors">Mesafeli Satış Sözleşmesi</Link>
+                <Link href="/iade-kosullari" className="hover:text-[#FFFFFF] transition-colors">İade & Değişim</Link>
               </div>
             </div>
           </footer>
         </CartProvider>
+        {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )
