@@ -72,7 +72,7 @@ function StoreContent() {
   const [reviews, setReviews] = useState<any[]>([])
   const [newReviewComment, setNewReviewComment] = useState('')
   const [newReviewRating, setNewReviewRating] = useState('5')
-  const [hasPurchased, setHasPurchased] = useState(false)
+  const [hasDeliveredOrder, setHasDeliveredOrder] = useState(false)
 
   const [cookieConsent, setCookieConsent] = useState(true)
 
@@ -132,8 +132,9 @@ function StoreContent() {
     if (session?.user) {
       const { data: ordersData } = await supabase.from('orders').select('*').eq('user_id', session.user.id)
       if (ordersData) {
-        const purchased = ordersData.some(ord => ord.status === 'Kargolandı' || ord.status === 'Teslim Edildi' || ord.status === 'Ödeme Onaylandı')
-        setHasPurchased(purchased)
+        // Sadece "Teslim Edildi" statüsündeki siparişler kontrol edilir
+        const delivered = ordersData.some(ord => ord.status === 'Teslim Edildi')
+        setHasDeliveredOrder(delivered)
       }
     }
   }
@@ -151,7 +152,7 @@ function StoreContent() {
     }])
 
     if (!error) {
-      alert('Sorunuz satıcıya iletildi!')
+      alert('Sorunuz satıcıya iletildi ve onay bekliyor!')
       setNewQuestion('')
       fetchProductInteractions(selectedProduct.id)
     }
@@ -160,7 +161,7 @@ function StoreContent() {
   const handleSendReview = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!currentUser) { alert('Yorum yapmak için giriş yapmalısınız.'); return }
-    if (!hasPurchased) { alert('Bu ürüne yorum yapabilmek için onaylanmış bir siparişinizin olması gerekmektedir.'); return }
+    if (!hasDeliveredOrder) { alert('Bu ürüne yorum yapabilmeniz için siparişinizin teslim edilmiş olması gerekmektedir.'); return }
 
     const { error } = await supabase.from('product_reviews').insert([{
       product_id: selectedProduct.id,
@@ -297,7 +298,7 @@ function StoreContent() {
         {/* ÜRÜN DETAY MODALI */}
         {selectedProduct && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn overflow-y-auto">
-            <div className="relative w-full max-w-5xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-5 sm:p-10 shadow-2xl space-y-6 sm:space-y-8 text-[#FFFFFF] max-h-[92vh] overflow-y-auto">
+            <div className="relative w-full max-w-5xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-5 sm:p-10 shadow-2xl space-y-8 text-[#FFFFFF] max-h-[92vh] overflow-y-auto">
               
               <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 pb-4">
                 <span className="text-xs font-mono tracking-widest text-[#F74A05] uppercase font-bold">ÜRÜN DETAYI</span>
@@ -397,6 +398,47 @@ function StoreContent() {
                     <button type="button" onClick={handleAddToCart} className={`flex w-full items-center justify-center gap-3 rounded-full py-3.5 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${isAdded ? 'bg-emerald-500 text-[#111111] font-black' : 'bg-[#F74A05] text-[#111111] hover:scale-[1.02] font-black shadow-[0_0_20px_rgba(247,74,5,0.4)]'}`}>
                       {isAdded ? <><Check className="h-4 w-4" /><span>Sepete Eklendi</span></> : <><ShoppingBag className="h-4 w-4" /><span>Siparişe Ekle — ₺{selectedProduct.price}</span></>}
                     </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Soru Sorma (Herkes) ve Yorum Yapma (Sadece Teslim Edilenler) Bölümü */}
+              <div className="border-t border-[#D8D6D2]/10 pt-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div className="space-y-4">
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 text-[#FFFFFF]"><HelpCircle className="text-[#F74A05]" size={16} /> Soru Sor ({questions.length})</h3>
+                  <form onSubmit={handleSendQuestion} className="space-y-3">
+                    <textarea rows={2} value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)} placeholder="Ürün hakkında soru sorun..." className="w-full rounded-xl border border-[#D8D6D2]/15 bg-black/40 p-3 text-xs text-[#FFFFFF] focus:outline-none focus:border-[#F74A05] resize-none" />
+                    <button type="submit" className="rounded-full bg-[#D8D6D2]/15 px-5 py-2 text-[11px] font-bold uppercase hover:bg-[#F74A05] hover:text-[#111111] transition-colors cursor-pointer text-[#FFFFFF]">Soru Gönder</button>
+                  </form>
+                  <div className="space-y-3 pt-2 max-h-56 overflow-y-auto">
+                    {questions.map((q) => (
+                      <div key={q.id} className="p-3 rounded-xl border border-[#D8D6D2]/15 bg-black/40 space-y-1.5 text-xs">
+                        <p className="font-bold text-[#FFFFFF]">S: {q.question}</p>
+                        {q.answer && <p className="text-[#F74A05] bg-[#F74A05]/10 p-2.5 rounded-lg"><strong>Satıcı Yanıtı:</strong> {q.answer}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 text-[#FFFFFF]"><MessageSquare className="text-[#F74A05]" size={16} /> Yorumlar ({reviews.length})</h3>
+                  {hasDeliveredOrder ? (
+                    <form onSubmit={handleSendReview} className="space-y-3 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+                      <textarea rows={2} value={newReviewComment} onChange={(e) => setNewReviewComment(e.target.value)} placeholder="Ürün hakkındaki deneyimleriniz..." className="w-full rounded-xl border border-[#D8D6D2]/15 bg-black/40 p-3 text-xs text-[#FFFFFF] focus:outline-none resize-none" />
+                      <button type="submit" className="rounded-full bg-emerald-500 text-[#111111] font-bold px-5 py-2 text-[11px] uppercase cursor-pointer">Yorum Yap</button>
+                    </form>
+                  ) : (
+                    <p className="text-[11px] font-mono text-[#D8D6D2]/60 p-3 rounded-xl border border-[#D8D6D2]/10 bg-black/20">
+                      * Bu ürüne yorum yapabilmeniz için siparişinizin <strong>"Teslim Edildi"</strong> statüsünde olması gerekmektedir.
+                    </p>
+                  )}
+                  <div className="space-y-3 max-h-56 overflow-y-auto">
+                    {reviews.map((r) => (
+                      <div key={r.id} className="p-3 rounded-xl border border-[#D8D6D2]/15 bg-black/40 space-y-1 text-xs font-mono">
+                        <span className="font-bold text-[#FFFFFF]">{r.user_name}</span>
+                        <p className="text-[#D8D6D2] font-sans">{r.comment}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -560,7 +602,7 @@ function StoreContent() {
           )}
         </section>
 
-        {/* Ürün Vitrini (Grid): Bilgisayarda Yan Yana 4'lü Ferah Avva Tarzı Düzen */}
+        {/* Ürün Vitrini (Grid) */}
         <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-12 sm:py-28">
           <div className="mx-auto max-w-[1600px] px-4 sm:px-8 lg:px-12">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-8">
@@ -687,8 +729,6 @@ function StoreContent() {
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOLEVİ OMUZDAN DİK</td><td>29</td><td>30</td><td>31</td><td>32</td><td>33</td><td>34</td><td>35</td><td>36</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL AĞZI</td><td>19.5</td><td>20.25</td><td>21</td><td>21.75</td><td>22.5</td><td>23.25</td><td>24</td><td>24.75</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">YAKA YÜKSEKLİĞI</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                     </>
                   )}
                 </tbody>
@@ -699,13 +739,5 @@ function StoreContent() {
         </div>
       )}
     </div>
-  )
-}
-
-export default function StorePage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-[#111111]" />}>
-      <StoreContent />
-    </Suspense>
   )
 }
