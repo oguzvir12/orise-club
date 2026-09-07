@@ -12,7 +12,6 @@ import {
   Maximize2,
   ArrowUpDown,
   Sparkles,
-  Truck,
   HelpCircle,
   MessageSquare,
   Ruler,
@@ -406,8 +405,8 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Hero Alanı: Mobilde Geniş Açılı, Üst Üste Binmeyen Derli Toplu Görünüm */}
-        <section className="relative pt-28 sm:pt-36 pb-12 sm:pb-24 px-4 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[70vh] sm:min-h-[85vh] flex items-end">
+        {/* Hero Alanı: Web'de ve Telefonda Kargo Yazısı Kaldırıldı, Keşfet Butonu Sadece Masaüstünde Kalacak Şekilde Düzenlendi */}
+        <section className="relative pt-24 sm:pt-36 pb-12 sm:pb-24 px-4 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[75vh] sm:min-h-[85vh] flex items-end">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
               autoPlay 
@@ -419,43 +418,35 @@ function StoreContent() {
               <source src="/store-hero-video.mp4" type="video/mp4" />
               Tarayıcınız video etiketini desteklemiyor.
             </video>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/50 to-transparent" />
           </div>
 
-          {/* TELEFONDA KÜÇÜK İKON, MASAÜSTÜNDE ŞIK ROZET "KEŞFET" BUTONU */}
-          <div className="absolute bottom-4 right-4 sm:bottom-10 sm:right-16 z-25">
+          {/* KEŞFET BUTONU: Sadece Masaüstünde Görünür (Telefonda tamamen kaldırıldı) */}
+          <div className="hidden sm:flex absolute bottom-10 right-16 z-25">
             <button 
               onClick={scrollToCollection}
-              className="group relative flex items-center justify-center sm:gap-3 rounded-full border-2 border-[#F74A05] bg-black/90 p-3 sm:px-6 sm:py-4 backdrop-blur-2xl shadow-[0_0_30px_rgba(247,74,5,0.4)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
+              className="group relative flex items-center gap-3 rounded-full border-2 border-[#F74A05] bg-black/90 px-6 py-4 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.5)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
               title="Koleksiyonu Keşfet"
             >
-              <div className="relative flex h-6 w-6 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-md">
-                <svg className="h-3 w-3 sm:h-5 sm:w-5 fill-current animate-bounce" viewBox="0 0 24 24">
+              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-lg">
+                <svg className="h-5 w-5 fill-current animate-bounce" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M2 12h20" stroke="currentColor" strokeWidth="1.5"/>
                 </svg>
               </div>
-              <div className="hidden sm:flex flex-col text-left">
+              <div className="flex flex-col text-left">
                 <span className="text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">ORISE CLUB</span>
                 <span className="font-['Vast_XXL',sans-serif] text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
               </div>
             </button>
           </div>
 
-          <div className="relative z-10 max-w-4xl space-y-2 sm:space-y-6 pb-2 sm:pb-0">
-            {/* Estetik Kargo Rozeti */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#D8D6D2]/15 bg-black/70 px-3 py-1 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-mono text-[#D8D6D2] backdrop-blur-md shadow-lg">
-              <div className="flex h-3.5 w-3.5 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#F74A05]/20 text-[#F74A05]">
-                <Truck size={10} />
-              </div>
-              <span className="tracking-wide">2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
-            </div>
-
-            <h1 className="font-['Vast_XXL',sans-serif] text-3xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-[#FFFFFF] uppercase leading-[1.02] sm:leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
+          <div className="relative z-10 max-w-4xl space-y-4 sm:space-y-6 pb-4 sm:pb-0">
+            <h1 className="font-['Vast_XXL',sans-serif] text-4xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-[#FFFFFF] uppercase leading-[1.02] sm:leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
               BİRLİKTE <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F74A05] via-orange-400 to-amber-300">HAREKET ET.</span>
             </h1>
-            <p className="text-[11px] sm:text-lg text-[#D8D6D2] font-sans max-w-lg font-normal leading-relaxed">
+            <p className="text-xs sm:text-lg text-[#D8D6D2] font-sans max-w-lg font-normal leading-relaxed">
               Yeni nesil teknik spor giyim, kulüp ruhu ve sokak stili bir arada. Sınırları birlikte zorlayın.
             </p>
           </div>
@@ -570,10 +561,10 @@ function StoreContent() {
           )}
         </section>
 
-        {/* Ürün Vitrini (Grid): Telefonda "Uzaklaştırılmış" ve Dengeli Görünüm */}
-        <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-10 sm:py-28">
+        {/* Ürün Vitrini (Grid) */}
+        <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-12 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-10 lg:px-14">
-            <div className="grid grid-cols-1 gap-5 sm:gap-10 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:gap-10 sm:grid-cols-2 lg:grid-cols-3">
               {filteredProducts.map((product) => {
                 const productImages = product.image_urls && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '/placeholder.svg']
                 const totalStock = product.sizes ? Object.values(product.sizes as Record<string, any>).reduce((acc: number, curr: any) => {
@@ -588,7 +579,7 @@ function StoreContent() {
                   <div 
                     key={product.id} 
                     onClick={() => openProductDetail(product)} 
-                    className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#D8D6D2]/15 bg-[#111111]/60 p-4 sm:p-6 backdrop-blur-xl transition-all duration-500 ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-[#F74A05]/60 hover:bg-[#111111] cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
+                    className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#D8D6D2]/15 bg-[#111111]/60 p-5 sm:p-6 backdrop-blur-xl transition-all duration-500 ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-[#F74A05]/60 hover:bg-[#111111] cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
                   >
                     <div>
                       <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-[#111111] flex items-center justify-center border border-[#D8D6D2]/10">
@@ -600,17 +591,17 @@ function StoreContent() {
                         <Image src={productImages[0]} alt={product.title} fill className="object-contain p-4 transition-transform duration-700 group-hover:scale-105" />
                       </div>
 
-                      <div className="mt-4 space-y-1">
-                        <div className="text-[9px] sm:text-[10px] font-mono text-[#F74A05] uppercase font-bold tracking-widest">{product.category_label || 'ÖZEL DROP'}</div>
-                        <h3 className="font-['Vast_XXL',sans-serif] text-base sm:text-xl font-bold text-[#FFFFFF] group-hover:text-[#F74A05] transition-colors tracking-tight">{product.title}</h3>
+                      <div className="mt-5 space-y-1.5">
+                        <div className="text-[10px] font-mono text-[#F74A05] uppercase font-bold tracking-widest">{product.category_label || 'ÖZEL DROP'}</div>
+                        <h3 className="font-['Vast_XXL',sans-serif] text-lg sm:text-xl font-bold text-[#FFFFFF] group-hover:text-[#F74A05] transition-colors tracking-tight">{product.title}</h3>
                       </div>
                     </div>
 
-                    <div className="mt-5 sm:mt-8 flex items-center justify-between border-t border-[#D8D6D2]/10 pt-3 sm:pt-5">
-                      <div className="text-base sm:text-xl font-black text-[#FFFFFF]">₺{Number(product.price).toLocaleString('tr-TR')}</div>
-                      <div className="inline-flex items-center gap-1.5 rounded-full border border-[#D8D6D2]/20 px-3.5 py-1.5 sm:px-5 sm:py-2.5 text-[11px] sm:text-xs font-bold uppercase bg-[#D8D6D2]/10 text-[#F5F2EC] group-hover:bg-[#F74A05] group-hover:text-[#111111] group-hover:border-[#F74A05] transition-all">
+                    <div className="mt-6 sm:mt-8 flex items-center justify-between border-t border-[#D8D6D2]/10 pt-4">
+                      <div className="text-lg sm:text-xl font-black text-[#FFFFFF]">₺{Number(product.price).toLocaleString('tr-TR')}</div>
+                      <div className="inline-flex items-center gap-1.5 rounded-full border border-[#D8D6D2]/20 px-4 py-2 text-xs font-bold uppercase bg-[#D8D6D2]/10 text-[#F5F2EC] group-hover:bg-[#F74A05] group-hover:text-[#111111] group-hover:border-[#F74A05] transition-all">
                         <span>İncele</span>
-                        <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                        <ArrowUpRight className="h-3.5 w-3.5" />
                       </div>
                     </div>
                   </div>
@@ -709,13 +700,5 @@ function StoreContent() {
         </div>
       )}
     </div>
-  )
-}
-
-export default function StorePage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-[#111111]" />}>
-      <StoreContent />
-    </Suspense>
   )
 }
