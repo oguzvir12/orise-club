@@ -65,7 +65,6 @@ function StoreContent() {
   const [newReviewRating, setNewReviewRating] = useState('5')
   const [hasPurchased, setHasPurchased] = useState(false)
 
-  // Sol alt bülten gizleme / açma state'leri
   const [showNewsletter, setShowNewsletter] = useState(true)
   const [isNewsletterMinimized, setIsNewsletterMinimized] = useState(false)
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false)
@@ -249,14 +248,14 @@ function StoreContent() {
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
       <div>
-        {/* Üst Kargo Bandı */}
-        <div className="bg-[#111111] border-b border-[#D8D6D2]/10 text-[#D8D6D2] py-2.5 px-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 mt-16 sm:mt-20">
+        {/* Üst Kargo Bandı - Şeffaf / Cam Efektli ve Boşluksuz */}
+        <div className="bg-[#111111]/40 border-b border-[#D8D6D2]/10 text-[#D8D6D2] py-2 px-4 text-center text-[11px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 backdrop-blur-md">
           <Truck size={14} className="text-[#F74A05]" />
           <span>2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz</span>
         </div>
 
         {selectedProduct && (
-          <div className="absolute top-28 left-6 z-30 sm:left-10">
+          <div className="absolute top-20 left-6 z-30 sm:left-10">
             <button type="button" onClick={closeProductDetail} className="group inline-flex items-center gap-2 rounded-full border border-[#D8D6D2]/20 bg-[#111111]/80 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-[#F5F2EC] backdrop-blur-xl transition-all hover:border-[#F74A05] cursor-pointer">
               <ArrowLeft className="h-3.5 w-3.5 text-[#F74A05]" />
               <span>Tüm Koleksiyon</span>
@@ -652,7 +651,7 @@ function StoreContent() {
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOLEVİ OMUZDAN DİK</td><td>29</td><td>30</td><td>31</td><td>32</td><td>33</td><td>34</td><td>35</td><td>36</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
+                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 code">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL AĞZI</td><td>19.5</td><td>20.25</td><td>21</td><td>21.75</td><td>22.5</td><td>23.25</td><td>24</td><td>24.75</td></tr>
                       <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">YAKA YÜKSEKLİĞİ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
                     </>
