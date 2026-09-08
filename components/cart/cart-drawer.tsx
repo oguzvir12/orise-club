@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Minus, Plus, ShoppingBag, Trash2, X, Tag, Check, AlertCircle, Truck } from 'lucide-react'
+import { Minus, Plus, ShoppingBag, Trash2, X, Tag, Check, AlertCircle, Truck, MapPin } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -14,13 +14,15 @@ const formatTL = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n)
 
-const STANDARD_SHIPPING_FEE = 60
+const STANDARD_SHIPPING_FEE = 80
 const FREE_SHIPPING_THRESHOLD = 2000
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, subtotal, removeItem, updateQuantity, clearCart } = useCart() as any
   const [loading, setLoading] = useState(false)
   const [validationError, setValidationError] = useState('')
+
+  const [deliveryType, setDeliveryType] = useState<'cargo' | 'pickup'>('cargo')
 
   const [couponInput, setCouponInput] = useState('')
   const [appliedDiscount, setAppliedDiscount] = useState(0)
@@ -67,7 +69,9 @@ export function CartDrawer() {
   const discountAmount = (subtotal * appliedDiscount) / 100
   const discountedSubtotal = subtotal - discountAmount
   const isFreeShipping = discountedSubtotal >= FREE_SHIPPING_THRESHOLD
-  const shippingFee = isFreeShipping ? 0 : STANDARD_SHIPPING_FEE
+  
+  // Elden teslim seçilirse kargo ücreti 0 TL, aksi takdirde 80 TL (2000 TL üstü ücretsiz)
+  const shippingFee = deliveryType === 'pickup' ? 0 : (isFreeShipping ? 0 : STANDARD_SHIPPING_FEE)
   const finalTotal = discountedSubtotal + shippingFee
   const remainingForFreeShipping = FREE_SHIPPING_THRESHOLD - discountedSubtotal
 
@@ -89,8 +93,8 @@ export function CartDrawer() {
         .eq('id', session.user.id)
         .maybeSingle()
 
-      if (!profile || !profile.full_name || !profile.phone || !profile.tc_no || !profile.address) {
-        setValidationError('Lütfen profilinizdeki Ad, Telefon, TCKN ve Adres alanlarını eksiksiz doldurun.')
+      if (!profile || !profile.full_name || !profile.phone || !profile.tc_no || (deliveryType === 'cargo' && !profile.address)) {
+        setValidationError('Lütfen profilinizdeki Ad, Telefon, TCKN ve Teslimat Adresi alanlarını eksiksiz doldurun.')
         setLoading(false)
         return
       }
@@ -142,9 +146,10 @@ export function CartDrawer() {
         email: session.user.email,
         phone: profile.phone,
         tc_no: profile.tc_no,
-        address: profile.address,
-        billing_address: sameAsShipping ? profile.address : billingAddressInput,
+        address: deliveryType === 'pickup' ? 'ORISE Community Etkinlik Noktası (Elden Teslim)' : profile.address,
+        billing_address: sameAsShipping ? (deliveryType === 'pickup' ? (profile.address || 'Belirtilmedi') : profile.address) : billingAddressInput,
         same_billing: sameAsShipping,
+        delivery_type: deliveryType, // 'cargo' veya 'pickup'
         items: items,
         subtotal: subtotal,
         discount: discountAmount,
@@ -187,7 +192,7 @@ export function CartDrawer() {
           </button>
         </div>
 
-        {items.length > 0 && (
+        {items.length > 0 && deliveryType === 'cargo' && (
           <div className="bg-[#111111] border-b border-[#D8D6D2]/10 px-6 py-2.5 text-[11px] font-mono text-[#D8D6D2] flex items-center justify-between">
             {isFreeShipping ? (
               <span className="text-emerald-400 font-bold w-full text-center">🎉 2000 TL Üzeri Ücretsiz Kargo Kazandınız!</span>
@@ -223,7 +228,6 @@ export function CartDrawer() {
                     </div>
                     <span className="text-xs font-black text-[#F74A05]">{formatTL(item.price * (item.quantity || 1))}</span>
                   </div>
-
                 </div>
               </li>
             ))}
@@ -233,6 +237,40 @@ export function CartDrawer() {
         {items.length > 0 && (
           <div className="space-y-4 border-t border-[#D8D6D2]/10 bg-[#111111] px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
             
+            {/* Teslimat Tipi Seçim Kırılımı */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono uppercase text-[#F74A05] font-bold">Teslimat Yöntemi Seçin</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDeliveryType('cargo')}
+                  className={`flex flex-col items-start p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    deliveryType === 'cargo' ? 'border-[#F74A05] bg-[#F74A05]/10 text-white' : 'border-[#D8D6D2]/15 bg-black/40 text-[#D8D6D2]'
+                  }`}
+                >
+                  <span className="flex items-center gap-1.5 text-xs font-bold"><Truck size={14} className="text-[#F74A05]" /> Aras Kargo</span>
+                  <span className="text-[10px] opacity-70 mt-1">80 TL (2000₺ Üstü Ücretsiz)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDeliveryType('pickup')}
+                  className={`flex flex-col items-start p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    deliveryType === 'pickup' ? 'border-[#F74A05] bg-[#F74A05]/10 text-white' : 'border-[#D8D6D2]/15 bg-black/40 text-[#D8D6D2]'
+                  }`}
+                >
+                  <span className="flex items-center gap-1.5 text-xs font-bold"><MapPin size={14} className="text-[#F74A05]" /> Elden Teslim</span>
+                  <span className="text-[10px] opacity-70 mt-1">Ücretsiz (Etkinlikte Al)</span>
+                </button>
+              </div>
+
+              {deliveryType === 'pickup' && (
+                <div className="p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-[11px] text-amber-300 font-mono">
+                  💡 Seçtiğiniz ürün, bir sonraki <strong>ORISE Community</strong> etkinlik buluşmasında tarafınıza elden teslim edilecektir. Detaylar için sizinle iletişime geçilecektir.
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2 border-b border-[#D8D6D2]/10 pb-4">
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -299,8 +337,17 @@ export function CartDrawer() {
                 </div>
               )}
               <div className="flex items-center justify-between text-xs text-[#D8D6D2]">
-                <span className="flex items-center gap-1"><Truck size={13} /> Kargo Ücreti</span>
-                <span>{isFreeShipping ? <span className="text-emerald-400 font-bold uppercase">Ücretsiz</span> : formatTL(STANDARD_SHIPPING_FEE)}</span>
+                <span className="flex items-center gap-1">
+                  {deliveryType === 'pickup' ? <MapPin size={13} /> : <Truck size={13} />} 
+                  {deliveryType === 'pickup' ? 'Elden Teslim (Etkinlikte)' : 'Kargo Ücreti (Aras)'}
+                </span>
+                <span>
+                  {deliveryType === 'pickup' ? (
+                    <span className="text-emerald-400 font-bold uppercase">Ücretsiz</span>
+                  ) : (
+                    isFreeShipping ? <span className="text-emerald-400 font-bold uppercase">Ücretsiz</span> : formatTL(STANDARD_SHIPPING_FEE)
+                  )}
+                </span>
               </div>
               <div className="flex items-center justify-between pt-1 font-sans border-t border-[#D8D6D2]/10 mt-2">
                 <span className="text-xs font-mono uppercase text-[#D8D6D2]">Toplam Tutar</span>
@@ -321,11 +368,11 @@ export function CartDrawer() {
                 onClick={handleCheckout} 
                 className="w-full rounded-full bg-[#F74A05] py-4 text-xs font-black uppercase tracking-widest text-[#111111] shadow-lg cursor-pointer disabled:opacity-50 hover:bg-orange-600 transition-colors"
               >
-                {loading ? 'İşleniyor...' : 'İyzico ile Güvenli Ödeme Yap'}
+                {loading ? 'İşleniyor...' : 'Siparişi Tamamla (İyzico Hazır)'}
               </button>
               
               <div className="flex items-center justify-center gap-3 pt-2 opacity-80">
-                <span className="text-[10px] font-mono text-[#D8D6D2]/60 uppercase">İyzico Güvencesiyle:</span>
+                <span className="text-[10px] font-mono text-[#D8D6D2]/60 uppercase">Güvenli Altyapı:</span>
                 <span className="text-[10px] font-bold font-mono text-[#D8D6D2]">Mastercard / VISA / Troy</span>
               </div>
             </div>
