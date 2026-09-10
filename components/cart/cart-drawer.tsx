@@ -149,7 +149,7 @@ export function CartDrawer() {
         address: deliveryType === 'pickup' ? 'ORISE Community Etkinlik Noktası (Elden Teslim)' : profile.address,
         billing_address: sameAsShipping ? (deliveryType === 'pickup' ? (profile.address || 'Belirtilmedi') : profile.address) : billingAddressInput,
         same_billing: sameAsShipping,
-        delivery_type: deliveryType, // 'cargo' veya 'pickup'
+        delivery_type: deliveryType,
         items: items,
         subtotal: subtotal,
         discount: discountAmount,
@@ -237,7 +237,6 @@ export function CartDrawer() {
         {items.length > 0 && (
           <div className="space-y-4 border-t border-[#D8D6D2]/10 bg-[#111111] px-6 py-6 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
             
-            {/* Teslimat Tipi Seçim Kırılımı */}
             <div className="space-y-2">
               <label className="text-[10px] font-mono uppercase text-[#F74A05] font-bold">Teslimat Yöntemi Seçin</label>
               <div className="grid grid-cols-2 gap-2">
