@@ -23,7 +23,8 @@ import {
   ChevronUp,
   ArrowDown,
   Filter,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Compass
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -447,7 +448,7 @@ function StoreContent() {
           </div>
         )}
 
-        {/* HERO ALANI: Oran orantı ve mobilde kayma sorunları giderildi */}
+        {/* HERO ALANI: Ultra Premium, Şık Lüks Keşfet Butonu */}
         <section className="relative pt-28 sm:pt-40 pb-16 sm:pb-28 px-4 sm:px-8 lg:px-16 select-none border-b border-white/10 overflow-hidden min-h-[70vh] sm:min-h-[85vh] flex items-end">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
@@ -463,22 +464,26 @@ function StoreContent() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-black/30" />
           </div>
 
+          {/* PRESTİJLİ LÜKS KEŞFET BUTONU */}
           <div className="hidden sm:flex absolute bottom-12 right-12 z-25">
             <button 
               onClick={scrollToCollection}
-              className="group relative flex items-center gap-3 rounded-full border-2 border-[#F74A05] bg-black/90 px-6 py-4 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.4)] transition-all hover:scale-105 hover:bg-[#F74A05] cursor-pointer"
+              className="group relative flex items-center gap-4 rounded-full border border-white/20 bg-black/60 px-7 py-4 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-500 hover:border-[#F74A05] hover:bg-black cursor-pointer overflow-hidden"
               title="Koleksiyonu Keşfet"
             >
-              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-lg">
-                <svg className="h-5 w-5 fill-current animate-bounce" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M2 12h20" stroke="currentColor" strokeWidth="1.5"/>
-                </svg>
+              <span className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-[#F74A05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F74A05]/10 border border-[#F74A05]/30 text-[#F74A05] group-hover:bg-[#F74A05] group-hover:text-[#111111] transition-all duration-500 shadow-inner">
+                <Compass className="h-4 w-4 animate-spin-slow" />
               </div>
+
               <div className="flex flex-col text-left">
-                <span className="text-[9px] font-mono text-[#F74A05] group-hover:text-[#111111] font-extrabold tracking-widest uppercase">ORISE CLUB</span>
-                <span className="font-['Vast_XXL',sans-serif] text-xs font-black text-white group-hover:text-[#111111] tracking-wider uppercase">KOLEKSİYONU KEŞFET</span>
+                <span className="text-[9px] font-mono text-[#F74A05] font-extrabold tracking-[0.25em] uppercase">ORISE CLUB</span>
+                <span className="font-['Vast_XXL',sans-serif] text-xs font-black text-white tracking-[0.15em] uppercase mt-0.5 group-hover:text-[#F74A05] transition-colors">Koleksiyonu Keşfet</span>
+              </div>
+
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white group-hover:translate-x-1 transition-transform duration-300">
+                <ArrowDown className="h-3.5 w-3.5" />
               </div>
             </button>
           </div>
@@ -601,7 +606,7 @@ function StoreContent() {
           )}
         </section>
 
-        {/* ÜRÜN VİTRİNİ: Mobilde Çift Sütun, Mükemmel Kart Oranları */}
+        {/* ÜRÜN VİTRİNİ */}
         <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-10 sm:py-20">
           <div className="mx-auto max-w-[1600px] px-3 sm:px-8 lg:px-12">
             <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 xl:gap-8">
