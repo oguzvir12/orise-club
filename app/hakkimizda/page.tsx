@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Sparkles, HeartHandshake, Compass, Users, ChevronRight } from 'lucide-react'
+import { ArrowLeft, HeartHandshake, Compass, Users, ChevronRight } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 
 export default function AboutPage() {
@@ -32,8 +32,7 @@ export default function AboutPage() {
             <span>Mağazaya Dön</span>
           </Link>
 
-          <div className="mx-auto inline-flex items-center gap-2.5 rounded-full border border-[#F74A05]/40 bg-[#F74A05]/10 px-6 py-2.5 text-xs font-bold uppercase tracking-[0.3em] text-[#F74A05] backdrop-blur-md shadow-[0_0_25px_rgba(247,74,5,0.25)]">
-            <Sparkles className="h-3.5 w-3.5" />
+          <div className="mx-auto inline-flex items-center rounded-full border border-[#F74A05]/40 bg-[#F74A05]/10 px-6 py-2.5 text-xs font-bold uppercase tracking-[0.3em] text-[#F74A05] backdrop-blur-md shadow-[0_0_25px_rgba(247,74,5,0.25)]">
             <span>KÜLTÜR & HAREKET</span>
           </div>
 
