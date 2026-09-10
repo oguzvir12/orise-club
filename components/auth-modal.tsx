@@ -363,7 +363,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 <>
                   <p><strong>1. Taraflar:</strong> İşbu sözleşme, ORISE STORE (Satıcı) ile siteye üye olan ve sipariş veren Alıcı arasındadır.</p>
                   <p><strong>2. Konu:</strong> Alıcının satıcıya ait internet sitesinden elektronik ortamda siparişini yaptığı ürünlerin satışı ve teslimi ile ilgili 6502 sayılı Kanun hükümleri uygulanır.</p>
-                  <p><strong>3. Teslimat ve Kargo:</strong> Ürünler, 2000 TL ve üzeri alışverişlerde ücretsiz kargo, altı tutarlarda ise 60 TL sabit kargo ücretiyle alıcının belirttiği adrese teslim edilir.</p>
+                  <p><strong>3. Teslimat ve Kargo:</strong> Ürünler, 2000 TL ve üzeri alışverişlerde ücretsiz kargo, altı tutarlarda ise 80 TL sabit kargo ücretiyle alıcının belirttiği adrese teslim edilir.</p>
                   <p><strong>4. Cayma Hakkı:</strong> Alıcı, teslim aldığı tarihten itibaren 14 gün içinde hiçbir gerekçe göstermeksizin cayma hakkını kullanabilir.</p>
                 </>
               )}
