@@ -22,7 +22,10 @@ import {
   Calendar,
   Users,
   Shield,
-  UserCheck
+  UserCheck,
+  Tag,
+  TrendingUp,
+  PackageCheck
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -87,9 +90,14 @@ export default function AdminPage() {
   const [events, setEvents] = useState<any[]>([])
   const [registrations, setRegistrations] = useState<any[]>([])
   const [profiles, setProfiles] = useState<any[]>([])
+  const [coupons, setCoupons] = useState<any[]>([])
   const [answerInputs, setAnswerInputs] = useState<{ [key: string]: string }>({})
 
   const [userRolesState, setUserRolesState] = useState<{ [key: string]: { role: string, branch: string } }>({})
+
+  // Kupon ekleme state'leri
+  const [newCouponCode, setNewCouponCode] = useState('')
+  const [newCouponDiscount, setNewCouponDiscount] = useState('10')
 
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
@@ -202,10 +210,43 @@ export default function AdminPage() {
         })
         setUserRolesState(roleMap)
       }
+
+      const { data: couponData } = await supabase.from('coupons').select('*').order('created_at', { ascending: false })
+      if (couponData) setCoupons(couponData)
+
     } catch (e) {
       console.error(e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleCreateCoupon = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newCouponCode.trim()) return
+
+    const { error } = await supabase.from('coupons').insert([{
+      code: newCouponCode.trim().toUpperCase(),
+      discount_percentage: Number(newCouponDiscount) || 10,
+      is_active: true
+    }])
+
+    if (!error) {
+      alert('İndirim kuponu başarıyla oluşturuldu!')
+      setNewCouponCode('')
+      setNewCouponDiscount('10')
+      fetchData()
+    } else {
+      alert('Hata: ' + error.message)
+    }
+  }
+
+  const handleDeleteCoupon = async (couponId: string) => {
+    if (!confirm('Bu kuponu silmek istediğinize emin misiniz?')) return
+    const { error } = await supabase.from('coupons').delete().eq('id', couponId)
+    if (!error) {
+      alert('Kupon silindi.')
+      fetchData()
     }
   }
 
@@ -623,6 +664,11 @@ export default function AdminPage() {
     ? registrations.filter((r: any) => visibleEvents.some(e => e.id === r.event_id))
     : registrations
 
+  // İstatistik KPI hesaplamaları
+  const totalRevenue = orders.filter(o => o.status !== 'İptal Edildi' && o.status !== 'İade Edildi').reduce((sum, o) => sum + Number(o.total_price || 0), 0)
+  const pendingOrdersCount = orders.filter(o => o.status === 'Ödeme Bekliyor' || o.status === 'Ödeme Onaylandı').length
+  const totalMembersCount = profiles.length
+
   if (!isLoggedIn) {
     return (
       <div className="fixed inset-0 z-50 bg-[#111111] text-[#FFFFFF] flex items-center justify-center p-6 font-sans">
@@ -649,6 +695,36 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-7xl space-y-12 mb-16">
         
+        {/* ÖZET İSTATİSTİK (KPI) KARTLARI */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="rounded-3xl border border-[#D8D6D2]/15 bg-[#111111] p-6 space-y-2 shadow-xl">
+            <div className="flex items-center justify-between text-[#F74A05]">
+              <span className="text-xs font-mono uppercase font-bold">Toplam Ciro</span>
+              <TrendingUp size={18} />
+            </div>
+            <div className="text-2xl font-black text-[#FFFFFF] font-mono">₺{totalRevenue.toLocaleString('tr-TR')}</div>
+            <p className="text-[10px] text-[#D8D6D2]/60 font-mono">İptal/İadeler hariç net ciro</p>
+          </div>
+
+          <div className="rounded-3xl border border-[#D8D6D2]/15 bg-[#111111] p-6 space-y-2 shadow-xl">
+            <div className="flex items-center justify-between text-[#F74A05]">
+              <span className="text-xs font-mono uppercase font-bold">Aktif Siparişler</span>
+              <PackageCheck size={18} />
+            </div>
+            <div className="text-2xl font-black text-[#FFFFFF] font-mono">{pendingOrdersCount} Adet</div>
+            <p className="text-[10px] text-[#D8D6D2]/60 font-mono">İşlem bekleyen siparişler</p>
+          </div>
+
+          <div className="rounded-3xl border border-[#D8D6D2]/15 bg-[#111111] p-6 space-y-2 shadow-xl">
+            <div className="flex items-center justify-between text-[#F74A05]">
+              <span className="text-xs font-mono uppercase font-bold">Toplam Kulüp Üyesi</span>
+              <Users size={18} />
+            </div>
+            <div className="text-2xl font-black text-[#FFFFFF] font-mono">{totalMembersCount} Kişi</div>
+            <p className="text-[10px] text-[#D8D6D2]/60 font-mono">Kayıtlı sporcu & müşteri</p>
+          </div>
+        </div>
+
         {/* SÜPER ADMIN: KULLANICI VE YETKİLENDİRME YÖNETİMİ */}
         {isSuperAdmin && (
           <div className="space-y-6 rounded-3xl border border-[#F74A05]/40 bg-[#111111] p-6 sm:p-8 shadow-2xl">
@@ -772,6 +848,45 @@ export default function AdminPage() {
                   </div>
                 ))
               )}
+            </div>
+          </div>
+        )}
+
+        {/* KUPON YÖNETİMİ (STORE ADMIN) */}
+        {isStoreAdmin && (
+          <div className="space-y-6">
+            <h2 className="text-base font-bold flex items-center gap-2 text-[#F74A05]"><Tag className="h-5 w-5" /><span>İndirim Kuponu Yönetimi</span></h2>
+            <div className="rounded-3xl border border-[#D8D6D2]/15 bg-[#111111] p-6 sm:p-8 shadow-xl space-y-6">
+              <form onSubmit={handleCreateCoupon} className="flex flex-col sm:flex-row gap-3 items-end">
+                <div className="w-full sm:flex-1 space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-[#D8D6D2]">Kupon Kodu</label>
+                  <input type="text" required placeholder="Örn: ORISE20" value={newCouponCode} onChange={(e) => setNewCouponCode(e.target.value)} className="w-full rounded-xl border border-[#D8D6D2]/20 bg-black px-4 py-3 text-xs text-white uppercase focus:border-[#F74A05]" />
+                </div>
+                <div className="w-full sm:w-48 space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-[#D8D6D2]">İndirim Oranı (%)</label>
+                  <input type="number" required placeholder="10" value={newCouponDiscount} onChange={(e) => setNewCouponDiscount(e.target.value)} className="w-full rounded-xl border border-[#D8D6D2]/20 bg-black px-4 py-3 text-xs text-white focus:border-[#F74A05]" />
+                </div>
+                <button type="submit" className="w-full sm:w-auto rounded-xl bg-[#F74A05] px-6 py-3 text-xs font-bold uppercase text-[#111111] cursor-pointer hover:bg-orange-600 transition-colors font-black">Kupon Oluştur</button>
+              </form>
+
+              <div className="space-y-2 pt-2">
+                <span className="text-[10px] font-mono text-[#D8D6D2]/60 uppercase">Aktif Kuponlar ({coupons.length}):</span>
+                {coupons.length === 0 ? (
+                  <p className="text-xs text-[#D8D6D2]/60 italic">Tanımlı kupon bulunmuyor.</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {coupons.map((c) => (
+                      <div key={c.id} className="p-4 rounded-2xl border border-[#D8D6D2]/15 bg-black/60 flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-sm text-white font-mono">{c.code}</div>
+                          <div className="text-xs text-[#F74A05]">%{c.discount_percentage} İndirim</div>
+                        </div>
+                        <button type="button" onClick={() => handleDeleteCoupon(c.id)} className="text-red-400 hover:text-red-300 p-2 cursor-pointer" title="Sil"><Trash2 size={14} /></button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
