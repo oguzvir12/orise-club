@@ -132,7 +132,6 @@ function StoreContent() {
     if (session?.user) {
       const { data: ordersData } = await supabase.from('orders').select('*').eq('user_id', session.user.id).eq('status', 'Teslim Edildi')
       if (ordersData) {
-        // items alanı içinden bu ürünün ID'sini içeren bir sipariş var mı kontrol ediyoruz
         const boughtThisProduct = ordersData.some(ord => {
           const items = ord.items || []
           return items.some((item: any) => item.id?.includes(productId) || item.product_id === productId)
@@ -301,24 +300,24 @@ function StoreContent() {
         {/* ÜRÜN DETAY MODALI */}
         {selectedProduct && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn overflow-y-auto">
-            <div className="relative w-full max-w-5xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-5 sm:p-10 shadow-2xl space-y-8 text-[#FFFFFF] max-h-[92vh] overflow-y-auto">
+            <div className="relative w-full max-w-5xl rounded-3xl border border-white/20 bg-[#111111] p-5 sm:p-10 shadow-2xl space-y-8 text-white max-h-[92vh] overflow-y-auto">
               
-              <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 pb-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <span className="text-xs font-mono tracking-widest text-[#F74A05] uppercase font-bold">ÜRÜN DETAYI</span>
-                <button type="button" onClick={closeProductDetail} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[#FFFFFF] hover:bg-[#F74A05] hover:text-[#111111] transition-colors cursor-pointer">
+                <button type="button" onClick={closeProductDetail} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-[#F74A05] hover:text-[#111111] transition-colors cursor-pointer">
                   <X size={18} />
                 </button>
               </div>
 
               <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
                 <div className="lg:col-span-6 space-y-4">
-                  <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-2xl border border-[#D8D6D2]/15 bg-[#111111] flex items-center justify-center">
+                  <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-2xl border border-white/15 bg-black flex items-center justify-center">
                     <Image src={currentImages[activeImageIdx]} alt={selectedProduct.title} fill priority className="object-contain p-4" />
                   </div>
                   {currentImages.length > 1 && (
                     <div className="flex items-center gap-3 overflow-x-auto pb-2">
                       {currentImages.map((img: string, idx: number) => (
-                        <button key={idx} type="button" onClick={() => setActiveImageIdx(idx)} className={`relative aspect-square w-16 flex-none overflow-hidden rounded-xl border transition-all cursor-pointer ${activeImageIdx === idx ? 'border-[#F74A05] ring-2 ring-[#F74A05]/50' : 'border-[#D8D6D2]/15 opacity-60'}`}>
+                        <button key={idx} type="button" onClick={() => setActiveImageIdx(idx)} className={`relative aspect-square w-16 flex-none overflow-hidden rounded-xl border transition-all cursor-pointer ${activeImageIdx === idx ? 'border-[#F74A05] ring-2 ring-[#F74A05]/50' : 'border-white/15 opacity-60'}`}>
                           <Image src={img} alt="" fill className="object-cover" />
                         </button>
                       ))}
@@ -330,23 +329,22 @@ function StoreContent() {
                   <div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-mono text-[#F74A05] uppercase font-bold">{selectedProduct.category_label || 'ÖZEL DROP'}</span>
-                      <button type="button" onClick={() => setIsSizeTableOpen(true)} className="inline-flex items-center gap-1.5 text-xs text-[#F74A05] underline font-mono hover:text-[#FFFFFF] cursor-pointer font-bold">
+                      <button type="button" onClick={() => setIsSizeTableOpen(true)} className="inline-flex items-center gap-1.5 text-xs text-[#F74A05] underline font-mono hover:text-white cursor-pointer font-bold">
                         <Ruler size={14} /> Beden Ölçü Tablosu
                       </button>
                     </div>
 
-                    <h2 className="mt-2 font-['Vast_XXL',sans-serif] text-xl sm:text-3xl font-black tracking-tight text-[#FFFFFF]">{selectedProduct.title}</h2>
+                    <h2 className="mt-2 font-['Vast_XXL',sans-serif] text-xl sm:text-3xl font-black tracking-tight text-white">{selectedProduct.title}</h2>
                     
-                    <div className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-black text-[#FFFFFF] flex items-center gap-3">
+                    <div className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-black text-white flex items-center gap-3">
                       <span>₺{Number(selectedProduct.price).toLocaleString('tr-TR')}</span>
                       {selectedProduct.compare_at_price && selectedProduct.compare_at_price > selectedProduct.price && (
-                        <span className="text-base text-[#D8D6D2] line-through font-mono">₺{Number(selectedProduct.compare_at_price).toLocaleString('tr-TR')}</span>
+                        <span className="text-base text-zinc-400 line-through font-mono">₺{Number(selectedProduct.compare_at_price).toLocaleString('tr-TR')}</span>
                       )}
                     </div>
 
-                    {/* Akıllı Genişletilebilir Açıklama Alanı */}
-                    <div className="mt-4 bg-black/40 p-4 rounded-2xl border border-[#D8D6D2]/10 space-y-2">
-                      <div className={`text-xs leading-relaxed text-[#D8D6D2] overflow-hidden transition-all duration-300 ${isDescExpanded ? 'max-h-96 overflow-y-auto pr-2' : 'max-h-20'}`} dangerouslySetInnerHTML={{ __html: selectedProduct.description }} />
+                    <div className="mt-4 bg-black/40 p-4 rounded-2xl border border-white/10 space-y-2">
+                      <div className={`text-xs leading-relaxed text-zinc-300 overflow-hidden transition-all duration-300 ${isDescExpanded ? 'max-h-96 overflow-y-auto pr-2' : 'max-h-20'}`} dangerouslySetInnerHTML={{ __html: selectedProduct.description }} />
                       <button 
                         type="button" 
                         onClick={() => setIsDescExpanded(!isDescExpanded)} 
@@ -358,10 +356,10 @@ function StoreContent() {
 
                     {selectedProduct.colors && selectedProduct.colors.length > 0 && (
                       <div className="mt-4 space-y-2">
-                        <div className="text-xs font-mono text-[#D8D6D2] uppercase">Renk: <strong className="text-[#FFFFFF]">{selectedColor}</strong></div>
+                        <div className="text-xs font-mono text-zinc-400 uppercase">Renk: <strong className="text-white">{selectedColor}</strong></div>
                         <div className="flex gap-2 flex-wrap">
                           {selectedProduct.colors.map((col: string) => (
-                            <button key={col} type="button" onClick={() => { setSelectedColor(col); setSelectedSize(''); }} className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${selectedColor === col ? 'border-[#F74A05] bg-[#F74A05]/20 text-[#F74A05]' : 'border-[#D8D6D2]/15 bg-[#111111] text-[#D8D6D2]'}`}>
+                            <button key={col} type="button" onClick={() => { setSelectedColor(col); setSelectedSize(''); }} className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${selectedColor === col ? 'border-[#F74A05] bg-[#F74A05]/20 text-[#F74A05]' : 'border-white/15 bg-black text-zinc-300'}`}>
                               {col}
                             </button>
                           ))}
@@ -370,7 +368,7 @@ function StoreContent() {
                     )}
 
                     <div className="mt-4 space-y-2">
-                      <div className="text-xs font-mono text-[#D8D6D2] uppercase">Beden Seçimi *Zorunlu</div>
+                      <div className="text-xs font-mono text-zinc-400 uppercase">Beden Seçimi *Zorunlu</div>
                       <div className="grid grid-cols-4 gap-2">
                         {['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'].map((s) => {
                           const rawSizes = selectedProduct.sizes || {}
@@ -384,9 +382,9 @@ function StoreContent() {
                               type="button" 
                               disabled={isSizeOut}
                               onClick={() => setSelectedSize(s)} 
-                              className={`rounded-xl py-2 text-xs font-bold transition-all flex flex-col items-center justify-center ${
-                                isSizeOut ? 'bg-[#111111] border border-[#D8D6D2]/10 text-[#D8D6D2]/40 line-through cursor-not-allowed' :
-                                selectedSize === s ? 'border-2 border-[#F74A05] bg-[#F74A05] text-[#111111] font-black cursor-pointer shadow-lg' : 'border border-[#D8D6D2]/15 bg-[#111111] text-[#F5F2EC] hover:border-[#F74A05]/50 cursor-pointer'
+                              className={`rounded-xl py-2.5 text-xs font-bold transition-all flex flex-col items-center justify-center ${
+                                isSizeOut ? 'bg-black/40 border border-white/5 text-zinc-600 line-through cursor-not-allowed' :
+                                selectedSize === s ? 'border-2 border-[#F74A05] bg-[#F74A05] text-[#111111] font-black cursor-pointer shadow-lg' : 'border border-white/15 bg-black text-white hover:border-[#F74A05]/50 cursor-pointer'
                               }`}
                             >
                               <span>{s}</span>
@@ -398,25 +396,24 @@ function StoreContent() {
                   </div>
 
                   <div className="pt-2">
-                    <button type="button" onClick={handleAddToCart} className={`flex w-full items-center justify-center gap-3 rounded-full py-3.5 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${isAdded ? 'bg-emerald-500 text-[#111111] font-black' : 'bg-[#F74A05] text-[#111111] hover:scale-[1.02] font-black shadow-[0_0_20px_rgba(247,74,5,0.4)]'}`}>
+                    <button type="button" onClick={handleAddToCart} className={`flex w-full items-center justify-center gap-3 rounded-full py-4 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${isAdded ? 'bg-emerald-500 text-[#111111] font-black' : 'bg-[#F74A05] text-[#111111] hover:scale-[1.02] font-black shadow-[0_0_25px_rgba(247,74,5,0.4)]'}`}>
                       {isAdded ? <><Check className="h-4 w-4" /><span>Sepete Eklendi</span></> : <><ShoppingBag className="h-4 w-4" /><span>Siparişe Ekle — ₺{selectedProduct.price}</span></>}
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Soru Sorma (Herkes) ve Yorum Yapma (Sadece Bu Ürünü Teslim Alanlar) Bölümü */}
-              <div className="border-t border-[#D8D6D2]/10 pt-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div className="border-t border-white/10 pt-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
                 <div className="space-y-4">
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 text-[#FFFFFF]"><HelpCircle className="text-[#F74A05]" size={16} /> Soru Sor ({questions.length})</h3>
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 text-white"><HelpCircle className="text-[#F74A05]" size={16} /> Soru Sor ({questions.length})</h3>
                   <form onSubmit={handleSendQuestion} className="space-y-3">
-                    <textarea rows={2} value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)} placeholder="Ürün hakkında soru sorun..." className="w-full rounded-xl border border-[#D8D6D2]/15 bg-black/40 p-3 text-xs text-[#FFFFFF] focus:outline-none focus:border-[#F74A05] resize-none" />
-                    <button type="submit" className="rounded-full bg-[#D8D6D2]/15 px-5 py-2 text-[11px] font-bold uppercase hover:bg-[#F74A05] hover:text-[#111111] transition-colors cursor-pointer text-[#FFFFFF]">Soru Gönder</button>
+                    <textarea rows={2} value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)} placeholder="Ürün hakkında soru sorun..." className="w-full rounded-xl border border-white/15 bg-black/40 p-3 text-xs text-white focus:outline-none focus:border-[#F74A05] resize-none" />
+                    <button type="submit" className="rounded-full bg-white/15 px-5 py-2 text-[11px] font-bold uppercase hover:bg-[#F74A05] hover:text-[#111111] transition-colors cursor-pointer text-white">Soru Gönder</button>
                   </form>
                   <div className="space-y-3 pt-2 max-h-56 overflow-y-auto">
                     {questions.map((q) => (
-                      <div key={q.id} className="p-3 rounded-xl border border-[#D8D6D2]/15 bg-black/40 space-y-1.5 text-xs">
-                        <p className="font-bold text-[#FFFFFF]">S: {q.question}</p>
+                      <div key={q.id} className="p-3 rounded-xl border border-white/15 bg-black/40 space-y-1.5 text-xs">
+                        <p className="font-bold text-white">S: {q.question}</p>
                         {q.answer && <p className="text-[#F74A05] bg-[#F74A05]/10 p-2.5 rounded-lg"><strong>Satıcı Yanıtı:</strong> {q.answer}</p>}
                       </div>
                     ))}
@@ -424,22 +421,22 @@ function StoreContent() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 text-[#FFFFFF]"><MessageSquare className="text-[#F74A05]" size={16} /> Yorumlar ({reviews.length})</h3>
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 text-white"><MessageSquare className="text-[#F74A05]" size={16} /> Yorumlar ({reviews.length})</h3>
                   {hasDeliveredThisProduct ? (
                     <form onSubmit={handleSendReview} className="space-y-3 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
-                      <textarea rows={2} value={newReviewComment} onChange={(e) => setNewReviewComment(e.target.value)} placeholder="Ürünü teslim aldıktan sonra yorum yapabilirsiniz..." className="w-full rounded-xl border border-[#D8D6D2]/15 bg-black/40 p-3 text-xs text-[#FFFFFF] focus:outline-none resize-none" />
+                      <textarea rows={2} value={newReviewComment} onChange={(e) => setNewReviewComment(e.target.value)} placeholder="Ürünü teslim aldıktan sonra yorum yapabilirsiniz..." className="w-full rounded-xl border border-white/15 bg-black/40 p-3 text-xs text-white focus:outline-none resize-none" />
                       <button type="submit" className="rounded-full bg-emerald-500 text-[#111111] font-bold px-5 py-2 text-[11px] uppercase cursor-pointer">Yorum Yap</button>
                     </form>
                   ) : (
-                    <p className="text-[11px] font-mono text-[#D8D6D2]/60 p-3 rounded-xl border border-[#D8D6D2]/10 bg-black/20">
+                    <p className="text-[11px] font-mono text-zinc-500 p-3 rounded-xl border border-white/10 bg-black/20">
                       Ürünü teslim aldıktan sonra yorum yapabilirsiniz.
                     </p>
                   )}
                   <div className="space-y-3 max-h-56 overflow-y-auto">
                     {reviews.map((r) => (
-                      <div key={r.id} className="p-3 rounded-xl border border-[#D8D6D2]/15 bg-black/40 space-y-1 text-xs font-mono">
-                        <span className="font-bold text-[#FFFFFF]">{r.user_name}</span>
-                        <p className="text-[#D8D6D2] font-sans">{r.comment}</p>
+                      <div key={r.id} className="p-3 rounded-xl border border-white/15 bg-black/40 space-y-1 text-xs font-mono">
+                        <span className="font-bold text-white">{r.user_name}</span>
+                        <p className="text-zinc-300 font-sans">{r.comment}</p>
                       </div>
                     ))}
                   </div>
@@ -450,26 +447,26 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Hero Alanı */}
-        <section className="relative pt-24 sm:pt-36 pb-12 sm:pb-24 px-4 sm:px-12 lg:px-20 select-none border-b border-[#D8D6D2]/10 overflow-hidden min-h-[75vh] sm:min-h-[85vh] flex items-end">
+        {/* HERO ALANI: Oran orantı ve mobilde kayma sorunları giderildi */}
+        <section className="relative pt-28 sm:pt-40 pb-16 sm:pb-28 px-4 sm:px-8 lg:px-16 select-none border-b border-white/10 overflow-hidden min-h-[70vh] sm:min-h-[85vh] flex items-end">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
               autoPlay 
               muted 
               loop 
               playsInline 
-              className="absolute inset-0 h-full w-full object-cover sm:object-cover object-center scale-100 sm:scale-105 brightness-90 contrast-110"
+              className="absolute inset-0 h-full w-full object-cover object-center scale-105 brightness-95 contrast-110"
             >
               <source src="/store-hero-video.mp4" type="video/mp4" />
               Tarayıcınız video etiketini desteklemiyor.
             </video>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-black/30" />
           </div>
 
-          <div className="hidden sm:flex absolute bottom-10 right-16 z-25">
+          <div className="hidden sm:flex absolute bottom-12 right-12 z-25">
             <button 
               onClick={scrollToCollection}
-              className="group relative flex items-center gap-3 rounded-full border-2 border-[#F74A05] bg-black/90 px-6 py-4 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.5)] transition-all hover:scale-110 hover:bg-[#F74A05] cursor-pointer"
+              className="group relative flex items-center gap-3 rounded-full border-2 border-[#F74A05] bg-black/90 px-6 py-4 backdrop-blur-2xl shadow-[0_0_40px_rgba(247,74,5,0.4)] transition-all hover:scale-105 hover:bg-[#F74A05] cursor-pointer"
               title="Koleksiyonu Keşfet"
             >
               <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F74A05] group-hover:bg-[#111111] text-[#111111] group-hover:text-[#F74A05] transition-colors shadow-lg">
@@ -486,11 +483,11 @@ function StoreContent() {
             </button>
           </div>
 
-          <div className="relative z-10 max-w-4xl space-y-4 sm:space-y-6 pb-4 sm:pb-0">
-            <h1 className="font-['Vast_XXL',sans-serif] text-4xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-[#FFFFFF] uppercase leading-[1.02] sm:leading-[0.95]" style={{ letterSpacing: '-0.03em' }}>
+          <div className="relative z-10 max-w-3xl space-y-4">
+            <h1 className="font-['Vast_XXL',sans-serif] text-3xl sm:text-6xl lg:text-8xl font-black tracking-tight text-white uppercase leading-[1.05]" style={{ letterSpacing: '-0.02em' }}>
               BİRLİKTE <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F74A05] via-orange-400 to-amber-300">HAREKET ET.</span>
             </h1>
-            <p className="text-xs sm:text-lg text-[#D8D6D2] font-sans max-w-lg font-normal leading-relaxed">
+            <p className="text-xs sm:text-base text-zinc-300 font-sans max-w-md font-normal leading-relaxed">
               Yeni nesil teknik spor giyim, kulüp ruhu ve sokak stili bir arada. Sınırları birlikte zorlayın.
             </p>
           </div>
@@ -499,8 +496,8 @@ function StoreContent() {
         <div id="collection"></div>
         
         {/* DERİN FİLTRELEME VE SIRALAMA ÇUBUĞU */}
-        <section className="border-b border-[#D8D6D2]/10 bg-[#111111]/95 sticky top-16 sm:top-20 z-30 backdrop-blur-2xl">
-          <div className="mx-auto max-w-7xl px-4 sm:px-10 lg:px-14 py-3 sm:py-5 flex flex-col lg:flex-row items-center justify-between gap-3">
+        <section className="border-b border-white/10 bg-[#111111]/95 sticky top-16 sm:top-24 z-30 backdrop-blur-2xl">
+          <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12 py-3 sm:py-4 flex flex-col lg:flex-row items-center justify-between gap-3">
             
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto py-1">
               {searchParam && (
@@ -514,7 +511,7 @@ function StoreContent() {
                 <button 
                   key={catKey} 
                   onClick={() => setActiveCategory(catKey)} 
-                  className={`rounded-full px-4 sm:px-6 py-1.5 sm:py-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${activeCategory === catKey ? 'bg-[#F74A05] text-[#111111] font-black shadow-[0_0_20px_rgba(247,74,5,0.4)]' : 'border border-[#D8D6D2]/15 bg-[#111111]/60 text-[#D8D6D2] hover:text-[#FFFFFF] hover:border-[#F74A05]/50'}`}
+                  className={`rounded-full px-4 sm:px-5 py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer ${activeCategory === catKey ? 'bg-[#F74A05] text-[#111111] font-black shadow-[0_0_20px_rgba(247,74,5,0.4)]' : 'border border-white/15 bg-black/40 text-zinc-300 hover:text-white hover:border-[#F74A05]/50'}`}
                 >
                   {ALL_CATEGORIES_MAP[catKey] || catKey.toUpperCase()}
                 </button>
@@ -525,7 +522,7 @@ function StoreContent() {
               <button 
                 type="button" 
                 onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
-                className={`flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0 ${isFilterPanelOpen || selectedColorFilter !== 'all' || selectedSizeFilter !== 'all' ? 'border-[#F74A05] bg-[#F74A05]/20 text-[#F74A05]' : 'border-[#D8D6D2]/15 bg-black/40 text-[#D8D6D2] hover:text-white'}`}
+                className={`flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shrink-0 ${isFilterPanelOpen || selectedColorFilter !== 'all' || selectedSizeFilter !== 'all' ? 'border-[#F74A05] bg-[#F74A05]/20 text-[#F74A05]' : 'border-white/15 bg-black/40 text-zinc-300 hover:text-white'}`}
               >
                 <SlidersHorizontal size={13} />
                 <span>Detaylı Filtre</span>
@@ -534,9 +531,9 @@ function StoreContent() {
                 )}
               </button>
 
-              <div className="flex items-center gap-2 shrink-0 bg-black/40 border border-[#D8D6D2]/15 rounded-full px-3.5 py-2">
+              <div className="flex items-center gap-2 shrink-0 bg-black/40 border border-white/15 rounded-full px-3.5 py-2">
                 <ArrowUpDown className="h-3 w-3 text-[#F74A05]" />
-                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-transparent text-[10px] sm:text-xs font-mono text-[#FFFFFF] focus:outline-none cursor-pointer">
+                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="bg-transparent text-[10px] sm:text-xs font-mono text-white focus:outline-none cursor-pointer">
                   <option value="default" className="bg-[#111111]">Önerilen Sıralama</option>
                   <option value="asc" className="bg-[#111111]">Fiyat: Ucuzdan Pahalıya</option>
                   <option value="desc" className="bg-[#111111]">Fiyat: Pahalıdan Ucuza</option>
@@ -546,16 +543,15 @@ function StoreContent() {
 
           </div>
 
-          {/* Derin Filtreleme Açılır Panel */}
           {isFilterPanelOpen && (
-            <div className="mx-auto max-w-7xl px-4 sm:px-10 lg:px-14 pb-5 pt-2 border-t border-[#D8D6D2]/10 flex flex-wrap items-center gap-4 animate-fadeIn text-xs font-mono">
+            <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12 pb-5 pt-2 border-t border-white/10 flex flex-wrap items-center gap-4 animate-fadeIn text-xs font-mono">
               
               <div className="flex items-center gap-2">
-                <span className="text-[#D8D6D2] uppercase font-bold text-[11px]">Renk:</span>
+                <span className="text-zinc-400 uppercase font-bold text-[11px]">Renk:</span>
                 <div className="flex flex-wrap gap-1">
                   <button 
                     onClick={() => setSelectedColorFilter('all')}
-                    className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedColorFilter === 'all' ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                    className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedColorFilter === 'all' ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-white/20 text-zinc-300'}`}
                   >
                     Tümü
                   </button>
@@ -563,7 +559,7 @@ function StoreContent() {
                     <button 
                       key={col}
                       onClick={() => setSelectedColorFilter(col)}
-                      className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedColorFilter === col ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                      className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedColorFilter === col ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-white/20 text-zinc-300'}`}
                     >
                       {col}
                     </button>
@@ -572,11 +568,11 @@ function StoreContent() {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-[#D8D6D2] uppercase font-bold text-[11px]">Beden:</span>
+                <span className="text-zinc-400 uppercase font-bold text-[11px]">Beden:</span>
                 <div className="flex flex-wrap gap-1">
                   <button 
                     onClick={() => setSelectedSizeFilter('all')}
-                    className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedSizeFilter === 'all' ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                    className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedSizeFilter === 'all' ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-white/20 text-zinc-300'}`}
                   >
                     Tümü
                   </button>
@@ -584,7 +580,7 @@ function StoreContent() {
                     <button 
                       key={size}
                       onClick={() => setSelectedSizeFilter(size)}
-                      className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedSizeFilter === size ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-[#D8D6D2]/20 text-[#D8D6D2]'}`}
+                      className={`px-2.5 py-1 rounded-full border transition-all cursor-pointer text-[11px] ${selectedSizeFilter === size ? 'bg-[#F74A05] text-[#111111] font-bold border-[#F74A05]' : 'bg-black/40 border-white/20 text-zinc-300'}`}
                     >
                       {size}
                     </button>
@@ -605,10 +601,10 @@ function StoreContent() {
           )}
         </section>
 
-        {/* Ürün Vitrini (Grid) */}
-        <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-12 sm:py-28">
-          <div className="mx-auto max-w-[1600px] px-4 sm:px-8 lg:px-12">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-8">
+        {/* ÜRÜN VİTRİNİ: Mobilde Çift Sütun, Mükemmel Kart Oranları */}
+        <section className="bg-gradient-to-b from-[#111111] via-[#111111]/80 to-[#111111] py-10 sm:py-20">
+          <div className="mx-auto max-w-[1600px] px-3 sm:px-8 lg:px-12">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 xl:gap-8">
               {filteredProducts.map((product) => {
                 const productImages = product.image_urls && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '/placeholder.svg']
                 const totalStock = product.sizes ? Object.values(product.sizes as Record<string, any>).reduce((acc: number, curr: any) => {
@@ -623,29 +619,29 @@ function StoreContent() {
                   <div 
                     key={product.id} 
                     onClick={() => openProductDetail(product)} 
-                    className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#D8D6D2]/15 bg-[#111111]/60 p-4 sm:p-5 backdrop-blur-xl transition-all duration-500 ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-[#F74A05]/60 hover:bg-[#111111] cursor-pointer shadow-[0_10px_30px_rgba(0,0,0,0.5)]'}`}
+                    className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-black/60 p-3 sm:p-5 backdrop-blur-xl transition-all duration-500 ${isSoldOut ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-[#F74A05]/60 hover:bg-black cursor-pointer shadow-xl'}`}
                   >
                     <div>
-                      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#111111] flex items-center justify-center border border-[#D8D6D2]/10">
+                      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl sm:rounded-2xl bg-black flex items-center justify-center border border-white/10">
                         {isSoldOut && (
                           <div className="absolute inset-0 z-20 bg-black/75 flex items-center justify-center">
-                            <span className="rounded-xl bg-[#111111] border border-[#D8D6D2]/20 px-6 py-2.5 text-xs font-black uppercase text-[#D8D6D2]">TÜKENDİ</span>
+                            <span className="rounded-xl bg-[#111111] border border-white/20 px-4 py-2 text-[10px] sm:text-xs font-black uppercase text-zinc-300">TÜKENDİ</span>
                           </div>
                         )}
-                        <Image src={productImages[0]} alt={product.title} fill className="object-contain p-4 transition-transform duration-700 group-hover:scale-105" />
+                        <Image src={productImages[0]} alt={product.title} fill className="object-contain p-2 sm:p-4 transition-transform duration-700 group-hover:scale-105" />
                       </div>
 
-                      <div className="mt-4 space-y-1">
-                        <div className="text-[9px] font-mono text-[#F74A05] uppercase font-bold tracking-widest">{product.category_label || 'ÖZEL DROP'}</div>
-                        <h3 className="font-['Vast_XXL',sans-serif] text-base sm:text-lg font-bold text-[#FFFFFF] group-hover:text-[#F74A05] transition-colors tracking-tight line-clamp-1">{product.title}</h3>
+                      <div className="mt-3 sm:mt-4 space-y-1">
+                        <div className="text-[8px] sm:text-[9px] font-mono text-[#F74A05] uppercase font-bold tracking-widest">{product.category_label || 'ÖZEL DROP'}</div>
+                        <h3 className="font-['Vast_XXL',sans-serif] text-xs sm:text-lg font-bold text-white group-hover:text-[#F74A05] transition-colors tracking-tight line-clamp-1">{product.title}</h3>
                       </div>
                     </div>
 
-                    <div className="mt-6 flex items-center justify-between border-t border-[#D8D6D2]/10 pt-3">
-                      <div className="text-base sm:text-lg font-black text-[#FFFFFF]">₺{Number(product.price).toLocaleString('tr-TR')}</div>
-                      <div className="inline-flex items-center gap-1.5 rounded-full border border-[#D8D6D2]/20 px-3.5 py-1.5 text-[11px] font-bold uppercase bg-[#D8D6D2]/10 text-[#F5F2EC] group-hover:bg-[#F74A05] group-hover:text-[#111111] group-hover:border-[#F74A05] transition-all">
+                    <div className="mt-4 sm:mt-6 flex items-center justify-between border-t border-white/10 pt-2.5 sm:pt-3">
+                      <div className="text-xs sm:text-lg font-black text-white">₺{Number(product.price).toLocaleString('tr-TR')}</div>
+                      <div className="inline-flex items-center gap-1 rounded-full border border-white/20 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[10px] sm:text-[11px] font-bold uppercase bg-white/10 text-white group-hover:bg-[#F74A05] group-hover:text-[#111111] group-hover:border-[#F74A05] transition-all">
                         <span>İncele</span>
-                        <ArrowUpRight className="h-3.5 w-3.5" />
+                        <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                       </div>
                     </div>
                   </div>
@@ -656,10 +652,9 @@ function StoreContent() {
         </section>
       </div>
 
-      {/* Yasal Çerez (KVKK) Onay Banner'ı */}
       {!cookieConsent && (
-        <div className="fixed bottom-0 inset-x-0 z-50 bg-[#111111]/98 border-t border-[#D8D6D2]/20 p-4 sm:p-5 backdrop-blur-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
-          <p className="text-xs text-[#D8D6D2] max-w-4xl font-sans">
+        <div className="fixed bottom-0 inset-x-0 z-50 bg-[#111111]/98 border-t border-white/20 p-4 sm:p-5 backdrop-blur-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
+          <p className="text-xs text-zinc-300 max-w-4xl font-sans">
             Deneyiminizi geliştirmek ve yasal yükümlülüklerimizi yerine getirmek amacıyla çerezler kullanmaktayız. Sitemizi kullanarak çerez politikamızı kabul etmiş olursunuz.
           </p>
           <div className="flex items-center gap-3 shrink-0">
@@ -673,71 +668,55 @@ function StoreContent() {
         </div>
       )}
 
-      {/* Beden Ölçü Tablosu Modal */}
       {isSizeTableOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setIsSizeTableOpen(false)}>
-          <div className="relative w-full max-w-4xl rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 sm:p-8 shadow-2xl space-y-6 text-[#FFFFFF] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 pb-4">
+          <div className="relative w-full max-w-4xl rounded-3xl border border-white/20 bg-[#111111] p-6 sm:p-8 shadow-2xl space-y-6 text-white max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">
-                <h3 className="text-base font-black uppercase tracking-wider text-[#FFFFFF]">ÖLÇÜ TABLOSU</h3>
-                <div className="flex bg-[#111111] rounded-full p-1 border border-[#D8D6D2]/15">
-                  <button type="button" onClick={() => setActiveTabTable('erkek')} className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase cursor-pointer ${activeTabTable === 'erkek' ? 'bg-[#F74A05] text-[#111111]' : 'text-[#D8D6D2]'}`}>Erkek Tablosu</button>
-                  <button type="button" onClick={() => setActiveTabTable('kadin')} className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase cursor-pointer ${activeTabTable === 'kadin' ? 'bg-[#F74A05] text-[#111111]' : 'text-[#D8D6D2]'}`}>Kadın Tablosu</button>
+                <h3 className="text-base font-black uppercase tracking-wider text-white">ÖLÇÜ TABLOSU</h3>
+                <div className="flex bg-black rounded-full p-1 border border-white/15">
+                  <button type="button" onClick={() => setActiveTabTable('erkek')} className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase cursor-pointer ${activeTabTable === 'erkek' ? 'bg-[#F74A05] text-[#111111]' : 'text-zinc-300'}`}>Erkek Tablosu</button>
+                  <button type="button" onClick={() => setActiveTabTable('kadin')} className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase cursor-pointer ${activeTabTable === 'kadin' ? 'bg-[#F74A05] text-[#111111]' : 'text-zinc-300'}`}>Kadın Tablosu</button>
                 </div>
               </div>
-              <button type="button" onClick={() => setIsSizeTableOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#FFFFFF] hover:bg-[#F74A05] hover:text-[#111111]"><X className="h-4 w-4" /></button>
+              <button type="button" onClick={() => setIsSizeTableOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-[#F74A05] hover:text-[#111111]"><X className="h-4 w-4" /></button>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-center text-xs font-mono border border-[#D8D6D2]/15">
-                <thead className="bg-[#111111] text-[#F74A05]">
+              <table className="w-full text-center text-xs font-mono border border-white/15">
+                <thead className="bg-black text-[#F74A05]">
                   <tr>
-                    <th className="p-3 border border-[#D8D6D2]/15 text-left">ÖLÇÜM YERİ / BEDEN</th>
-                    <th className="p-3 border border-[#D8D6D2]/15">XS</th>
-                    <th className="p-3 border border-[#D8D6D2]/15">S</th>
-                    <th className="p-3 border border-[#D8D6D2]/15">M</th>
-                    <th className="p-3 border border-[#D8D6D2]/15">L</th>
-                    <th className="p-3 border border-[#D8D6D2]/15">XL</th>
-                    <th className="p-3 border border-[#D8D6D2]/15">2XL</th>
-                    <th className="p-3 border border-[#D8D6D2]/15">3XL</th>
-                    {activeTabTable === 'erkek' && <th className="p-3 border border-[#D8D6D2]/15">4XL</th>}
+                    <th className="p-3 border border-white/15 text-left">ÖLÇÜM YERİ / BEDEN</th>
+                    <th className="p-3 border border-white/15">XS</th>
+                    <th className="p-3 border border-white/15">S</th>
+                    <th className="p-3 border border-white/15">M</th>
+                    <th className="p-3 border border-white/15">L</th>
+                    <th className="p-3 border border-white/15">XL</th>
+                    <th className="p-3 border border-white/15">2XL</th>
+                    <th className="p-3 border border-white/15">3XL</th>
+                    {activeTabTable === 'erkek' && <th className="p-3 border border-white/15">4XL</th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#D8D6D2]/15 text-[#D8D6D2]">
+                <tbody className="divide-y divide-white/15 text-zinc-300">
                   {activeTabTable === 'kadin' ? (
                     <>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">OMUZDAN BOY</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">GÖĞÜS</td><td>48</td><td>50</td><td>52</td><td>54</td><td>56</td><td>58</td><td>60</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">ETEK</td><td>48</td><td>50</td><td>52</td><td>54</td><td>56</td><td>58</td><td>60</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">OMUZDAN OMUZA</td><td>45</td><td>47</td><td>49</td><td>51</td><td>53</td><td>55</td><td>57</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">YAKA AÇIKLIĞI</td><td>17.5</td><td>18</td><td>18.5</td><td>19</td><td>19.5</td><td>20</td><td>20.5</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>8.75</td><td>9</td><td>9.25</td><td>9.5</td><td>9.75</td><td>10</td><td>10.25</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOLEVİ OMUZDAN DİK</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td><td>29.5</td><td>30.5</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL BOYU</td><td>15.25</td><td>16</td><td>16.75</td><td>17.5</td><td>18.25</td><td>19</td><td>19.75</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">PAZU</td><td>18.5</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL AĞZI</td><td>16.25</td><td>17</td><td>17.75</td><td>18.5</td><td>19.25</td><td>20</td><td>20.75</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">YAKA YÜKSEKLİĞİ</td><td>1.5</td><td>1.5</td><td>1.5</td><td>1.5</td><td>1.5</td><td>1.5</td><td>1.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/15 text-left">OMUZDAN BOY</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/15 text-left">GÖĞÜS</td><td>48</td><td>50</td><td>52</td><td>54</td><td>56</td><td>58</td><td>60</td></tr>
+                      <tr><td className="p-2.5 border border-white/15 text-left">ETEK</td><td>48</td><td>50</td><td>52</td><td>54</td><td>56</td><td>58</td><td>60</td></tr>
+                      <tr><td className="p-2.5 border border-white/15 text-left">OMUZDAN OMUZA</td><td>45</td><td>47</td><td>49</td><td>51</td><td>53</td><td>55</td><td>57</td></tr>
                     </>
                   ) : (
                     <>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">OMUZDAN ÖN BOY</td><td>68</td><td>70</td><td>72</td><td>74</td><td>76</td><td>78</td><td>80</td><td>82</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">OMUZDAN ARKA BOY</td><td>69</td><td>71</td><td>73</td><td>75</td><td>77</td><td>79</td><td>81</td><td>83</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">GÖĞÜS</td><td>54</td><td>56</td><td>58</td><td>60</td><td>62</td><td>64</td><td>66</td><td>68</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">ETEK</td><td>54</td><td>56</td><td>58</td><td>60</td><td>62</td><td>64</td><td>66</td><td>—</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">OMUZDAN OMUZA</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td><td>68</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">YAKA AÇIKLIĞI</td><td>19</td><td>19.5</td><td>20</td><td>20.5</td><td>21</td><td>21.5</td><td>22</td><td>22.5</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">ÖN YAKA DÜŞÜKLÜĞÜ</td><td>10.5</td><td>10.75</td><td>11</td><td>11.25</td><td>11.5</td><td>11.75</td><td>12</td><td>12.25</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">ARKA YAKA DÜŞÜKLÜĞÜ</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.5</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOLEVİ OMUZDAN DİK</td><td>29</td><td>30</td><td>31</td><td>32</td><td>33</td><td>34</td><td>35</td><td>36</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">KOL BOYU</td><td>19.5</td><td>20.5</td><td>21.5</td><td>22.5</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td></tr>
-                      <tr><td className="p-2.5 border border-[#D8D6D2]/15 text-left">PAZU</td><td>21.5</td><td>22</td><td>23.5</td><td>24.5</td><td>25.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
+                      <tr><td className="p-2.5 border border-white/15 text-left">OMUZDAN ÖN BOY</td><td>68</td><td>70</td><td>72</td><td>74</td><td>76</td><td>78</td><td>80</td><td>82</td></tr>
+                      <tr><td className="p-2.5 border border-white/15 text-left">OMUZDAN ARKA BOY</td><td>69</td><td>71</td><td>73</td><td>75</td><td>77</td><td>79</td><td>81</td><td>83</td></tr>
+                      <tr><td className="p-2.5 border border-white/15 text-left">GÖĞÜS</td><td>54</td><td>56</td><td>58</td><td>60</td><td>62</td><td>64</td><td>66</td><td>68</td></tr>
+                      <tr><td className="p-2.5 border border-white/15 text-left">OMUZDAN OMUZA</td><td>52.5</td><td>54</td><td>55.5</td><td>57</td><td>58.5</td><td>60</td><td>61.5</td><td>68</td></tr>
                     </>
                   )}
                 </tbody>
               </table>
             </div>
-            <p className="text-[10px] text-[#D8D6D2]/60 font-mono text-center">Tüm ölçüler santimetre (cm) cinsinden verilmiştir. Model: ORISE CLUB Ölçü Standardı (27.08.2026).</p>
+            <p className="text-[10px] text-zinc-500 font-mono text-center">Tüm ölçüler santimetre (cm) cinsinden verilmiştir. Model: ORISE CLUB Ölçü Standardı.</p>
           </div>
         </div>
       )}
