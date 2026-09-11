@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ShoppingBag, User, LogOut, Menu, Search, X } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Menu, Search, X, PackageCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/logo'
 import { useCart } from '@/components/cart/cart-provider'
@@ -82,8 +82,13 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className={cn('fixed inset-x-0 top-0 z-50 transition-all duration-300', scrolled ? 'border-b border-white/10 bg-[#111111]/95 shadow-2xl backdrop-blur-md' : 'border-b border-transparent bg-gradient-to-b from-black/80 via-black/40 to-transparent')}>
-        <div className="mx-auto flex h-16 sm:h-24 max-w-7xl items-center justify-between px-4 sm:px-8 lg:px-12">
+      {/* ÜST KAMPANYA VE DUYURU ÇUBUĞU */}
+      <div className="fixed inset-x-0 top-0 z-[60] bg-[#F74A05] text-[#111111] py-2 px-4 text-center font-mono text-[11px] font-black uppercase tracking-wider">
+        2000 TL ve Üzeri Alışverişlerde Kargo Ücretsiz!
+      </div>
+
+      <header className={cn('fixed inset-x-0 top-8 z-50 transition-all duration-300', scrolled ? 'border-b border-white/10 bg-[#111111]/95 shadow-2xl backdrop-blur-md top-8' : 'border-b border-transparent bg-gradient-to-b from-black/80 via-black/40 to-transparent')}>
+        <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-4 sm:px-8 lg:px-12">
 
           <div className="flex items-center gap-3 z-20">
             <button 
@@ -97,6 +102,9 @@ export function SiteHeader() {
             
             <nav className="hidden sm:flex items-center gap-6 font-mono text-xs uppercase tracking-widest text-zinc-300">
               <Link href="/store" className="hover:text-[#F74A05] transition-colors">Mağaza</Link>
+              <Link href="/track-order" className="hover:text-[#F74A05] transition-colors flex items-center gap-1.5 text-[#F74A05] font-bold">
+                <PackageCheck size={14} /> Sipariş Takibi
+              </Link>
               <Link href="/community" className="hover:text-[#F74A05] transition-colors">Topluluk</Link>
               <Link href="/hakkimizda" className="hover:text-[#F74A05] transition-colors">Hakkımızda</Link>
             </nav>
@@ -147,7 +155,7 @@ export function SiteHeader() {
         </div>
 
         {isSearchOpen && (
-          <div className="absolute top-16 sm:top-24 inset-x-0 bg-[#111111]/98 border-b border-white/10 p-4 sm:p-6 shadow-2xl animate-fadeIn">
+          <div className="absolute top-16 sm:top-20 inset-x-0 bg-[#111111]/98 border-b border-white/10 p-4 sm:p-6 shadow-2xl animate-fadeIn">
             <form onSubmit={handleSearch} className="mx-auto max-w-2xl flex items-center gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
@@ -173,6 +181,9 @@ export function SiteHeader() {
         {mobileMenuOpen && (
           <div className="sm:hidden absolute top-16 inset-x-0 bg-[#111111]/98 border-b border-white/10 p-6 space-y-4 font-mono text-xs uppercase font-bold animate-fadeIn shadow-2xl">
             <Link href="/store" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-zinc-200 hover:text-[#F74A05] border-b border-white/5">Mağaza Vitrini</Link>
+            <Link href="/track-order" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-[#F74A05] border-b border-white/5 flex items-center gap-2">
+              <PackageCheck size={16} /> Sipariş Takibi
+            </Link>
             <Link href="/community" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-zinc-200 hover:text-[#F74A05] border-b border-white/5">Topluluk & Etkinlikler</Link>
             <Link href="/hakkimizda" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-zinc-200 hover:text-[#F74A05] border-b border-white/5">Hakkımızda</Link>
             <div className="pt-2 flex flex-col gap-3">
