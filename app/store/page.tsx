@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -24,7 +24,8 @@ import {
   ArrowDown,
   Filter,
   SlidersHorizontal,
-  Compass
+  Compass,
+  Zap
 } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -103,6 +104,23 @@ function StoreContent() {
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) setCurrentUser(session.user)
   }
+
+  const closeProductDetail = useCallback(() => {
+    setSelectedProduct(null)
+    router.push('/store', { scroll: false })
+  }, [router])
+
+  // ESC tuşu ile modalı kapatma
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeProductDetail()
+        setIsSizeTableOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [closeProductDetail])
 
   useEffect(() => {
     if (productParam && products.length > 0) {
@@ -194,11 +212,6 @@ function StoreContent() {
     fetchProductInteractions(product.id)
   }
 
-  const closeProductDetail = () => {
-    setSelectedProduct(null)
-    router.push('/store', { scroll: false })
-  }
-
   const handleAddToCart = () => {
     if (!selectedProduct) return
     if (!selectedSize) {
@@ -227,6 +240,36 @@ function StoreContent() {
 
     setIsAdded(true)
     setTimeout(() => setIsAdded(false), 2000)
+  }
+
+  const handleBuyNow = () => {
+    if (!selectedProduct) return
+    if (!selectedSize) {
+      alert('Lütfen hemen almadan önce bir beden seçiniz!')
+      return
+    }
+
+    const rawSizes = selectedProduct.sizes || {}
+    const colorStockMap = rawSizes[selectedColor] || (typeof rawSizes.XS === 'number' ? rawSizes : {})
+    const stockCount = colorStockMap[selectedSize] ?? 0
+
+    if (stockCount <= 0) {
+      alert(`Seçtiğiniz ${selectedSize} beden (${selectedColor}) stokta bulunmuyor!`)
+      return
+    }
+
+    const image = selectedProduct.image_urls?.[0] || selectedProduct.image_url || '/placeholder.svg'
+
+    addItem({
+      id: `${selectedProduct.id}-${selectedColor}-${selectedSize}`,
+      name: `${selectedProduct.title} (${selectedColor}) - [${selectedSize}]`,
+      price: selectedProduct.price,
+      image: image,
+      type: 'product',
+    })
+
+    closeProductDetail()
+    router.push('/checkout')
   }
 
   const scrollToCollection = () => {
@@ -298,10 +341,10 @@ function StoreContent() {
     <div className="relative min-h-screen bg-[#111111] text-[#F5F2EC] font-sans selection:bg-[#F74A05] selection:text-white flex flex-col justify-between">
       
       <div>
-        {/* ÜRÜN DETAY MODALI */}
+        {/* ÜRÜN DETAY MODALI (Arka plana tıklayınca kapanır) */}
         {selectedProduct && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn overflow-y-auto">
-            <div className="relative w-full max-w-5xl rounded-3xl border border-white/20 bg-[#111111] p-5 sm:p-10 shadow-2xl space-y-8 text-white max-h-[92vh] overflow-y-auto">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-xl animate-fadeIn overflow-y-auto" onClick={closeProductDetail}>
+            <div className="relative w-full max-w-5xl rounded-3xl border border-white/20 bg-[#111111] p-5 sm:p-10 shadow-2xl space-y-8 text-white max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <span className="text-xs font-mono tracking-widest text-[#F74A05] uppercase font-bold">ÜRÜN DETAYI</span>
@@ -411,11 +454,17 @@ function StoreContent() {
                   </div>
 
                   <div className="pt-2 space-y-3">
-                    <button type="button" onClick={handleAddToCart} className={`flex w-full items-center justify-center gap-3 rounded-full py-4 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${isAdded ? 'bg-emerald-500 text-[#111111] font-black' : 'bg-[#F74A05] text-[#111111] hover:scale-[1.02] font-black shadow-[0_0_25px_rgba(247,74,5,0.4)]'}`}>
-                      {isAdded ? <><Check className="h-4 w-4" /><span>Sepete Eklendi</span></> : <><ShoppingBag className="h-4 w-4" /><span>Siparişe Ekle — ₺{selectedProduct.price}</span></>}
-                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={handleAddToCart} className={`flex items-center justify-center gap-2 rounded-full py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${isAdded ? 'bg-emerald-500 text-[#111111] font-black' : 'border border-[#F74A05] text-[#F74A05] hover:bg-[#F74A05] hover:text-[#111111]'}`}>
+                        {isAdded ? <><Check className="h-4 w-4" /><span>Eklendi</span></> : <><ShoppingBag className="h-4 w-4" /><span>Sepete Ekle</span></>}
+                      </button>
 
-                    {/* WHATSAPP İLE HIZLI SATIN AL BUTONU */}
+                      <button type="button" onClick={handleBuyNow} className="flex items-center justify-center gap-2 rounded-full bg-[#F74A05] py-3.5 text-xs font-black uppercase tracking-wider text-[#111111] hover:scale-[1.02] transition-all cursor-pointer shadow-[0_0_20px_rgba(247,74,5,0.4)]">
+                        <Zap className="h-4 w-4 fill-current" /><span>Hemen Al</span>
+                      </button>
+                    </div>
+
+                    {/* WHATSAPP İLE HIZLI İLETİŞİM */}
                     <a 
                       href={`https://wa.me/905070820800?text=Merhaba,%20${encodeURIComponent(selectedProduct.title)}%20ürününden%20sipariş%20vermek%20istiyorum.%20Seçtiğim%20Renk:%20${selectedColor}%20-%20Beden:%20${selectedSize || 'Belirtilmedi'}`}
                       target="_blank" 
@@ -425,7 +474,7 @@ function StoreContent() {
                       <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
                         <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
                       </svg>
-                      <span>WhatsApp ile Hemen Satın Al</span>
+                      <span>WhatsApp ile Bilgi Al / Sipariş Ver</span>
                     </a>
                   </div>
                 </div>
@@ -475,7 +524,7 @@ function StoreContent() {
           </div>
         )}
 
-        {/* HERO ALANI: Ultra Premium, Şık Lüks Keşfet Butonu */}
+        {/* HERO ALANI */}
         <section className="relative pt-28 sm:pt-40 pb-16 sm:pb-28 px-4 sm:px-8 lg:px-16 select-none border-b border-white/10 overflow-hidden min-h-[70vh] sm:min-h-[85vh] flex items-end">
           <div className="absolute inset-0 z-0 overflow-hidden bg-[#111111]">
             <video 
@@ -491,7 +540,6 @@ function StoreContent() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/40 to-black/30" />
           </div>
 
-          {/* PRESTİJLİ LÜKS KEŞFET BUTONU */}
           <div className="hidden sm:flex absolute bottom-12 right-12 z-25">
             <button 
               onClick={scrollToCollection}
