@@ -1,0 +1,208 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useCart } from '@/components/cart/cart-provider'
+import { supabase } from '@/lib/supabase'
+import { ShoppingBag, ShieldCheck, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import Link from 'next/link'
+import Image from 'next/image'
+
+export default function CheckoutPage() {
+  const router = useRouter()
+  const { items, clearCart } = useCart()
+
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
+  const [city, setCity] = useState('İstanbul')
+  const [loading, setLoading] = useState(false)
+  const [successOrderCode, setSuccessOrderCode] = useState<string | null>(null)
+
+  const subtotal = items.reduce((acc, item) => acc + item.price * (item.quantity || 1), 0)
+  const shippingFee = subtotal >= 2000 || subtotal === 0 ? 0 : 150
+  const grandTotal = subtotal + shippingFee
+
+  const handleCheckout = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (items.length === 0) {
+      alert('Sepetiniz boş!')
+      return
+    }
+
+    setLoading(true)
+    const orderCode = 'ORISE-' + Math.floor(100000 + Math.random() * 900000)
+
+    const { error } = await supabase.from('orders').insert([{
+      order_code: orderCode,
+      full_name: fullName,
+      email: email,
+      phone: phone,
+      address: address,
+      city: city,
+      total_amount: grandTotal,
+      shipping_fee: shippingFee,
+      status: 'Sipariş Alındı',
+      items: items
+    }])
+
+    setLoading(false)
+
+    if (error) {
+      console.error(error)
+      alert('Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.')
+    } else {
+      setSuccessOrderCode(orderCode)
+      clearCart()
+    }
+  }
+
+  if (successOrderCode) {
+    return (
+      <div className="min-h-screen bg-[#111111] text-[#F5F2EC] flex items-center justify-center px-4 py-20">
+        <div className="max-w-md w-full bg-black/60 border border-white/20 p-8 rounded-3xl text-center space-y-6 backdrop-blur-xl shadow-2xl">
+          <div className="flex justify-center text-emerald-400">
+            <CheckCircle2 size={64} />
+          </div>
+          <h1 className="font-['Vast_XXL',sans-serif] text-2xl font-black text-white uppercase">Siparişiniz Alındı!</h1>
+          <p className="text-xs text-zinc-300">
+            Teşekkür ederiz. Siparişiniz başarıyla oluşturuldu ve ekibimize iletildi.
+          </p>
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+            <span className="text-[10px] font-mono text-zinc-400 uppercase">Sipariş Takip Kodunuz:</span>
+            <div className="text-lg font-mono font-bold text-[#F74A05] tracking-widest">{successOrderCode}</div>
+          </div>
+          <p className="text-[11px] text-zinc-500 font-mono">
+            Bu kodu ve e-posta adresinizi kullanarak siparişinizin durumunu takip edebilirsiniz.
+          </p>
+          <Link href="/store" className="block w-full py-3.5 rounded-full bg-[#F74A05] text-[#111111] font-black text-xs uppercase tracking-wider hover:bg-orange-600 transition-all">
+            Alışverişe Devam Et
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-[#111111] text-[#F5F2EC] pt-28 pb-16 px-4 sm:px-8 lg:px-16 font-sans">
+      <div className="mx-auto max-w-6xl space-y-8">
+        
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <Link href="/store" className="inline-flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-white transition-colors">
+            <ArrowLeft size={16} /> Mağazaya Dön
+          </Link>
+          <h1 className="font-['Vast_XXL',sans-serif] text-xl sm:text-2xl font-black uppercase text-white">Hızlı Ödeme (Checkout)</h1>
+          <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono">
+            <ShieldCheck size={16} /> 256-Bit SSL
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          
+          <div className="lg:col-span-7 space-y-6">
+            <form onSubmit={handleCheckout} className="space-y-4 bg-black/40 border border-white/15 p-6 sm:p-8 rounded-3xl backdrop-blur-xl">
+              <h2 className="text-xs font-mono uppercase tracking-widest text-[#F74A05] font-bold mb-4">Teslimat Bilgileri (Üyelik Gerekmez)</h2>
+              
+              <div className="space-y-2">
+                <label className="text-xs font-mono text-zinc-300">Ad Soyad *</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={fullName} 
+                  onChange={(e) => setFullName(e.target.value)} 
+                  placeholder="Adınız Soyadınız" 
+                  className="w-full rounded-xl border border-white/15 bg-black p-3.5 text-xs text-white focus:border-[#F74A05] focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-mono text-zinc-300">E-posta Adresi *</label>
+                  <input 
+                    type="email" 
+                    required 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    placeholder="ornek@mail.com" 
+                    className="w-full rounded-xl border border-white/15 bg-black p-3.5 text-xs text-white focus:border-[#F74A05] focus:outline-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-mono text-zinc-300">Telefon Numarası *</label>
+                  <input 
+                    type="tel" 
+                    required 
+                    value={phone} 
+                    onChange={(e) => setPhone(e.target.value)} 
+                    placeholder="05XX XXX XX XX" 
+                    className="w-full rounded-xl border border-white/15 bg-black p-3.5 text-xs text-white focus:border-[#F74A05] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-mono text-zinc-300">Açık Teslimat Adresi *</label>
+                <textarea 
+                  rows={3} 
+                  required 
+                  value={address} 
+                  onChange={(e) => setAddress(e.target.value)} 
+                  placeholder="Mahalle, Cadde, Sokak, No, Daire, İlçe / İl" 
+                  className="w-full rounded-xl border border-white/15 bg-black p-3.5 text-xs text-white focus:border-[#F74A05] focus:outline-none resize-none"
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={loading || items.length === 0}
+                className="w-full mt-6 py-4 rounded-full bg-[#F74A05] text-[#111111] font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all cursor-pointer shadow-[0_0_25px_rgba(247,74,5,0.4)] disabled:opacity-50"
+              >
+                {loading ? 'İşleniyor...' : `Siparişi Tamamla — ₺${grandTotal.toLocaleString('tr-TR')}`}
+              </button>
+            </form>
+          </div>
+
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-black/40 border border-white/15 p-6 rounded-3xl space-y-4 backdrop-blur-xl">
+              <h2 className="text-xs font-mono uppercase tracking-widest text-[#F74A05] font-bold">Sipariş Özeti ({items.length} Ürün)</h2>
+              
+              <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+                {items.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-12 w-12 rounded-xl bg-black border border-white/10 overflow-hidden shrink-0">
+                        <Image src={item.image} alt={item.name} fill className="object-cover" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-white line-clamp-1">{item.name}</h4>
+                        <span className="text-[10px] font-mono text-zinc-400">Adet: {item.quantity || 1}</span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-white">₺{(item.price * (item.quantity || 1)).toLocaleString('tr-TR')}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2 pt-4 border-t border-white/10 text-xs font-mono">
+                <div className="flex justify-between text-zinc-300">
+                  <span>Ara Toplam</span>
+                  <span>₺{subtotal.toLocaleString('tr-TR')}</span>
+                </div>
+                <div className="flex justify-between text-zinc-300">
+                  <span>Kargo Ücreti</span>
+                  <span>{shippingFee === 0 ? <strong className="text-emerald-400">ÜCRETSİZ (2000 TL Üzeri)</strong> : `₺${shippingFee}`}</span>
+                </div>
+                <div className="flex justify-between text-sm font-black text-white pt-2 border-t border-white/10">
+                  <span>Genel Toplam</span>
+                  <span className="text-[#F74A05]">₺{grandTotal.toLocaleString('tr-TR')}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  )
+}
