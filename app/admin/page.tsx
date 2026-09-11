@@ -25,7 +25,8 @@ import {
   UserCheck,
   Tag,
   TrendingUp,
-  PackageCheck
+  PackageCheck,
+  Star
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -95,7 +96,6 @@ export default function AdminPage() {
 
   const [userRolesState, setUserRolesState] = useState<{ [key: string]: { role: string, branch: string } }>({})
 
-  // Kupon ekleme state'leri
   const [newCouponCode, setNewCouponCode] = useState('')
   const [newCouponDiscount, setNewCouponDiscount] = useState('10')
 
@@ -386,6 +386,21 @@ export default function AdminPage() {
     setUploading(false)
   }
 
+  // Seçilen fotoğrafı en başa (Kapak / Ana Fotoğraf) taşıma fonksiyonu
+  const handleSetMainImage = (index: number, target: 'new' | 'edit') => {
+    if (target === 'new') {
+      const list = [...imageList]
+      const [item] = list.splice(index, 1)
+      list.unshift(item)
+      setImageList(list)
+    } else {
+      const list = [...editImages]
+      const [item] = list.splice(index, 1)
+      list.unshift(item)
+      setEditImages(list)
+    }
+  }
+
   const handleEventImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'new' | 'edit') => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -664,7 +679,6 @@ export default function AdminPage() {
     ? registrations.filter((r: any) => visibleEvents.some(e => e.id === r.event_id))
     : registrations
 
-  // İstatistik KPI hesaplamaları
   const totalRevenue = orders.filter(o => o.status !== 'İptal Edildi' && o.status !== 'İade Edildi').reduce((sum, o) => sum + Number(o.total_price || 0), 0)
   const pendingOrdersCount = orders.filter(o => o.status === 'Ödeme Bekliyor' || o.status === 'Ödeme Onaylandı').length
   const totalMembersCount = profiles.length
@@ -1128,7 +1142,7 @@ export default function AdminPage() {
 
             {/* YENİ ÜRÜN EKLEME */}
             <div className="rounded-3xl border border-[#F74A05]/30 bg-[#111111] p-6 sm:p-8 shadow-2xl space-y-6">
-              <h2 className="text-base font-bold flex items-center gap-2 text-[#F74A05]"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Genişletilmiş Kategoriler)</span></h2>
+              <h2 className="text-base font-bold flex items-center gap-2 text-[#F74A05]"><PlusCircle className="h-5 w-5" /><span>Mağazaya Ürün Ekle (Genişletilmiş Kategoriler & Fotoğraf Yönetimi)</span></h2>
               <form onSubmit={handleAddProduct} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <input type="text" placeholder="Ürün Başlığı" required value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border border-[#D8D6D2]/20 bg-black px-4 py-3 text-xs text-[#FFFFFF] focus:border-[#F74A05]" />
@@ -1153,11 +1167,34 @@ export default function AdminPage() {
                   </select>
 
                   <div className="relative flex items-center justify-between rounded-xl border border-[#D8D6D2]/20 bg-black px-4 py-3 cursor-pointer hover:border-[#F74A05]">
-                    <span className="text-xs text-[#D8D6D2] truncate">{uploading ? 'Yükleniyor...' : imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf` : 'Fotoğraf Seç'}</span>
+                    <span className="text-xs text-[#D8D6D2] truncate">{uploading ? 'Yükleniyor...' : imageList.length > 0 ? `✓ ${imageList.length} Fotoğraf Yüklendi` : 'Fotoğraf Seç / Yükle'}</span>
                     <Upload className="h-4 w-4 text-[#F74A05]" />
                     <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'new')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
                   </div>
                 </div>
+
+                {/* FOTOĞRAF ÖNİZLEME VE KAPAK YAPMA */}
+                {imageList.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-mono text-[#F74A05] uppercase font-bold">Yüklenen Fotoğraflar (İlk fotoğraf ana kapak görselidir. Değiştirmek için yıldız ikonuna tıklayın):</span>
+                    <div className="flex items-center gap-3 overflow-x-auto pb-2">
+                      {imageList.map((imgUrl, imgIdx) => (
+                        <div key={imgIdx} className="relative h-20 w-20 rounded-xl overflow-hidden border-2 border-white/20 flex-none group bg-black">
+                          <Image src={imgUrl} alt="" fill className="object-cover" />
+                          {imgIdx === 0 && (
+                            <span className="absolute top-1 left-1 bg-[#F74A05] text-[#111111] text-[9px] font-black px-1.5 py-0.5 rounded shadow">Kapak</span>
+                          )}
+                          <div className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
+                            {imgIdx !== 0 && (
+                              <button type="button" onClick={() => handleSetMainImage(imgIdx, 'new')} className="p-1 bg-[#F74A05] text-[#111111] rounded-lg cursor-pointer" title="Kapak Yap"><Star size={12} className="fill-current" /></button>
+                            )}
+                            <button type="button" onClick={() => setImageList(imageList.filter((_, i) => i !== imgIdx))} className="p-1 bg-red-600 text-white rounded-lg cursor-pointer" title="Kaldır"><X size={12} /></button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-mono uppercase text-[#D8D6D2] block">Ürün Renk Seçenekleri</label>
@@ -1220,17 +1257,6 @@ export default function AdminPage() {
                         ))}
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {imageList.length > 0 && (
-                  <div className="flex items-center gap-3 overflow-x-auto pb-2">
-                    {imageList.map((imgUrl, imgIdx) => (
-                      <div key={imgIdx} className="relative h-16 w-16 rounded-xl overflow-hidden border border-[#D8D6D2]/20 flex-none group">
-                        <Image src={imgUrl} alt="" fill className="object-cover" />
-                        <button type="button" onClick={() => setImageList(imageList.filter((_, i) => i !== imgIdx))} className="absolute inset-0 bg-red-600/80 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-xs font-bold cursor-pointer">Kaldır</button>
-                      </div>
-                    ))}
                   </div>
                 )}
 
@@ -1310,7 +1336,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={() => setEditingProduct(null)}>
           <div className="relative w-full max-w-lg rounded-3xl border border-[#D8D6D2]/20 bg-[#111111] p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-[#D8D6D2]/10 pb-4">
-              <h3 className="font-bold text-base text-[#FFFFFF]">Ürünü, Kategoriyi ve Matrisi Düzenle</h3>
+              <h3 className="font-bold text-base text-[#FFFFFF]">Ürünü, Kategoriyi ve Görselleri Düzenle</h3>
               <button type="button" onClick={() => setEditingProduct(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#FFFFFF] hover:bg-[#F74A05] hover:text-[#111111]"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleUpdateProduct} className="space-y-4">
@@ -1332,6 +1358,35 @@ export default function AdminPage() {
                   <option value="erkek">Erkek</option>
                   <option value="kadin">Kadın</option>
                 </select>
+              </div>
+
+              {/* DÜZENLEME MODALINDA FOTOĞRAF YÖNETİMİ */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-mono uppercase text-[#D8D6D2] block">Ürün Fotoğrafları (İlk fotoğraf kapaktır)</label>
+                  <label className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 text-xs text-white cursor-pointer hover:bg-zinc-700 font-bold">
+                    <Upload size={12} /> Fotoğraf Ekle
+                    <input type="file" accept="image/*" multiple onChange={(e) => handleMultipleImageUpload(e, 'edit')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                  </label>
+                </div>
+                {editImages.length > 0 && (
+                  <div className="flex items-center gap-3 overflow-x-auto pb-2">
+                    {editImages.map((imgUrl, imgIdx) => (
+                      <div key={imgIdx} className="relative h-20 w-20 rounded-xl overflow-hidden border-2 border-white/20 flex-none group bg-black">
+                        <Image src={imgUrl} alt="" fill className="object-cover" />
+                        {imgIdx === 0 && (
+                          <span className="absolute top-1 left-1 bg-[#F74A05] text-[#111111] text-[9px] font-black px-1.5 py-0.5 rounded shadow">Kapak</span>
+                        )}
+                        <div className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
+                          {imgIdx !== 0 && (
+                            <button type="button" onClick={() => handleSetMainImage(imgIdx, 'edit')} className="p-1 bg-[#F74A05] text-[#111111] rounded-lg cursor-pointer" title="Kapak Yap"><Star size={12} className="fill-current" /></button>
+                          )}
+                          <button type="button" onClick={() => setEditImages(editImages.filter((_, i) => i !== imgIdx))} className="p-1 bg-red-600 text-white rounded-lg cursor-pointer" title="Kaldır"><X size={12} /></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
