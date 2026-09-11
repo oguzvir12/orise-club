@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { Minus, Plus, ShoppingBag, Trash2, X, Tag, Check, AlertCircle, Truck, MapPin } from 'lucide-react'
 import { useCart } from '@/components/cart/cart-provider'
 import { supabase } from '@/lib/supabase'
@@ -18,6 +19,7 @@ const STANDARD_SHIPPING_FEE = 80
 const FREE_SHIPPING_THRESHOLD = 2000
 
 export function CartDrawer() {
+  const router = useRouter()
   const { items, isOpen, closeCart, subtotal, removeItem, updateQuantity, clearCart } = useCart() as any
   const [loading, setLoading] = useState(false)
   const [validationError, setValidationError] = useState('')
@@ -70,110 +72,14 @@ export function CartDrawer() {
   const discountedSubtotal = subtotal - discountAmount
   const isFreeShipping = discountedSubtotal >= FREE_SHIPPING_THRESHOLD
   
-  // Elden teslim seçilirse kargo ücreti 0 TL, aksi takdirde 80 TL (2000 TL üstü ücretsiz)
   const shippingFee = deliveryType === 'pickup' ? 0 : (isFreeShipping ? 0 : STANDARD_SHIPPING_FEE)
   const finalTotal = discountedSubtotal + shippingFee
   const remainingForFreeShipping = FREE_SHIPPING_THRESHOLD - discountedSubtotal
 
-  const handleCheckout = async () => {
-    setValidationError('')
-    const { data: { session } } = await supabase.auth.getSession()
-    
-    if (!session?.user) {
-      alert('Sipariş vermek için lütfen giriş yapın.')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .maybeSingle()
-
-      if (!profile || !profile.full_name || !profile.phone || !profile.tc_no || (deliveryType === 'cargo' && !profile.address)) {
-        setValidationError('Lütfen profilinizdeki Ad, Telefon, TCKN ve Teslimat Adresi alanlarını eksiksiz doldurun.')
-        setLoading(false)
-        return
-      }
-
-      for (const cartItem of items) {
-        const lastHyphenIdx = cartItem.id.lastIndexOf('-')
-        const size = cartItem.id.substring(lastHyphenIdx + 1)
-        const rest = cartItem.id.substring(0, lastHyphenIdx)
-        const secondLastHyphenIdx = rest.lastIndexOf('-')
-        const productId = rest.substring(0, secondLastHyphenIdx)
-        const color = rest.substring(secondLastHyphenIdx + 1)
-
-        const { data: prodRecord } = await supabase.from('products').select('*').eq('id', productId).maybeSingle()
-        if (prodRecord && prodRecord.sizes) {
-          let updatedSizes = { ...prodRecord.sizes }
-
-          if (updatedSizes[color] && typeof updatedSizes[color] === 'object') {
-            const currentStock = updatedSizes[color][size] || 0
-            const newStock = Math.max(0, currentStock - (cartItem.quantity || 1))
-            updatedSizes[color] = {
-              ...updatedSizes[color],
-              [size]: newStock
-            }
-          } else {
-            const currentStock = updatedSizes[size] || 0
-            const newStock = Math.max(0, currentStock - (cartItem.quantity || 1))
-            updatedSizes[size] = newStock
-          }
-
-          let newTotalStock = 0
-          Object.values(updatedSizes).forEach((val: any) => {
-            if (typeof val === 'object' && val !== null) {
-              newTotalStock += Object.values(val).reduce((a: any, b: any) => a + Number(b || 0), 0)
-            } else {
-              newTotalStock += Number(val || 0)
-            }
-          })
-
-          await supabase.from('products').update({
-            sizes: updatedSizes,
-            stock: newTotalStock
-          }).eq('id', productId)
-        }
-      }
-
-      const orderPayload = {
-        user_id: session.user.id,
-        customer_name: profile.full_name,
-        email: session.user.email,
-        phone: profile.phone,
-        tc_no: profile.tc_no,
-        address: deliveryType === 'pickup' ? 'ORISE Community Etkinlik Noktası (Elden Teslim)' : profile.address,
-        billing_address: sameAsShipping ? (deliveryType === 'pickup' ? (profile.address || 'Belirtilmedi') : profile.address) : billingAddressInput,
-        same_billing: sameAsShipping,
-        delivery_type: deliveryType,
-        items: items,
-        subtotal: subtotal,
-        discount: discountAmount,
-        shipping_fee: shippingFee,
-        total_price: finalTotal,
-        status: 'Ödeme Bekliyor',
-        tracking_number: null
-      }
-
-      const { error: ordError } = await supabase.from('orders').insert([orderPayload])
-      if (ordError) throw ordError
-
-      if (typeof clearCart === 'function') {
-        clearCart()
-      }
-
-      setLoading(false)
-      closeCart()
-      window.location.href = '/profile'
-
-    } catch (err: any) {
-      setValidationError('Hata: ' + err.message)
-      setLoading(false)
-    }
+  const handleCheckout = () => {
+    if (items.length === 0) return
+    closeCart()
+    router.push('/checkout')
   }
 
   return (
@@ -367,7 +273,7 @@ export function CartDrawer() {
                 onClick={handleCheckout} 
                 className="w-full rounded-full bg-[#F74A05] py-4 text-xs font-black uppercase tracking-widest text-[#111111] shadow-lg cursor-pointer disabled:opacity-50 hover:bg-orange-600 transition-colors"
               >
-                {loading ? 'İşleniyor...' : 'Siparişi Tamamla (İyzico Hazır)'}
+                {loading ? 'İşleniyor...' : 'Ödeme Adımına Geç (Checkout)'}
               </button>
               
               <div className="flex items-center justify-center gap-3 pt-2 opacity-80">
