@@ -20,7 +20,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [successOrderCode, setSuccessOrderCode] = useState<string | null>(null)
 
-  const subtotal = items.reduce((acc, item) => acc + item.price * (item.quantity || 1), 0)
+  const subtotal = items.reduce((acc: number, item: any) => acc + item.price * (item.quantity || 1), 0)
   const shippingFee = subtotal >= 2000 || subtotal === 0 ? 0 : 150
   const grandTotal = subtotal + shippingFee
 
@@ -34,27 +34,76 @@ export default function CheckoutPage() {
     setLoading(true)
     const orderCode = 'ORISE-' + Math.floor(100000 + Math.random() * 900000)
 
-    const { error } = await supabase.from('orders').insert([{
-      order_code: orderCode,
-      full_name: fullName,
-      email: email,
-      phone: phone,
-      address: address,
-      city: city,
-      total_amount: grandTotal,
-      shipping_fee: shippingFee,
-      status: 'Sipariş Alındı',
-      items: items
-    }])
+    try {
+      for (const cartItem of items) {
+        const cartId = cartItem.id || ''
+        const lastHyphenIdx = cartId.lastIndexOf('-')
+        if (lastHyphenIdx !== -1) {
+          const size = cartId.substring(lastHyphenIdx + 1)
+          const rest = cartId.substring(0, lastHyphenIdx)
+          const secondLastHyphenIdx = rest.lastIndexOf('-')
+          if (secondLastHyphenIdx !== -1) {
+            const productId = rest.substring(0, secondLastHyphenIdx)
+            const color = rest.substring(secondLastHyphenIdx + 1)
 
-    setLoading(false)
+            const { data: prodRecord } = await supabase.from('products').select('*').eq('id', productId).maybeSingle()
+            if (prodRecord && prodRecord.sizes) {
+              let updatedSizes = { ...prodRecord.sizes }
 
-    if (error) {
-      console.error(error)
-      alert('Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.')
-    } else {
+              if (updatedSizes[color] && typeof updatedSizes[color] === 'object') {
+                const currentStock = updatedSizes[color][size] || 0
+                const newStock = Math.max(0, currentStock - (cartItem.quantity || 1))
+                updatedSizes[color] = {
+                  ...updatedSizes[color],
+                  [size]: newStock
+                }
+              } else {
+                const currentStock = updatedSizes[size] || 0
+                const newStock = Math.max(0, currentStock - (cartItem.quantity || 1))
+                updatedSizes[size] = newStock
+              }
+
+              let newTotalStock = 0
+              Object.values(updatedSizes).forEach((val: any) => {
+                if (typeof val === 'object' && val !== null) {
+                  newTotalStock += Object.values(val).reduce((a: any, b: any) => a + Number(b || 0), 0)
+                } else {
+                  newTotalStock += Number(val || 0)
+                }
+              })
+
+              await supabase.from('products').update({
+                sizes: updatedSizes,
+                stock: newTotalStock
+              }).eq('id', productId)
+            }
+          }
+        }
+      }
+
+      const { error } = await supabase.from('orders').insert([{
+        order_code: orderCode,
+        full_name: fullName,
+        email: email,
+        phone: phone,
+        address: address,
+        city: city,
+        total_amount: grandTotal,
+        shipping_fee: shippingFee,
+        status: 'Sipariş Alındı',
+        items: items
+      }])
+
+      if (error) throw error
+
+      setLoading(false)
       setSuccessOrderCode(orderCode)
       clearCart()
+
+    } catch (err) {
+      console.error(err)
+      setLoading(false)
+      alert('Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.')
     }
   }
 
@@ -168,7 +217,7 @@ export default function CheckoutPage() {
               <h2 className="text-xs font-mono uppercase tracking-widest text-[#F74A05] font-bold">Sipariş Özeti ({items.length} Ürün)</h2>
               
               <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
-                {items.map((item) => (
+                {items.map((item: any) => (
                   <div key={item.id} className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
                     <div className="flex items-center gap-3">
                       <div className="relative h-12 w-12 rounded-xl bg-black border border-white/10 overflow-hidden shrink-0">
